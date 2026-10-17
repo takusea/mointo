@@ -3,7 +3,17 @@ import Slider from "~/components/Slider";
 import type { ToolProperty } from "~/core/CoreService";
 import type { MessageKey } from "~/features/i18n/I18nContext";
 import { useI18n } from "~/features/i18n/useI18n";
+import type { ToolKind } from "~/features/tool/type";
 import { useTool } from "~/features/tool/useTool";
+
+const toolNameKeys = {
+	move: "tool.name.move",
+	pen: "tool.name.pen",
+	eraser: "tool.name.eraser",
+	fill: "tool.name.fill",
+	select: "tool.name.select",
+	eyedropper: "tool.name.eyedropper",
+} as const satisfies Record<ToolKind, MessageKey>;
 
 type Props = {
 	properties: ToolProperty[];
@@ -19,7 +29,7 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 			<div className="flex flex-col gap-2">
 				<h2 className="font-bold">
 					{t("toolInspector.propertyOfTool", {
-						tool: toolContext.tool.toUpperCase(),
+						tool: t(toolNameKeys[toolContext.tool]),
 					})}
 				</h2>
 				{properties.map((property) => {
