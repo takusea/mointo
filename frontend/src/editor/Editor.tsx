@@ -131,7 +131,7 @@ const Editor = () => {
 								<div className="absolute left-2 bottom-16 pointer-events-auto">
 									<Card size="small">
 										<IconButton
-											label="a"
+											label={t("editor.openToolInspector")}
 											icon={IconTools}
 											onClick={() => toggleIsToolInspectorOpen()}
 										/>
@@ -144,7 +144,7 @@ const Editor = () => {
 									<div className="absolute right-2 bottom-16 pointer-events-auto">
 										<Card size="small">
 											<IconButton
-												label="a"
+												label={t("editor.openClipInspector")}
 												icon={IconAdjustmentsHorizontal}
 												onClick={() => toggleIsClipInspectorOpen()}
 											/>

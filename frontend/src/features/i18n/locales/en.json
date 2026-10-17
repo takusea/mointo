@@ -63,6 +63,8 @@
 	"app.resizeTimeline": "Resize Timeline",
 	"editor.resizeToolInspector": "Resize tool inspector",
 	"editor.resizeClipInspector": "Resize clip inspector",
+	"editor.openToolInspector": "Open tool inspector",
+	"editor.openClipInspector": "Open clip inspector",
 	"nav.export": "Export",
 	"nav.exportProgress": "Exporting {completed}/{total}",
 	"nav.exportFailed": "Could not export: {error}",

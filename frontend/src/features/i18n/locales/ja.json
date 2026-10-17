@@ -63,6 +63,8 @@
 	"app.resizeTimeline": "タイムラインのサイズを変更",
 	"editor.resizeToolInspector": "ツールインスペクターの幅を変更",
 	"editor.resizeClipInspector": "クリップインスペクターの幅を変更",
+	"editor.openToolInspector": "ツールインスペクターを開く",
+	"editor.openClipInspector": "クリップインスペクターを開く",
 	"nav.export": "エクスポート",
 	"nav.exportProgress": "エクスポート中 {completed}/{total}",
 	"nav.exportFailed": "エクスポートできませんでした: {error}",
