@@ -18,6 +18,7 @@ export const useCanvasNavigation = (
 ) => {
 	const pointers = useRef(new Map<number, Point>());
 	const previousGesture = useRef<ReturnType<typeof getGesture> | null>(null);
+	const gestureFrame = useRef<number | null>(null);
 	const zoomAnchor = useRef<Point | null>(null);
 
 	const handleContainerPointerDown = (event: React.PointerEvent) => {
@@ -76,25 +77,37 @@ export const useCanvasNavigation = (
 				y: event.clientY,
 			});
 			if (pointers.current.size >= 2) {
-				const current = getGesture([...pointers.current.values()].slice(0, 2));
-				const previous = previousGesture.current;
-				if (previous != null && previous.distance > 0) {
-					const canvas = canvasRef.current;
-					if (canvas != null) {
-						const rect = canvas.getBoundingClientRect();
-						let angleDelta = current.angle - previous.angle;
-						if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
-						if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
-						canvasView.applyGesture(
-							current.distance / previous.distance,
-							(angleDelta * 180) / Math.PI,
-							previous.center,
-							current.center,
-							{ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+				if (gestureFrame.current == null) {
+					gestureFrame.current = requestAnimationFrame(() => {
+						gestureFrame.current = null;
+						if (pointers.current.size < 2) return;
+
+						const current = getGesture(
+							[...pointers.current.values()].slice(0, 2),
 						);
-					}
+						const previous = previousGesture.current;
+						if (previous != null && previous.distance > 0) {
+							const canvas = canvasRef.current;
+							if (canvas != null) {
+								const rect = canvas.getBoundingClientRect();
+								let angleDelta = current.angle - previous.angle;
+								if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+								if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+								canvasView.applyGesture(
+									current.distance / previous.distance,
+									(angleDelta * 180) / Math.PI,
+									previous.center,
+									current.center,
+									{
+										x: rect.left + rect.width / 2,
+										y: rect.top + rect.height / 2,
+									},
+								);
+							}
+						}
+						previousGesture.current = current;
+					});
 				}
-				previousGesture.current = current;
 			}
 			return;
 		}
