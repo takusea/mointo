@@ -110,7 +110,7 @@ const TrackHeader = ({
 
 	return (
 		<div
-			className="absolute h-full border-b border-zinc-500/40"
+			className="h-full border-b border-zinc-500/40"
 			style={{
 				translate: `-${scrollX}px 0`,
 				width: `${totalFrames * frameWidth}px`,
@@ -158,7 +158,7 @@ const TrackHeader = ({
 				onKeyDown={(event) => handleRangeKeyDown(event, false)}
 			></button>
 			<div
-				className="absolute h-full flex items-center px-1 border-b-2 border-primary font-mono pointer-events-none"
+				className="absolute h-full flex items-center px-1 border-b-2 border-primary pointer-events-none"
 				style={{
 					translate: `${currentFrame * frameWidth}px 0`,
 					width: `${frameWidth}px`,

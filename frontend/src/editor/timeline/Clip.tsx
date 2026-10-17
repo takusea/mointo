@@ -86,8 +86,16 @@ const Clip = ({
 		startInteraction();
 
 		onMove(
-			Math.max(0, drag.startFrame + Math.floor((event.clientX - drag.startX) / frameWidth)),
-			Math.max(0, drag.layerIndex + Math.floor((event.clientY - drag.startY) / layerHeight)),
+			Math.max(
+				0,
+				drag.startFrame +
+					Math.floor((event.clientX - drag.startX) / frameWidth),
+			),
+			Math.max(
+				0,
+				drag.layerIndex +
+					Math.floor((event.clientY - drag.startY) / layerHeight),
+			),
 		);
 	};
 
@@ -95,10 +103,20 @@ const Clip = ({
 		event: React.PointerEvent<HTMLDivElement>,
 	) => {
 		const drag = dragRef.current;
-		if (drag == null || drag.pointerId !== event.pointerId || drag.kind !== "resize") return;
+		if (
+			drag == null ||
+			drag.pointerId !== event.pointerId ||
+			drag.kind !== "resize"
+		)
+			return;
 		event.stopPropagation();
 		startInteraction();
-		onDurationChange(Math.max(1, drag.duration + Math.floor((event.clientX - drag.startX) / frameWidth)));
+		onDurationChange(
+			Math.max(
+				1,
+				drag.duration + Math.floor((event.clientX - drag.startX) / frameWidth),
+			),
+		);
 	};
 
 	const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -129,7 +147,7 @@ const Clip = ({
 				onPointerMove={isLocked ? undefined : handlePointerMove}
 			/>
 			<div
-				className={isLocked ? "" : "cursor-w-resize"}
+				className={`${isSelected ? "bg-primary" : "bg-zinc-500/40"} ${isLocked ? "" : "cursor-w-resize"}`}
 				data-resize="true"
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handleRightPointerMove}

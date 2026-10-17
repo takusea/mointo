@@ -35,8 +35,11 @@ const TrackSide = ({
 
 	return (
 		<div
-			className="absolute size-full"
-			style={{ translate: `0 -${scrollY}px` }}
+			className="border-r border-zinc-500/40"
+			style={{
+				translate: `0 -${scrollY}px`,
+				height: `${layers.length * layerHeight}px`,
+			}}
 			onWheel={onWheel}
 		>
 			{layers.map((layer, i) => {
@@ -45,12 +48,15 @@ const TrackSide = ({
 				return (
 					<div
 						key={layer.id}
-						className={`w-full overflow-hidden flex items-center justify-between gap-1 border-l-2 border-b border-zinc-500/40 ${selectedLayerId === layer.id ? "border-l-primary" : "border-l-transparent"} ${isHidden ? "opacity-50" : ""}`}
+						className={`overflow-hidden flex items-center justify-between gap-1 border-b border-zinc-500/40 ${isHidden ? "opacity-50" : ""}`}
 						style={{ height: `${layerHeight}px` }}
 					>
+						{selectedLayerId === layer.id && (
+							<div className="absolute left-1 w-1 h-4 bg-primary rounded-full" />
+						)}
 						<button
 							type="button"
-							className="flex-1 h-full px-2 text-left"
+							className="flex-1 h-full pl-3 pr-2 text-left"
 							onClick={() => onLayerSelect(layer.id)}
 						>
 							{t("timeline.layer", { index: i })}
