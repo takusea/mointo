@@ -41,27 +41,6 @@ const NumberField = ({
 
 	const cursor = isMoved ? "cursor-ew-resize" : "cursor-text";
 
-	const handlePointerMove = (event: React.PointerEvent) => {
-		if (
-			props.disabled ||
-			!(event.buttons & 1) ||
-			props.value == null ||
-			event.pointerType === "touch"
-		)
-			return;
-
-		event.currentTarget.setPointerCapture(event.pointerId);
-
-		if (Math.abs(event.movementX) > 0) {
-			setIsMoved(true);
-		}
-
-		const currentValue = dragValue.current ?? Number(props.value);
-		const nextValue = clamp(currentValue + event.movementX * step);
-		dragValue.current = nextValue;
-		onValueChange?.(nextValue);
-	};
-
 	const finishInteraction = () => {
 		dragValue.current = null;
 		if (interactionStarted.current) {
@@ -71,10 +50,34 @@ const NumberField = ({
 	};
 
 	const handlePointerDown = (event: React.PointerEvent) => {
-		if (props.disabled || event.button !== 0 || event.pointerType === "touch")
+		if (props.disabled || event.button !== 0 || event.pointerType === "touch") {
 			return;
+		}
+
+		event.currentTarget.setPointerCapture(event.pointerId);
+
 		interactionStarted.current = true;
 		onInteractionStart?.();
+	};
+
+	const handlePointerMove = (event: React.PointerEvent) => {
+		if (
+			props.disabled ||
+			document.activeElement === input.current ||
+			!(event.buttons & 1) ||
+			props.value == null ||
+			event.pointerType === "touch"
+		)
+			return;
+
+		if (Math.abs(event.movementX) > 0) {
+			setIsMoved(true);
+		}
+
+		const currentValue = dragValue.current ?? Number(props.value);
+		const nextValue = clamp(currentValue + event.movementX * step);
+		dragValue.current = nextValue;
+		onValueChange?.(nextValue);
 	};
 
 	const handlePointerUp = (event: React.PointerEvent) => {
@@ -90,13 +93,8 @@ const NumberField = ({
 				throw new Error("input.current is null");
 			}
 			input.current.focus();
-			input.current.select();
 		}
 		setIsMoved(false);
-	};
-
-	const handleInputPointerMove = (event: React.PointerEvent) => {
-		event.stopPropagation();
 	};
 
 	const handleChange = (event: React.ChangeEvent) => {
@@ -139,7 +137,7 @@ const NumberField = ({
 
 	return (
 		<div
-			className={`flex gap-1 px-2 h-8 border border-zinc-500/40 bg-white/50 dark:bg-zinc-800/50 rounded-md touch-none focus-within:outline-2 ${props.disabled ? "opacity-50" : cursor}`}
+			className={`flex gap-1 px-2 h-8 border border-zinc-500/40 bg-white/50 dark:bg-zinc-800/50 rounded-md focus-within:outline-2 ${props.disabled ? "opacity-50" : cursor}`}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
@@ -158,8 +156,7 @@ const NumberField = ({
 				ref={input}
 				type="number"
 				value={innerValue}
-				className="min-w-0 flex-1 h-full pointer-events-none focus:pointer-events-auto outline-none"
-				onPointerMove={handleInputPointerMove}
+				className="min-w-0 flex-1 h-full outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 				onChange={handleChange}
 				onKeyDown={handleKeyDown}
 				onBlur={handleBlur}
