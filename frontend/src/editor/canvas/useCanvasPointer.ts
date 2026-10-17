@@ -64,6 +64,30 @@ export const useCanvasPointer = (
 
 	const selection = useCanvasSelection(canvasRef, getPointerPosition);
 
+	const pickColor = async (clientX: number, clientY: number) => {
+		const canvas = canvasRef.current;
+		if (canvas == null) return;
+		const { x, y } = getPointerPosition(clientX, clientY);
+		const pixelX = Math.floor(x);
+		const pixelY = Math.floor(y);
+		if (
+			pixelX < 0 ||
+			pixelY < 0 ||
+			pixelX >= canvas.width ||
+			pixelY >= canvas.height
+		)
+			return;
+		const image = await playbackContext.renderFrame(
+			playbackContext.currentFrame,
+		);
+		if (image == null) return;
+		const pixelIndex = (pixelY * canvas.width + pixelX) * 4;
+		const data = image.subarray(pixelIndex, pixelIndex + 4);
+		toolContext.setColor(
+			rgbaToHsva({ r: data[0], g: data[1], b: data[2], a: 255 }),
+		);
+	};
+
 	const getPointerPressure = (
 		event: Pick<PointerEvent, "pointerType" | "pressure">,
 	) => {
@@ -92,6 +116,11 @@ export const useCanvasPointer = (
 		}
 		if (canvasRef.current == null) return;
 		if (!(event.buttons & 1) || event.shiftKey) return;
+		if (toolContext.tool === "eyedropper") {
+			event.currentTarget.setPointerCapture(event.pointerId);
+			await pickColor(event.clientX, event.clientY);
+			return;
+		}
 
 		if (toolContext.tool === "select") {
 			selection.beginSelection(event);
@@ -114,7 +143,10 @@ export const useCanvasPointer = (
 		}
 
 		const latestColor = toolContext.colorHistory[0];
-		if (latestColor == null || !hasSameRgbColor(toolContext.color, latestColor)) {
+		if (
+			latestColor == null ||
+			!hasSameRgbColor(toolContext.color, latestColor)
+		) {
 			toolContext.pushColorHistory(toolContext.color);
 		}
 
@@ -155,6 +187,14 @@ export const useCanvasPointer = (
 		const canvas = canvasRef.current;
 		if (canvas == null) return;
 		if (selection.moveSelection(event)) return;
+		if (event.buttons & 2) {
+			await pickColor(event.clientX, event.clientY);
+			return;
+		}
+		if (toolContext.tool === "eyedropper") {
+			if (event.buttons & 1) await pickColor(event.clientX, event.clientY);
+			return;
+		}
 
 		if (toolContext.tool === "move" && moveDragRef.current != null) {
 			if (moveDragRef.current == null) return;
@@ -174,24 +214,6 @@ export const useCanvasPointer = (
 				],
 			});
 			return;
-		}
-
-		if (event.buttons & 2) {
-			const { x, y } = getPointerPosition(event.clientX, event.clientY);
-			const image = await playbackContext.renderFrame(
-				playbackContext.currentFrame,
-			);
-			if (image == null) return;
-			const pixelIndex = (Math.floor(y) * canvas.width + Math.floor(x)) * 4;
-			const data = image.subarray(pixelIndex, pixelIndex + 4);
-			toolContext.setColor(
-				rgbaToHsva({
-					r: data[0],
-					g: data[1],
-					b: data[2],
-					a: 255,
-				}),
-			);
 		}
 
 		if (
@@ -228,6 +250,7 @@ export const useCanvasPointer = (
 			if (isMultiTouchRef.current) return;
 		}
 		if (selection.finishSelection(event)) return;
+		if (toolContext.tool === "eyedropper") return;
 
 		if (moveDragRef.current != null || toolContext.tool === "move") {
 			const hadMoveDrag = moveDragRef.current != null;

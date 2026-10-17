@@ -35,6 +35,7 @@ const DrawCanvas = () => {
 		x: number;
 		y: number;
 	} | null>(null);
+	const [isRightButtonDown, setIsRightButtonDown] = useState(false);
 	const sizeProperty = toolContext.properties.find(
 		(property) => property.name === "size",
 	);
@@ -45,7 +46,9 @@ const DrawCanvas = () => {
 	const cursorSize =
 		Math.max(1, Number.isFinite(brushSize) ? brushSize : 1) * canvasView.scale;
 	const cursorStyle =
-		toolContext.tool === "move"
+		toolContext.tool === "eyedropper" || isRightButtonDown
+			? "crosshair"
+			: toolContext.tool === "move"
 			? "move"
 			: toolContext.tool === "fill"
 				? isDesktop
@@ -161,12 +164,22 @@ const DrawCanvas = () => {
 				onPointerEnter={updateCursorPosition}
 				onPointerLeave={() => setCursorPosition(null)}
 				onPointerMove={(event) => {
+					setIsRightButtonDown((event.buttons & 2) !== 0);
 					canvasPointer.handlePointerMove(event);
 					updateCursorPosition(event);
 				}}
-				onPointerDown={canvasPointer.handlePointerDown}
-				onPointerUp={canvasPointer.handlePointerUp}
-				onPointerCancel={canvasPointer.handlePointerUp}
+				onPointerDown={(event) => {
+					setIsRightButtonDown((event.buttons & 2) !== 0);
+					canvasPointer.handlePointerDown(event);
+				}}
+				onPointerUp={(event) => {
+					setIsRightButtonDown(false);
+					canvasPointer.handlePointerUp(event);
+				}}
+				onPointerCancel={(event) => {
+					setIsRightButtonDown(false);
+					canvasPointer.handlePointerUp(event);
+				}}
 			/>
 			{cursorStyle === "none" &&
 				cursorPosition != null &&

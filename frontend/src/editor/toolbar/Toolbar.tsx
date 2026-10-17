@@ -4,6 +4,7 @@ import {
 	IconArrowsMove,
 	IconBucketDroplet,
 	IconClipboard,
+	IconColorPicker,
 	IconCopy,
 	IconEraser,
 	IconFlipHorizontal,
@@ -82,6 +83,7 @@ const Toolbar = () => {
 		playbackContext.setCurrentFrame(playbackContext.endFrame),
 	);
 	useHotkeys(shortcuts.moveTool, () => toolContext.setTool("move"));
+	useHotkeys(shortcuts.eyedropperTool, () => toolContext.setTool("eyedropper"));
 	useHotkeys(shortcuts.penTool, () => toolContext.setTool("pen"));
 	useHotkeys(shortcuts.eraserTool, () => toolContext.setTool("eraser"));
 	useHotkeys(shortcuts.fillTool, () => toolContext.setTool("fill"));
@@ -111,6 +113,13 @@ const Toolbar = () => {
 						icon={IconBucketDroplet}
 						variant={toolContext.tool === "fill" ? "primary" : "default"}
 						onClick={() => toolContext.setTool("fill")}
+					/>
+					<IconButton
+						label={t("toolbar.eyedropper")}
+						shortcut={formatShortcut(shortcuts.eyedropperTool)}
+						icon={IconColorPicker}
+						variant={toolContext.tool === "eyedropper" ? "primary" : "default"}
+						onClick={() => toolContext.setTool("eyedropper")}
 					/>
 					<IconButton
 						label={t("toolbar.select")}

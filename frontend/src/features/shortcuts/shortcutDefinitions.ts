@@ -54,8 +54,9 @@ export const shortcutDefinitions = {
 	penTool: { label: "shortcut.penTool", defaultKey: "1" },
 	eraserTool: { label: "shortcut.eraserTool", defaultKey: "2" },
 	fillTool: { label: "shortcut.fillTool", defaultKey: "3" },
-	selectTool: { label: "shortcut.selectTool", defaultKey: "4" },
-	moveTool: { label: "shortcut.moveTool", defaultKey: "5" },
+	eyedropperTool: { label: "shortcut.eyedropperTool", defaultKey: "4" },
+	selectTool: { label: "shortcut.selectTool", defaultKey: "5" },
+	moveTool: { label: "shortcut.moveTool", defaultKey: "6" },
 	deleteClip: { label: "shortcut.deleteClip", defaultKey: "delete" },
 } satisfies Record<string, { label: MessageKey; defaultKey: string }>;
 
