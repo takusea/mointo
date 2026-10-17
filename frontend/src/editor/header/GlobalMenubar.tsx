@@ -54,7 +54,9 @@ const GlobalMenubar = () => {
 		canvasView.setIsFlippedVertical(false);
 	};
 
-	useHotkeys(shortcuts.newProject, () => dialogs.open("createProject"));
+	useHotkeys(shortcuts.newProject, () => {
+		if (project.confirmDiscard()) dialogs.open("createProject");
+	});
 	useHotkeys(shortcuts.openProject, () => project.open());
 	useHotkeys(shortcuts.saveProject, () => project.save());
 	useHotkeys(shortcuts.zoomIn, () => canvasView.zoom(1));
@@ -78,7 +80,9 @@ const GlobalMenubar = () => {
 				<MenubarItem
 					label={t("menubar.new")}
 					shortcut={formatShortcut(shortcuts.newProject)}
-					onSelect={() => dialogs.open("createProject")}
+					onSelect={() => {
+						if (project.confirmDiscard()) dialogs.open("createProject");
+					}}
 				/>
 				<MenubarItem
 					label={t("menubar.open")}

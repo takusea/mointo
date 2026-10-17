@@ -1,16 +1,34 @@
+import { useCallback, useEffect, useState } from "react";
 import { useDocumentTitle } from "usehooks-ts";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
+import { useI18n } from "~/features/i18n/useI18n";
 import type { ProjectSettings } from "./type";
 
 export const useProject = () => {
 	const core = useCore();
-	const { projectSettings } = useCoreSnapshot();
+	const { projectSettings, revision } = useCoreSnapshot();
+	const { t } = useI18n();
+	const [savedRevision, setSavedRevision] = useState(revision);
+	const hasUnsavedChanges = revision !== savedRevision;
+
+	const confirmDiscard = useCallback(() => {
+		return !hasUnsavedChanges || window.confirm(t("project.unsavedChanges"));
+	}, [hasUnsavedChanges, t]);
+
+	useEffect(() => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			if (!hasUnsavedChanges) return;
+			event.preventDefault();
+			event.returnValue = "";
+		};
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+	}, [hasUnsavedChanges]);
 
 	const create = (settings: ProjectSettings) => {
 		return core.createProject(settings);
 	};
-	``;
 	const setSettings = (newSettings: ProjectSettings) => {
 		return core.setProjectSettings(newSettings);
 	};
@@ -20,6 +38,7 @@ export const useProject = () => {
 	);
 
 	const open = () => {
+		if (!confirmDiscard()) return;
 		const input = document.createElement("input");
 		input.type = "file";
 		input.accept = ".flip";
@@ -34,7 +53,9 @@ export const useProject = () => {
 				if (!(result instanceof ArrayBuffer)) {
 					throw new Error("FileReader result is not an ArrayBuffer");
 				}
-				void core.importProject(new Uint8Array(result));
+				void core.importProject(new Uint8Array(result)).then(() => {
+					setSavedRevision(core.getSnapshot().revision);
+				});
 			});
 			reader.readAsArrayBuffer(file);
 		});
@@ -52,6 +73,7 @@ export const useProject = () => {
 		link.download = "export.flip";
 		link.click();
 		link.remove();
+		setSavedRevision(core.getSnapshot().revision);
 	};
 
 	return {
@@ -60,5 +82,7 @@ export const useProject = () => {
 		setSettings,
 		open,
 		save,
+		hasUnsavedChanges,
+		confirmDiscard,
 	};
 };

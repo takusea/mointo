@@ -47,7 +47,9 @@ const Editor = () => {
 							icon={IconFilePlus}
 							variant="primary"
 							size="large"
-							onClick={() => dialogs.open("createProject")}
+							onClick={() => {
+								if (project.confirmDiscard()) dialogs.open("createProject");
+							}}
 						/>
 						<Button
 							label={t("app.openProject")}

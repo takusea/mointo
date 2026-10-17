@@ -138,6 +138,7 @@
 	"project.settings": "プロジェクト設定",
 	"project.create": "プロジェクト新規作成",
 	"project.createAction": "作成",
+	"project.unsavedChanges": "保存されていない変更があります。破棄して続行しますか？",
 	"project.apply": "変更",
 	"project.name": "プロジェクト名",
 	"project.width": "横幅",

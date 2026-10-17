@@ -6,8 +6,8 @@ import IconButton from "~/components/IconButton";
 import Tooltip from "~/components/Tooltip";
 import { useDialogs } from "~/editor/dialogs/useDialogs";
 import { useI18n } from "~/features/i18n/useI18n";
-import { useProject } from "~/features/project/useProject";
 import { useProjectExport } from "~/features/io/export/useProjectExport";
+import { useProject } from "~/features/project/useProject";
 import GlobalMenubar from "./GlobalMenubar";
 
 const GlobalHeader = () => {
@@ -57,7 +57,9 @@ const GlobalHeader = () => {
 						{project.settings && (
 							<Tooltip label={t("nav.projectSettings")} side="bottom">
 								<Button
-									label={project.settings.title}
+									label={
+										project.settings.title + (project.hasUnsavedChanges && " *")
+									}
 									onClick={() => dialogs.open("editProjectSettings")}
 								/>
 							</Tooltip>

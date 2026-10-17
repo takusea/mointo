@@ -138,6 +138,7 @@
 	"project.settings": "Project Settings",
 	"project.create": "Create New Project",
 	"project.createAction": "Create",
+	"project.unsavedChanges": "You have unsaved changes. Discard them and continue?",
 	"project.apply": "Apply",
 	"project.name": "Project Name",
 	"project.width": "Width",
