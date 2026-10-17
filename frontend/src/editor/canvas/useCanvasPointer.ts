@@ -188,7 +188,7 @@ export const useCanvasPointer = (
 					r: data[0],
 					g: data[1],
 					b: data[2],
-					a: data[3],
+					a: 255,
 				}),
 			);
 		}

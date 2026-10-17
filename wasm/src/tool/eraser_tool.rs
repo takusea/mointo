@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::core::{
     color::Color,
     image::{Image, PixelChange},
@@ -9,6 +7,7 @@ use crate::core::{
 pub struct EraserTool {
     pub size: u32,
     pub antialiasing: u32,
+    pub opacity: u8,
 }
 
 impl Tool for EraserTool {
@@ -52,7 +51,7 @@ impl Tool for EraserTool {
                 }
                 let idx = ((py * fw + px) * 4) as usize;
                 let mut pixel: [u8; 4] = image.data[idx..idx + 4].try_into().unwrap();
-                let remaining = 1.0 - covered as f32 / (samples * samples) as f32;
+                let remaining = 1.0 - covered as f32 / (samples * samples) as f32 * self.opacity as f32 / 100.0;
                 pixel[3] = (pixel[3] as f32 * remaining).round() as u8;
                 image.set_pixel(idx, pixel, changes);
             }
@@ -79,6 +78,15 @@ impl Tool for EraserTool {
                 step: 1.0,
                 unit: Some("×".into()),
             },
+            ToolProperty {
+                name: "opacity".into(),
+                label: "toolInspector.opacity".into(),
+                value: ToolPropertyValue::Number(self.opacity as f64),
+                min: 0.0,
+                max: 100.0,
+                step: 1.0,
+                unit: Some("%".into()),
+            },
         ]
     }
 
@@ -89,6 +97,9 @@ impl Tool for EraserTool {
             }
             ("antialiasing", ToolPropertyValue::Number(samples)) => {
                 self.antialiasing = samples.clamp(1.0, 16.0).round() as u32;
+            }
+            ("opacity", ToolPropertyValue::Number(opacity)) => {
+                self.opacity = opacity.clamp(0.0, 100.0).round() as u8;
             }
             _ => {
                 eprintln!("Brush: Unknown or invalid property: {}.", name);

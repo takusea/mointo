@@ -21,7 +21,7 @@ const ColorInspector = ({
 		h: Math.round(currentColor.h),
 		s: Math.round(currentColor.s * 100),
 		v: Math.round(currentColor.v * 100),
-		a: currentColor.a,
+		a: 255,
 	};
 
 	return (
@@ -37,7 +37,7 @@ const ColorInspector = ({
 						className="relative w-8 h-8 rounded border border-zinc-500/40 bg-[url(/transparent.png)] before:content-[''] before:rounded-sm before:absolute before:inset-1 before:bg-(--color) before:z-10"
 						style={
 							{
-								"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b} / ${rgbaColor.a / 255})`,
+						"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b})`,
 							} as React.CSSProperties
 						}
 					/>

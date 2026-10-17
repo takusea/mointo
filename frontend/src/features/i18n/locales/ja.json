@@ -105,6 +105,7 @@
 	"inputSettings.pressureCurve": "筆圧カーブ",
 	"inputSettings.curveHint": "クリックで制御点を追加し、グラフの外へドラッグすると削除します。",
 	"toolInspector.tolerance": "許容値",
+	"toolInspector.opacity": "不透明度",
 	"inspector.colorPicker": "カラーピッカー",
 	"inspector.propertyOf": "{name} のプロパティ",
 	"inspector.show": "表示",

@@ -51,6 +51,8 @@ pub struct ToolProperty {
 }
 
 pub trait Tool {
+    fn begin_stroke(&mut self) {}
+    fn end_stroke(&mut self) {}
     fn apply(
         &mut self,
         image: &mut Image,

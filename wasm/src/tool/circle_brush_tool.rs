@@ -9,9 +9,19 @@ use crate::core::{
 pub struct CircleBrushTool {
     pub size: u32,
     pub antialiasing: u32,
+    pub opacity: u8,
+    pub(crate) stroke_pixels: HashMap<usize, ([u8; 4], f32)>,
 }
 
 impl Tool for CircleBrushTool {
+    fn begin_stroke(&mut self) {
+        self.stroke_pixels.clear();
+    }
+
+    fn end_stroke(&mut self) {
+        self.stroke_pixels.clear();
+    }
+
     fn apply(
         &mut self,
         image: &mut Image,
@@ -56,9 +66,17 @@ impl Tool for CircleBrushTool {
 
                 let idx = ((py * fw + px) * 4) as usize;
                 let coverage = covered as f32 / (samples * samples) as f32;
-                let alpha = (color[3] as f32 * coverage).round() as u8;
-                let before = &image.data[idx..idx + 4];
-                let dst_a = before[3] as f32 / 255.0;
+                let (base, accumulated_coverage) = self
+                    .stroke_pixels
+                    .entry(idx)
+                    .or_insert_with(|| (image.data[idx..idx + 4].try_into().unwrap(), 0.0));
+                *accumulated_coverage = accumulated_coverage.max(coverage);
+                let alpha = (color[3] as f32
+                    * self.opacity as f32
+                    / 100.0
+                    * *accumulated_coverage)
+                    .round() as u8;
+                let dst_a = base[3] as f32 / 255.0;
                 let src_a = alpha as f32 / 255.0;
                 let out_a = src_a + dst_a * (1.0 - src_a);
                 if out_a <= 0.0 {
@@ -71,9 +89,9 @@ impl Tool for CircleBrushTool {
                 image.set_pixel(
                     idx,
                     [
-                        blend(cr, before[0]),
-                        blend(cg, before[1]),
-                        blend(cb, before[2]),
+                        blend(cr, base[0]),
+                        blend(cg, base[1]),
+                        blend(cb, base[2]),
                         (out_a * 255.0).round() as u8,
                     ],
                     changes,
@@ -102,6 +120,15 @@ impl Tool for CircleBrushTool {
                 step: 1.0,
                 unit: Some("×".into()),
             },
+            ToolProperty {
+                name: "opacity".into(),
+                label: "toolInspector.opacity".into(),
+                value: ToolPropertyValue::Number(self.opacity as f64),
+                min: 0.0,
+                max: 100.0,
+                step: 1.0,
+                unit: Some("%".into()),
+            },
         ]
     }
 
@@ -112,6 +139,9 @@ impl Tool for CircleBrushTool {
             }
             ("antialiasing", ToolPropertyValue::Number(samples)) => {
                 self.antialiasing = samples.clamp(1.0, 16.0).round() as u32;
+            }
+            ("opacity", ToolPropertyValue::Number(opacity)) => {
+                self.opacity = opacity.clamp(0.0, 100.0).round() as u8;
             }
             _ => {
                 eprintln!("Brush: Unknown or invalid property: {}.", name);

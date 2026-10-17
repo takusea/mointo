@@ -105,6 +105,7 @@
 	"inputSettings.pressureCurve": "Pressure curve",
 	"inputSettings.curveHint": "Click to add a control point. Drag points outside the graph to remove them.",
 	"toolInspector.tolerance": "Tolerance",
+	"toolInspector.opacity": "Opacity",
 	"inspector.colorPicker": "Color picker",
 	"inspector.propertyOf": "{name} Properties",
 	"inspector.show": "Show",

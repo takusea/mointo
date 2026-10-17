@@ -30,6 +30,8 @@ impl FlippenCore {
             Box::new(tool::circle_brush_tool::CircleBrushTool {
                 size: 5,
                 antialiasing: 8,
+                opacity: 100,
+                stroke_pixels: Default::default(),
             }),
         );
         tools.insert(
@@ -37,11 +39,12 @@ impl FlippenCore {
             Box::new(tool::eraser_tool::EraserTool {
                 size: 5,
                 antialiasing: 8,
+                opacity: 100,
             }),
         );
         tools.insert(
             ToolId::Fill,
-            Box::new(tool::fill_tool::FillTool { tolerance: 500 }),
+            Box::new(tool::fill_tool::FillTool { tolerance: 500, opacity: 100 }),
         );
 
         Self {

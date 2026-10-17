@@ -1,5 +1,4 @@
 import type { HSVAColor } from "~/lib/color";
-import Slider from "./Slider";
 
 type Props = {
 	currentColor: HSVAColor;
@@ -46,7 +45,7 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 	};
 
 	return (
-		<div className="flex flex-col gap-1">
+		<div className="flex flex-col gap-1 max-w-64 w-full mx-auto">
 			<div
 				style={{ "--hue": currentColor.h } as React.CSSProperties}
 				className="relative w-full h-auto aspect-square p-[20%] touch-none"
@@ -76,17 +75,6 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 					/>
 				</div>
 			</div>
-			<Slider
-				min={0}
-				max={255}
-				value={[currentColor.a]}
-				onValueChange={(value) => {
-					onCurrentColorChange({
-						...currentColor,
-						a: value[0],
-					});
-				}}
-			/>
 		</div>
 	);
 };

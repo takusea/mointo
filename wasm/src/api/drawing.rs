@@ -37,6 +37,9 @@ impl FlippenCore {
         {
             return;
         }
+        if let Some(tool) = self.tools.get_mut(ToolId::Pen) {
+            tool.begin_stroke();
+        }
         let action = Box::new(DrawStrokeAction::new(clip_id));
         if let Some(project) = self.project.as_mut() {
             self.action_manager.do_action(action, project);
@@ -45,6 +48,9 @@ impl FlippenCore {
     }
 
     pub fn end_draw(&mut self) {
+        if let Some(tool) = self.tools.get_mut(ToolId::Pen) {
+            tool.end_stroke();
+        }
         self.action_manager.end_pixel_recording();
     }
 

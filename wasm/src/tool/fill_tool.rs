@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::core::{
     color::{color_distance, Color},
     image::{Image, PixelChange},
@@ -8,6 +6,7 @@ use crate::core::{
 
 pub struct FillTool {
     pub tolerance: u32,
+    pub opacity: u8,
 }
 
 impl Tool for FillTool {
@@ -57,7 +56,19 @@ impl Tool for FillTool {
                 continue;
             }
 
-            image.set_pixel(i, color, changes);
+            let src_a = color[3] as f32 / 255.0 * self.opacity as f32 / 100.0;
+            let dst_a = image.data[i + 3] as f32 / 255.0;
+            let out_a = src_a + dst_a * (1.0 - src_a);
+            if out_a > 0.0 {
+                let mut blended = color;
+                for channel in 0..3 {
+                    blended[channel] = ((color[channel] as f32 * src_a
+                        + image.data[i + channel] as f32 * dst_a * (1.0 - src_a))
+                        / out_a).round() as u8;
+                }
+                blended[3] = (out_a * 255.0).round() as u8;
+                image.set_pixel(i, blended, changes);
+            }
 
             if cx > 0 {
                 stack.push((cx - 1, cy));
@@ -83,6 +94,14 @@ impl Tool for FillTool {
             max: 1000.0,
             step: 1.0,
             unit: None,
+        }, ToolProperty {
+            name: "opacity".into(),
+            label: "toolInspector.opacity".into(),
+            value: ToolPropertyValue::Number(self.opacity as f64),
+            min: 0.0,
+            max: 100.0,
+            step: 1.0,
+            unit: Some("%".into()),
         }]
     }
 
@@ -90,6 +109,9 @@ impl Tool for FillTool {
         match (name, value) {
             ("tolerance", ToolPropertyValue::Number(tolerance)) => {
                 self.tolerance = tolerance.max(0.0) as u32;
+            }
+            ("opacity", ToolPropertyValue::Number(opacity)) => {
+                self.opacity = opacity.clamp(0.0, 100.0).round() as u8;
             }
             _ => {
                 eprintln!("Brush: Unknown or invalid property: {}.", name);
