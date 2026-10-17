@@ -233,6 +233,10 @@ export class CoreService {
 		);
 	}
 
+	changeClipSize(id: string, width: number, height: number) {
+		return this.enqueue((core) => core.set_clip_size(id, width, height), true);
+	}
+
 	changeClipName(id: string, name: string) {
 		return this.enqueue((core) => core.set_clip_name(id, name), true);
 	}

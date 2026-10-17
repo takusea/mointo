@@ -141,7 +141,7 @@ const Editor = () => {
 					clipContext.transform &&
 					(isDesktop || isClipInspectorOpen) && (
 						<div
-							className="absolute right-0 h-full w-60 p-2 pb-16 flex flex-col gap-2 overflow-y-auto"
+							className="absolute right-0 h-full w-64 p-2 pb-16 flex flex-col gap-2 overflow-y-auto"
 							ref={clipInspectorRef}
 						>
 							<ClipInspector
@@ -162,6 +162,9 @@ const Editor = () => {
 								}
 								onNameChange={(name) =>
 									clipContext.changeClipName(selectedClip.id, name)
+								}
+								onSizeChange={(width, height) =>
+									clipContext.changeClipSize(selectedClip.id, width, height)
 								}
 								onPropertiesChange={(properties) =>
 									clipContext.changeClipProperties(selectedClip.id, {

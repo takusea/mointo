@@ -132,6 +132,12 @@ export const useClipCommands = ({
 		await core.changeClipName(id, name.trim());
 	};
 
+	const changeClipSize = async (id: string, width: number, height: number) => {
+		const clip = clips.find((candidate) => candidate.id === id);
+		if (clip == null || isLayerLocked(clip.layer_id)) return;
+		await core.changeClipSize(id, Math.max(1, Math.floor(width)), Math.max(1, Math.floor(height)));
+	};
+
 	const changeClipProperties = async (
 		id: string,
 		properties: ClipProperties,
@@ -147,6 +153,7 @@ export const useClipCommands = ({
 		moveClip,
 		changeClipDuration,
 		changeClipName,
+		changeClipSize,
 		changeClipProperties,
 		ensureClipAt,
 	};

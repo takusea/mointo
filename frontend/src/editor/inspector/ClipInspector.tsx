@@ -22,6 +22,7 @@ type Props = {
 	onStartChange: (start: number) => void;
 	onDurationChange: (duration: number) => void;
 	onNameChange: (name: string) => void;
+	onSizeChange: (width: number, height: number) => void;
 	onPropertiesChange: (properties: Partial<ClipProperties>) => void;
 	onTransformChange: (transform: Transform) => void;
 	onInteractionStart: () => void;
@@ -35,6 +36,7 @@ const ClipInspector = ({
 	onStartChange,
 	onDurationChange,
 	onNameChange,
+	onSizeChange,
 	onPropertiesChange,
 	onTransformChange,
 	onInteractionStart,
@@ -119,6 +121,12 @@ const ClipInspector = ({
 					onInteractionEnd={onInteractionEnd}
 					onValueChange={onDurationChange}
 				/>
+				<hr className="text-zinc-500/25" />
+				<span className="font-semibold">{t("inspector.size")}</span>
+				<div className="grid grid-cols-2 gap-2">
+					<NumberField id="clipWidth" aria-label={t("inspector.width")} min={1} value={clip.width} disabled={isLocked} leftElement="W" rightElement="px" onInteractionStart={onInteractionStart} onInteractionEnd={onInteractionEnd} onValueChange={(width) => onSizeChange(width, clip.height)} />
+					<NumberField id="clipHeight" aria-label={t("inspector.height")} min={1} value={clip.height} disabled={isLocked} leftElement="H" rightElement="px" onInteractionStart={onInteractionStart} onInteractionEnd={onInteractionEnd} onValueChange={(height) => onSizeChange(clip.width, height)} />
+				</div>
 				<hr className="text-zinc-500/25" />
 				<span className="font-semibold">{t("inspector.position")}</span>
 				<div className="grid grid-cols-2 gap-2">

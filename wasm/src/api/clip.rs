@@ -6,6 +6,7 @@ use crate::action::draw_stroke_action::DrawStrokeAction;
 use crate::action::move_clip_action::MoveClipAction;
 use crate::action::set_clip_name_action::SetClipNameAction;
 use crate::action::set_clip_properties_action::SetClipPropertiesAction;
+use crate::action::set_clip_size_action::SetClipSizeAction;
 use crate::action::set_clip_transform_action::SetClipTransformAction;
 use crate::app::clip::{BlendMode, ClipId, ClipProperties};
 use crate::app::composition::LayerId;
@@ -29,6 +30,8 @@ struct ClipMetadataView<'a> {
     locked: bool,
     opacity: f32,
     blend_mode: BlendMode,
+    width: u32,
+    height: u32,
 }
 
 #[wasm_bindgen]
@@ -62,6 +65,8 @@ impl FlippenCore {
                     locked: metadata.locked,
                     opacity: metadata.opacity,
                     blend_mode: metadata.blend_mode,
+                    width: clip.image.width,
+                    height: clip.image.height,
                 }
             })
             .collect();
@@ -244,6 +249,14 @@ impl FlippenCore {
 
         if let Some(project) = self.project.as_mut() {
             self.action_manager.do_action(action, project);
+        }
+    }
+
+    pub fn set_clip_size(&mut self, clip_id_str: String, width: u32, height: u32) {
+        let Ok(clip_id) = Uuid::parse_str(&clip_id_str) else { return; };
+        if width == 0 || height == 0 { return; }
+        if let Some(project) = self.project.as_mut() {
+            self.action_manager.do_action(Box::new(SetClipSizeAction::new(clip_id, width, height)), project);
         }
     }
 

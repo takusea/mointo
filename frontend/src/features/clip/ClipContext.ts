@@ -25,6 +25,7 @@ export type ClipContextValue = {
 	moveClip: (id: string, start: number, layerId: LayerId) => Promise<void>;
 	changeClipDuration: (id: string, duration: number) => Promise<void>;
 	changeClipName: (id: string, name: string) => Promise<void>;
+	changeClipSize: (id: string, width: number, height: number) => Promise<void>;
 	changeClipProperties: (
 		id: string,
 		properties: ClipProperties,
