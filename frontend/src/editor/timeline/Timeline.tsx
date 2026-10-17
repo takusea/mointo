@@ -136,7 +136,7 @@ const Timeline = () => {
 	}
 
 	return (
-		<div className="h-full min-h-0 min-w-0 bg-white/90 dark:bg-zinc-950/90 grid grid-rows-[24px_minmax(0,1fr)] grid-cols-[192px_minmax(0,1fr)] backdrop-blur-xl z-10">
+		<div className="border border-zinc-500/40 rounded-2xl h-full min-h-0 min-w-0 bg-white/90 dark:bg-zinc-950/90 grid grid-rows-[24px_minmax(0,1fr)] grid-cols-[192px_minmax(0,1fr)] backdrop-blur-xl z-10 overflow-hidden">
 			<div className="size-full flex items-center justify-between px-1 font-mono border-b border-r border-zinc-500/40">
 				<span>{playbackContext.startFrame} - </span>
 				<span>{playbackContext.currentFrame}</span>

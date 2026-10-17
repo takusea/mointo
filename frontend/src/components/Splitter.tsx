@@ -27,8 +27,10 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 			aria-valuemax={max}
 			aria-valuenow={value}
 			tabIndex={0}
-			className={`z-10 touch-none border-y bg-white dark:bg-zinc-950 border-zinc-500/40 hover:not-disabled:bg-zinc-100 dark:hover:not-disabled:bg-zinc-900 backdrop-blur-xl ${
-				isHorizontal ? "h-full cursor-row-resize" : "w-full cursor-col-resize"
+			className={`z-10 touch-none hover:not-disabled:bg-zinc-500/20 rounded-full ${
+				isHorizontal
+					? "h-full cursor-row-resize"
+					: "w-full h-full cursor-col-resize"
 			}`}
 			onPointerDown={(event) => {
 				if (event.button !== 0) return;

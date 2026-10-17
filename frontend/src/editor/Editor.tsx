@@ -28,6 +28,9 @@ import DrawCanvas from "./canvas/Canvas";
 const SPLITTER_HEIGHT = 8;
 const MIN_CANVAS_HEIGHT = 160;
 const MIN_TIMELINE_HEIGHT = 96;
+const MIN_INSPECTOR_WIDTH = 200;
+const DEFAULT_TOOL_INSPECTOR_WIDTH = 240;
+const DEFAULT_CLIP_INSPECTOR_WIDTH = 256;
 
 const Editor = () => {
 	const isDesktop: boolean = useMediaQuery("(min-width: 720px)");
@@ -45,6 +48,23 @@ const Editor = () => {
 	);
 
 	const [timelineHeight, setTimelineHeight] = useState<number>(160);
+	const [toolInspectorWidth, setToolInspectorWidth] = useState(
+		DEFAULT_TOOL_INSPECTOR_WIDTH,
+	);
+	const [clipInspectorWidth, setClipInspectorWidth] = useState(
+		DEFAULT_CLIP_INSPECTOR_WIDTH,
+	);
+	const maxInspectorWidth = Math.max(
+		MIN_INSPECTOR_WIDTH,
+		Math.floor(document.documentElement.clientWidth / 2),
+	);
+	const showToolInspector = isDesktop || isToolInspectorOpen;
+	const showClipInspector = Boolean(
+		selectedClip && clipContext.transform && (isDesktop || isClipInspectorOpen),
+	);
+	const inspectorGridColumns = isDesktop
+		? `${showToolInspector ? `${toolInspectorWidth}px 8px ` : ""}minmax(0, 1fr) ${showClipInspector ? `8px ${clipInspectorWidth}px` : ""}`
+		: "minmax(0, 1fr)";
 	const maxTimelineHeight = Math.max(
 		MIN_TIMELINE_HEIGHT,
 		document.documentElement.clientHeight - MIN_CANVAS_HEIGHT - SPLITTER_HEIGHT,
@@ -69,11 +89,16 @@ const Editor = () => {
 		<div
 			className="grid w-svw h-svh overflow-hidden"
 			style={{
-				gridTemplateRows: `48px minmax(0, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
+				gridTemplateRows: `48px minmax(0, 1fr)`,
 			}}
 		>
 			<GlobalHeader />
-			<main className="relative bg-zinc-50 dark:bg-zinc-950">
+			<main
+				className="relative min-h-0 min-w-0 bg-zinc-50 dark:bg-zinc-950 grid p-2"
+				style={{
+					gridTemplateRows: `minmax(0, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
+				}}
+			>
 				{project.settings ? (
 					<DrawCanvas />
 				) : (
@@ -93,123 +118,181 @@ const Editor = () => {
 						/>
 					</div>
 				)}
-				{!isDesktop && (
-					<>
-						{!isToolInspectorOpen && (
-							<div className="absolute left-2 bottom-16">
-								<Card size="small">
-									<IconButton
-										label="a"
-										icon={IconTools}
-										onClick={() => toggleIsToolInspectorOpen()}
-									/>
-								</Card>
-							</div>
-						)}
-						{selectedClip && clipContext.transform && !isClipInspectorOpen && (
-							<div className="absolute right-2 bottom-16">
-								<Card size="small">
-									<IconButton
-										label="a"
-										icon={IconAdjustmentsHorizontal}
-										onClick={() => toggleIsClipInspectorOpen()}
-									/>
-								</Card>
-							</div>
-						)}
-					</>
-				)}
-				{(isDesktop || isToolInspectorOpen) && (
-					<div
-						className="absolute left-0 h-full w-60 p-2 pb-16 flex flex-col gap-2 overflow-y-auto"
-						ref={toolInspectorRef}
-					>
-						<ToolInspector
-							properties={toolContext.properties}
-							onPropertyChange={(key, value) => {
-								toolContext.setProperty(key, value);
-							}}
-						/>
-						<ColorInspector
-							currentColor={toolContext.color}
-							colorHistory={toolContext.colorHistory}
-							onCurrentColorChange={toolContext.setColor}
-						/>
-					</div>
-				)}
-				{selectedClip &&
-					clipContext.transform &&
-					(isDesktop || isClipInspectorOpen) && (
-						<div
-							className="absolute right-0 h-full w-64 p-2 pb-16 flex flex-col gap-2 overflow-y-auto"
-							ref={clipInspectorRef}
-						>
-							<ClipInspector
-								clip={selectedClip}
-								isLayerLocked={layerContext.isLayerLocked(
-									selectedClip.layer_id,
+				<div
+					className="relative grid min-h-0 min-w-0 pointer-events-none"
+					style={{
+						gridTemplateColumns: inspectorGridColumns,
+						gridTemplateRows: "minmax(0, 1fr)",
+					}}
+				>
+					{!isDesktop && (
+						<>
+							{!isToolInspectorOpen && (
+								<div className="absolute left-2 bottom-16 pointer-events-auto">
+									<Card size="small">
+										<IconButton
+											label="a"
+											icon={IconTools}
+											onClick={() => toggleIsToolInspectorOpen()}
+										/>
+									</Card>
+								</div>
+							)}
+							{selectedClip &&
+								clipContext.transform &&
+								!isClipInspectorOpen && (
+									<div className="absolute right-2 bottom-16 pointer-events-auto">
+										<Card size="small">
+											<IconButton
+												label="a"
+												icon={IconAdjustmentsHorizontal}
+												onClick={() => toggleIsClipInspectorOpen()}
+											/>
+										</Card>
+									</div>
 								)}
-								transform={clipContext.transform}
-								onStartChange={(start) =>
-									clipContext.moveClip(
-										selectedClip.id,
-										start,
-										selectedClip.layer_id,
+						</>
+					)}
+					{showToolInspector && (
+						<div
+							className="z-10 h-full min-h-0 min-w-0 pb-16 overflow-y-auto pointer-events-none"
+							style={{ gridColumn: 1, gridRow: 1 }}
+							ref={toolInspectorRef}
+						>
+							<div className="flex flex-col gap-2 pointer-events-auto">
+								<ToolInspector
+									properties={toolContext.properties}
+									onPropertyChange={(key, value) => {
+										toolContext.setProperty(key, value);
+									}}
+								/>
+								<ColorInspector
+									currentColor={toolContext.color}
+									colorHistory={toolContext.colorHistory}
+									onCurrentColorChange={toolContext.setColor}
+								/>
+							</div>
+						</div>
+					)}
+					{isDesktop && (
+						<div
+							className="h-full pointer-events-auto"
+							style={{ gridColumn: 2, gridRow: 1 }}
+						>
+							<Splitter
+								orientation="vertical"
+								label={t("editor.resizeToolInspector")}
+								value={toolInspectorWidth}
+								min={MIN_INSPECTOR_WIDTH}
+								max={maxInspectorWidth}
+								onResize={(delta) =>
+									setToolInspectorWidth((width) =>
+										Math.min(
+											maxInspectorWidth,
+											Math.max(MIN_INSPECTOR_WIDTH, width + delta),
+										),
 									)
 								}
-								onDurationChange={(duration) =>
-									clipContext.changeClipDuration(selectedClip.id, duration)
-								}
-								onNameChange={(name) =>
-									clipContext.changeClipName(selectedClip.id, name)
-								}
-								onSizeChange={(width, height) =>
-									clipContext.changeClipSize(selectedClip.id, width, height)
-								}
-								onPropertiesChange={(properties) =>
-									clipContext.changeClipProperties(selectedClip.id, {
-										hidden: selectedClip.hidden,
-										alpha_locked: selectedClip.alpha_locked,
-										locked: selectedClip.locked,
-										opacity: selectedClip.opacity,
-										blend_mode: selectedClip.blend_mode,
-										...properties,
-									})
-								}
-								onTransformChange={(transform) => {
-									clipContext.changeTransform(selectedClip.id, transform);
-								}}
-								onInteractionStart={() => {
-									void core.beginActionGroup();
-								}}
-								onInteractionEnd={() => {
-									void core.endActionGroup();
-								}}
 							/>
 						</div>
 					)}
-				<div className="absolute bottom-0 left-0 right-0 overflow-x-auto">
-					<div className="mx-auto p-2 w-fit">
-						<Toolbar />
+					{showClipInspector && selectedClip && clipContext.transform && (
+						<div
+							className="z-10 h-full min-h-0 min-w-0 pb-16 overflow-y-auto pointer-events-none"
+							style={{ gridColumn: isDesktop ? 5 : 1, gridRow: 1 }}
+							ref={clipInspectorRef}
+						>
+							<div className="flex flex-col gap-2 pointer-events-auto">
+								<ClipInspector
+									clip={selectedClip}
+									isLayerLocked={layerContext.isLayerLocked(
+										selectedClip.layer_id,
+									)}
+									transform={clipContext.transform}
+									onStartChange={(start) =>
+										clipContext.moveClip(
+											selectedClip.id,
+											start,
+											selectedClip.layer_id,
+										)
+									}
+									onDurationChange={(duration) =>
+										clipContext.changeClipDuration(selectedClip.id, duration)
+									}
+									onNameChange={(name) =>
+										clipContext.changeClipName(selectedClip.id, name)
+									}
+									onSizeChange={(width, height) =>
+										clipContext.changeClipSize(selectedClip.id, width, height)
+									}
+									onPropertiesChange={(properties) =>
+										clipContext.changeClipProperties(selectedClip.id, {
+											hidden: selectedClip.hidden,
+											alpha_locked: selectedClip.alpha_locked,
+											locked: selectedClip.locked,
+											opacity: selectedClip.opacity,
+											blend_mode: selectedClip.blend_mode,
+											...properties,
+										})
+									}
+									onTransformChange={(transform) => {
+										clipContext.changeTransform(selectedClip.id, transform);
+									}}
+									onInteractionStart={() => {
+										void core.beginActionGroup();
+									}}
+									onInteractionEnd={() => {
+										void core.endActionGroup();
+									}}
+								/>
+							</div>
+						</div>
+					)}
+					{isDesktop && showClipInspector && (
+						<div
+							className="h-full pointer-events-auto"
+							style={{ gridColumn: 4, gridRow: 1 }}
+						>
+							<Splitter
+								orientation="vertical"
+								label={t("editor.resizeClipInspector")}
+								value={clipInspectorWidth}
+								min={MIN_INSPECTOR_WIDTH}
+								max={maxInspectorWidth}
+								onResize={(delta) =>
+									setClipInspectorWidth((width) =>
+										Math.min(
+											maxInspectorWidth,
+											Math.max(MIN_INSPECTOR_WIDTH, width - delta),
+										),
+									)
+								}
+							/>
+						</div>
+					)}
+					<div className="absolute bottom-0 left-0 right-0 overflow-x-auto z-10 pointer-events-auto">
+						<div className="mx-auto w-fit">
+							<Toolbar />
+						</div>
 					</div>
 				</div>
+				<Splitter
+					orientation="horizontal"
+					label={t("app.resizeTimeline")}
+					value={timelineHeight}
+					min={MIN_TIMELINE_HEIGHT}
+					max={maxTimelineHeight}
+					onResize={(delta) => {
+						setTimelineHeight((height) =>
+							Math.min(
+								maxTimelineHeight,
+								Math.max(MIN_TIMELINE_HEIGHT, height - delta),
+							),
+						);
+					}}
+				/>
+				<Timeline />
 			</main>
-			<Splitter
-				orientation="horizontal"
-				label={t("app.resizeTimeline")}
-				value={timelineHeight}
-				min={MIN_TIMELINE_HEIGHT}
-				max={maxTimelineHeight}
-				onResize={(delta) => {
-					setTimelineHeight((height) =>
-						Math.min(
-							maxTimelineHeight,
-							Math.max(MIN_TIMELINE_HEIGHT, height - delta),
-						),
-					);
-				}}
-			/>
-			<Timeline />
 		</div>
 	);
 };

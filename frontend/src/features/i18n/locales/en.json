@@ -61,6 +61,8 @@
 	"app.newProject": "New Project",
 	"app.openProject": "Open Project",
 	"app.resizeTimeline": "Resize Timeline",
+	"editor.resizeToolInspector": "Resize tool inspector",
+	"editor.resizeClipInspector": "Resize clip inspector",
 	"nav.export": "Export",
 	"nav.exportProgress": "Exporting {completed}/{total}",
 	"nav.exportFailed": "Could not export: {error}",
