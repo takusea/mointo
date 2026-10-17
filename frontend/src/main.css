@@ -9,6 +9,15 @@
 :root {
 	--hue: attr(data-accent-color);
 	overscroll-behavior-y: none;
+	color-scheme: light dark;
+}
+
+:root[data-theme="light"] {
+	color-scheme: only light;
+}
+
+:root[data-theme="dark"] {
+	color-scheme: only dark;
 }
 
 body {
@@ -21,8 +30,4 @@ body {
 		Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
 	@apply bg-white dark:bg-zinc-950 text-zinc-950 dark:text-white;
-
-	@media (prefers-color-scheme: dark) {
-		color-scheme: dark;
-	}
 }
