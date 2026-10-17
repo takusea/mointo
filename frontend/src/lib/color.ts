@@ -71,3 +71,9 @@ export function hsvaToRgba({ h, s, v, a }: HSVAColor): RGBAColor {
 		a,
 	};
 }
+
+export function hasSameRgbColor(a: HSVAColor, b: HSVAColor): boolean {
+	const rgbaA = hsvaToRgba(a);
+	const rgbaB = hsvaToRgba(b);
+	return rgbaA.r === rgbaB.r && rgbaA.g === rgbaB.g && rgbaA.b === rgbaB.b;
+}

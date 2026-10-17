@@ -1,7 +1,7 @@
 import { type JSX, useEffect, useState } from "react";
 import type { ToolProperty } from "~/core/CoreService";
 import { useCore } from "~/core/useCore";
-import type { HSVAColor } from "~/lib/color";
+import { hasSameRgbColor, type HSVAColor } from "~/lib/color";
 import { ToolContext } from "./ToolContext";
 import type { ToolKind } from "./type";
 
@@ -59,14 +59,18 @@ export const ToolProvider = ({ children }: Props) => {
 	const [colorHistory, setColorHistory] = useState<HSVAColor[]>([color]);
 
 	const COLOR_HISTORY_LIMIT = 100;
-
 	const setProperty = async (key: string, value: unknown) => {
 		await core.setToolProperty(tool, key, value);
 		setProperties((await core.getToolProperties(tool)) ?? []);
 	};
 
 	const pushColorHistory = (color: HSVAColor) => {
-		setColorHistory((prev) => [color, ...prev.slice(0, COLOR_HISTORY_LIMIT)]);
+		setColorHistory((prev) => [
+			color,
+			...prev
+				.filter((item) => !hasSameRgbColor(item, color))
+				.slice(0, COLOR_HISTORY_LIMIT - 1),
+		]);
 	};
 
 	useEffect(() => {

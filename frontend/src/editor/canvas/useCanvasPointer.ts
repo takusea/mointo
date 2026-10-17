@@ -5,7 +5,7 @@ import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { applyPressureCurve } from "~/features/tool/pressureCurve";
 import { useTool } from "~/features/tool/useTool";
-import { rgbaToHsva } from "~/lib/color";
+import { hasSameRgbColor, rgbaToHsva } from "~/lib/color";
 import type { Transform } from "~/lib/transform";
 import { useCanvasDraw } from "./useCanvasDraw";
 import { useCanvasSelection } from "./useCanvasSelection";
@@ -113,7 +113,8 @@ export const useCanvasPointer = (
 			return;
 		}
 
-		if (toolContext.color !== toolContext.colorHistory[0]) {
+		const latestColor = toolContext.colorHistory[0];
+		if (latestColor == null || !hasSameRgbColor(toolContext.color, latestColor)) {
 			toolContext.pushColorHistory(toolContext.color);
 		}
 
