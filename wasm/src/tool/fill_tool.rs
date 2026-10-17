@@ -4,6 +4,10 @@ use crate::core::{
     tool::{Tool, ToolProperty, ToolPropertyValue},
 };
 
+// color_distance is the sum of squared differences across four 8-bit channels.
+const MAX_TOLERANCE: u32 = 4 * 255 * 255;
+const MAX_TOLERANCE_DISTANCE: f64 = 2.0 * 255.0;
+
 pub struct FillTool {
     pub tolerance: u32,
     pub opacity: u8,
@@ -64,7 +68,8 @@ impl Tool for FillTool {
                 for channel in 0..3 {
                     blended[channel] = ((color[channel] as f32 * src_a
                         + image.data[i + channel] as f32 * dst_a * (1.0 - src_a))
-                        / out_a).round() as u8;
+                        / out_a)
+                        .round() as u8;
                 }
                 blended[3] = (out_a * 255.0).round() as u8;
                 image.set_pixel(i, blended, changes);
@@ -86,29 +91,35 @@ impl Tool for FillTool {
     }
 
     fn get_properties(&self) -> Vec<ToolProperty> {
-        vec![ToolProperty {
-            name: "tolerance".into(),
-            label: "toolInspector.tolerance".into(),
-            value: ToolPropertyValue::Number(self.tolerance as f64),
-            min: 0.0,
-            max: 1000.0,
-            step: 1.0,
-            unit: None,
-        }, ToolProperty {
-            name: "opacity".into(),
-            label: "toolInspector.opacity".into(),
-            value: ToolPropertyValue::Number(self.opacity as f64),
-            min: 0.0,
-            max: 100.0,
-            step: 1.0,
-            unit: Some("%".into()),
-        }]
+        vec![
+            ToolProperty {
+                name: "tolerance".into(),
+                label: "toolInspector.tolerance".into(),
+                value: ToolPropertyValue::Number(
+                    ((self.tolerance as f64).sqrt() / MAX_TOLERANCE_DISTANCE * 100.0).round(),
+                ),
+                min: 0.0,
+                max: 100.0,
+                step: 1.0,
+                unit: Some("%".into()),
+            },
+            ToolProperty {
+                name: "opacity".into(),
+                label: "toolInspector.opacity".into(),
+                value: ToolPropertyValue::Number(self.opacity as f64),
+                min: 0.0,
+                max: 100.0,
+                step: 1.0,
+                unit: Some("%".into()),
+            },
+        ]
     }
 
     fn set_property(&mut self, name: &str, value: ToolPropertyValue) {
         match (name, value) {
             ("tolerance", ToolPropertyValue::Number(tolerance)) => {
-                self.tolerance = tolerance.max(0.0) as u32;
+                let distance = tolerance.clamp(0.0, 100.0) / 100.0 * MAX_TOLERANCE_DISTANCE;
+                self.tolerance = (distance * distance).round() as u32;
             }
             ("opacity", ToolPropertyValue::Number(opacity)) => {
                 self.opacity = opacity.clamp(0.0, 100.0).round() as u8;
