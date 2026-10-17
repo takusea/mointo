@@ -1,4 +1,4 @@
-import type { HSVAColor } from "~/lib/color";
+import { type HSVAColor, hsvaToRgba } from "~/lib/color";
 
 type Props = {
 	currentColor: HSVAColor;
@@ -6,6 +6,8 @@ type Props = {
 };
 
 const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
+	const rgbaColor = hsvaToRgba(currentColor);
+
 	const handleHueMove = (event: React.PointerEvent) => {
 		if (event.buttons === 0) return;
 
@@ -45,23 +47,23 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 	};
 
 	return (
-		<div className="flex flex-col gap-1 max-w-64 w-full mx-auto">
+		<div className="relative flex flex-col gap-1 max-w-64 w-full mx-auto">
 			<div
-				style={{ "--hue": currentColor.h } as React.CSSProperties}
-				className="relative w-full h-auto aspect-square p-[20%] touch-none"
+				className="absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))] mask-[radial-gradient(transparent,transparent_60%,white_61%,white)]"
+				onPointerMove={handleHueMove}
 			>
 				<div
-					className="absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))] mask-[radial-gradient(transparent,transparent_60%,white_61%,white)]"
-					onPointerMove={handleHueMove}
-				>
-					<div
-						style={{
-							top: `${50 + Math.sin(currentColor.h / 57 - 2.6) * 46}%`,
-							left: `${50 + Math.cos(currentColor.h / 57 - 2.6) * 46}%`,
-						}}
-						className="pointer-events-none absolute translate-x-[-50%] translate-y-[-50%] w-2 h-2 border border-black shadow-inner shadow-white rounded-full"
-					/>
-				</div>
+					style={{
+						top: `${50 + Math.sin(currentColor.h / 57 - 2.6) * 46}%`,
+						left: `${50 + Math.cos(currentColor.h / 57 - 2.6) * 46}%`,
+					}}
+					className="pointer-events-none absolute translate-x-[-50%] translate-y-[-50%] w-2 h-2 border border-black shadow-inner shadow-white rounded-full"
+				/>
+			</div>
+			<div
+				style={{ "--hue": currentColor.h } as React.CSSProperties}
+				className="aspect-square p-[20%] touch-none"
+			>
 				<div
 					className="relative w-full h-full bg-[linear-gradient(to_bottom,#fff0_0%,#000_100%),linear-gradient(to_right,#fff_0%,hsl(var(--hue)_100%_50%)_100%)]"
 					onPointerMove={handleSLMove}
@@ -75,6 +77,14 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 					/>
 				</div>
 			</div>
+			<div
+				className="absolute bottom-0 left-0 w-4 h-4 rounded border border-zinc-500/40 bg-(--color)"
+				style={
+					{
+						"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b})`,
+					} as React.CSSProperties
+				}
+			/>
 		</div>
 	);
 };
