@@ -20,6 +20,7 @@ const DrawCanvas = () => {
 	const toolContext = useTool();
 	const isDesktop = useMediaQuery("(min-width: 720px)");
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	const containerRef = useRef<HTMLDivElement | null>(null);
 	const canvasRender = useCanvasRender();
 	const canvasView = useCanvasView();
 	const canvasPointer = useCanvasPointer(
@@ -137,7 +138,10 @@ const DrawCanvas = () => {
 		transformedPoint(canvasWidth, canvasHeight),
 		transformedPoint(0, canvasHeight),
 	];
-	const canvasClipPath = `polygon(${canvasCorners.map(({ x, y }) => `${x}px ${y}px`).join(", ")})`;
+
+	const rect = containerRef.current?.getBoundingClientRect();
+	const canvasClipPath = `polygon(${canvasCorners.map(({ x, y }) => `${x + (rect?.left ?? 0)}px ${y + (rect?.top ?? 0)}px`).join(", ")})`;
+
 	return (
 		<div
 			className="absolute inset-0"
@@ -146,10 +150,11 @@ const DrawCanvas = () => {
 			onPointerUp={canvasNavigation.handleContainerPointerUp}
 			onPointerCancel={canvasNavigation.handleContainerPointerCancel}
 			onWheel={canvasNavigation.handleWheel}
+			ref={containerRef}
 		>
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 bg-[url(/transparent.png)]"
+				className="pointer-events-none fixed inset-0 bg-[url(/transparent.png)]"
 				style={{
 					clipPath: canvasClipPath,
 				}}
