@@ -38,28 +38,30 @@ const Editor = () => {
 					gridTemplateRows: `minmax(0, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
 				}}
 			>
-				{project.settings ? (
-					<DrawCanvas />
-				) : (
-					<div className="absolute grid h-full w-full place-content-center gap-2">
-						<Button
-							label={t("app.newProject")}
-							icon={IconFilePlus}
-							variant="primary"
-							size="large"
-							onClick={() => {
-								if (project.confirmDiscard()) dialogs.open("createProject");
-							}}
-						/>
-						<Button
-							label={t("app.openProject")}
-							icon={IconFolderOpen}
-							size="large"
-							onClick={() => project.open()}
-						/>
-					</div>
-				)}
-				<InspectorLayout />
+				<div className="relative">
+					{project.settings ? (
+						<DrawCanvas />
+					) : (
+						<div className="absolute grid h-full w-full place-content-center gap-2">
+							<Button
+								label={t("app.newProject")}
+								icon={IconFilePlus}
+								variant="primary"
+								size="large"
+								onClick={() => {
+									if (project.confirmDiscard()) dialogs.open("createProject");
+								}}
+							/>
+							<Button
+								label={t("app.openProject")}
+								icon={IconFolderOpen}
+								size="large"
+								onClick={() => project.open()}
+							/>
+						</div>
+					)}
+					<InspectorLayout />
+				</div>
 				<Splitter
 					orientation="horizontal"
 					label={t("app.resizeTimeline")}

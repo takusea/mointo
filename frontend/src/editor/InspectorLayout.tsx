@@ -59,7 +59,7 @@ const InspectorLayout = () => {
 
 	return (
 		<div
-			className="pointer-events-none relative grid min-h-0 min-w-0 pb-18"
+			className="pointer-events-none relative grid size-full min-h-0 min-w-0 pb-18"
 			style={{
 				gridTemplateColumns,
 				gridTemplateRows: "minmax(0, 1fr)",
