@@ -16,7 +16,16 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"preset": "recommended"
+			"preset": "recommended",
+			"nursery": {
+				"useSortedClasses": {
+					"level": "error",
+					"fix": "safe",
+					"options": {
+						"functions": ["twMerge", "twJoin", "cn"]
+					}
+				}
+			}
 		}
 	},
 	"javascript": {
