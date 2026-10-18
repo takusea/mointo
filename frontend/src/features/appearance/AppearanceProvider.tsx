@@ -1,15 +1,13 @@
 import { type JSX, useEffect } from "react";
 import { useLocalStorage, useTernaryDarkMode } from "usehooks-ts";
+import { storageKeys } from "~/constants/storageKeys";
 import { AppearanceContext } from "./AppearanceContext";
-
-const THEME_STORAGE_KEY = "mointo.theme";
-const ACCENTCOLOR_STORAGE_KEY = "mointo.accentColor";
 
 export const AppearanceProvider = ({ children }: { children: JSX.Element }) => {
 	const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } =
-		useTernaryDarkMode({ localStorageKey: THEME_STORAGE_KEY });
+		useTernaryDarkMode({ localStorageKey: storageKeys.appearance.theme });
 	const [accentColor, setAccentColor] = useLocalStorage(
-		ACCENTCOLOR_STORAGE_KEY,
+		storageKeys.appearance.accentColor,
 		180,
 	);
 

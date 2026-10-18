@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { ShortcutId, Shortcuts } from "./shortcutDefinitions";
+import type { ShortcutId, Shortcuts } from "~/constants/shortcuts";
 
 type ShortcutsContextValue = {
 	shortcuts: Shortcuts;

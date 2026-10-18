@@ -1,13 +1,12 @@
 import type { JSX } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { ShortcutsContext } from "./ShortcutsContext";
 import {
 	defaultShortcuts,
 	type ShortcutId,
 	type Shortcuts,
-} from "./shortcutDefinitions";
-
-const STORAGE_KEY = "mointo.shortcuts";
+} from "~/constants/shortcuts";
+import { storageKeys } from "~/constants/storageKeys";
+import { ShortcutsContext } from "./ShortcutsContext";
 
 type Props = {
 	children: JSX.Element;
@@ -15,7 +14,7 @@ type Props = {
 
 export const ShortcutsProvider = ({ children }: Props) => {
 	const [shortcuts, setShortcuts] = useLocalStorage<Shortcuts>(
-		STORAGE_KEY,
+		storageKeys.shortcuts,
 		defaultShortcuts,
 	);
 

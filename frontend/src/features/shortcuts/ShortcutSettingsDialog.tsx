@@ -1,12 +1,12 @@
 import { useState } from "react";
 import Button from "~/components/Button";
 import Dialog from "~/components/Dialog";
-import { useI18n } from "~/features/i18n/useI18n";
 import {
 	formatShortcut,
 	type ShortcutId,
 	shortcutDefinitions,
-} from "./shortcutDefinitions";
+} from "~/constants/shortcuts";
+import { useI18n } from "~/features/i18n/useI18n";
 import { useShortcuts } from "./useShortcuts";
 
 type Props = {

@@ -1,4 +1,5 @@
 import { type JSX, useEffect, useState } from "react";
+import { storageKeys } from "~/constants/storageKeys";
 import type { ToolProperty } from "~/core/CoreService";
 import { useCore } from "~/core/useCore";
 import { type HSVAColor, hasSameRgbColor } from "~/lib/color";
@@ -15,16 +16,16 @@ export const ToolProvider = ({ children }: Props) => {
 	const [tool, setTool] = useState<ToolKind>("pen");
 	const [properties, setProperties] = useState<ToolProperty[]>([]);
 	const [pressureEnabled, setPressureEnabled] = useState(
-		() => localStorage.getItem("mointo.pressureEnabled") !== "false",
+		() => localStorage.getItem(storageKeys.tool.pressureEnabled) !== "false",
 	);
 	const [stabilization, setStabilization] = useState(() => {
-		const value = Number(localStorage.getItem("mointo.stabilization"));
+		const value = Number(localStorage.getItem(storageKeys.tool.stabilization));
 		return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
 	});
 	const [pressureCurve, setPressureCurve] = useState<[number, number][]>(() => {
 		try {
 			const value: unknown = JSON.parse(
-				localStorage.getItem("mointo.pressureCurve") ?? "null",
+				localStorage.getItem(storageKeys.tool.pressureCurve) ?? "null",
 			);
 			if (
 				Array.isArray(value) &&
@@ -78,13 +79,19 @@ export const ToolProvider = ({ children }: Props) => {
 	};
 
 	useEffect(() => {
-		localStorage.setItem("mointo.pressureEnabled", String(pressureEnabled));
+		localStorage.setItem(
+			storageKeys.tool.pressureEnabled,
+			String(pressureEnabled),
+		);
 	}, [pressureEnabled]);
 	useEffect(() => {
-		localStorage.setItem("mointo.stabilization", String(stabilization));
+		localStorage.setItem(storageKeys.tool.stabilization, String(stabilization));
 	}, [stabilization]);
 	useEffect(() => {
-		localStorage.setItem("mointo.pressureCurve", JSON.stringify(pressureCurve));
+		localStorage.setItem(
+			storageKeys.tool.pressureCurve,
+			JSON.stringify(pressureCurve),
+		);
 	}, [pressureCurve]);
 
 	useEffect(() => {

@@ -1,6 +1,6 @@
 import { createContext, type Dispatch, type SetStateAction } from "react";
-import enMessages from "./locales/en.json";
-import jaMessages from "./locales/ja.json";
+import enMessages from "~/constants/locales/en.json";
+import jaMessages from "~/constants/locales/ja.json";
 
 export const messages = { en: enMessages, ja: jaMessages };
 

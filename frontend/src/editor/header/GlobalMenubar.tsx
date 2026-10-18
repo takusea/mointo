@@ -4,6 +4,7 @@ import MenubarItem from "~/components/Menubar/MenubarItem";
 import MenubarMenu from "~/components/Menubar/MenubarMenu";
 import MenubarRoot from "~/components/Menubar/MenubarRoot";
 import MenubarSeparator from "~/components/Menubar/MenubarSeparator";
+import { fixedShortcuts, formatShortcut } from "~/constants/shortcuts";
 import { useDialogs } from "~/editor/dialogs/useDialogs";
 import { useClip } from "~/features/clip/useClip";
 import { useUndo } from "~/features/history/useUndo";
@@ -12,7 +13,6 @@ import { useImageImport } from "~/features/io/import/useImageImport";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
-import { formatShortcut } from "~/features/shortcuts/shortcutDefinitions";
 import { useShortcuts } from "~/features/shortcuts/useShortcuts";
 import { useCanvasView } from "../canvas/useCanvasView";
 
@@ -94,7 +94,10 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.saveProject)}
 					onSelect={() => project.save()}
 				/>
-				<MenubarItem label={t("menubar.saveWith")} shortcut="Ctrl+Shift+S" />
+				<MenubarItem
+					label={t("menubar.saveWith")}
+					shortcut={formatShortcut(shortcuts.saveWith)}
+				/>
 				<MenubarSeparator />
 				<MenubarItem
 					label={t("menubar.import")}
