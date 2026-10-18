@@ -17,6 +17,10 @@ export const ToolProvider = ({ children }: Props) => {
 	const [pressureEnabled, setPressureEnabled] = useState(
 		() => localStorage.getItem("flippen.pressureEnabled") !== "false",
 	);
+	const [stabilization, setStabilization] = useState(() => {
+		const value = Number(localStorage.getItem("flippen.stabilization"));
+		return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+	});
 	const [pressureCurve, setPressureCurve] = useState<[number, number][]>(() => {
 		try {
 			const value: unknown = JSON.parse(
@@ -77,6 +81,9 @@ export const ToolProvider = ({ children }: Props) => {
 		localStorage.setItem("flippen.pressureEnabled", String(pressureEnabled));
 	}, [pressureEnabled]);
 	useEffect(() => {
+		localStorage.setItem("flippen.stabilization", String(stabilization));
+	}, [stabilization]);
+	useEffect(() => {
 		localStorage.setItem(
 			"flippen.pressureCurve",
 			JSON.stringify(pressureCurve),
@@ -105,9 +112,11 @@ export const ToolProvider = ({ children }: Props) => {
 				properties,
 				pressureEnabled,
 				pressureCurve,
+				stabilization,
 				setProperty,
 				setPressureEnabled,
 				setPressureCurve,
+				setStabilization,
 			}}
 		>
 			{children}

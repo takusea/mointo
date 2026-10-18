@@ -19,6 +19,7 @@ export const useCanvasDraw = () => {
 	const pendingPointsRef = useRef<DrawState[]>([]);
 	const drawFrameRef = useRef<number | null>(null);
 	const inputPointCountRef = useRef(0);
+	const stabilizedPointRef = useRef<DrawState | null>(null);
 
 	const rgbaColor = hsvaToRgba(toolContext.color);
 	const sizeProperty = toolContext.properties.find(
@@ -37,6 +38,7 @@ export const useCanvasDraw = () => {
 	const beginDraw = (state: DrawState, clipId: string) => {
 		drawingClipIdRef.current = clipId;
 		inputPointCountRef.current = 0;
+		stabilizedPointRef.current = state;
 		updateDrawState({ isDrawing: true, state });
 	};
 
@@ -69,6 +71,7 @@ export const useCanvasDraw = () => {
 		flushPoints();
 		drawingClipIdRef.current = undefined;
 		inputPointCountRef.current = 0;
+		stabilizedPointRef.current = null;
 		updateDrawState({ isDrawing: false });
 	};
 
@@ -115,9 +118,17 @@ export const useCanvasDraw = () => {
 
 		const baseState = drawStateRef.current.state;
 		let previous = baseState;
-		for (const current of states) {
+		for (const input of states) {
+			const alpha = 0.08 ** (toolContext.stabilization / 50);
+			const last = stabilizedPointRef.current ?? previous;
+			const current = {
+				x: last.x + (input.x - last.x) * alpha,
+				y: last.y + (input.y - last.y) * alpha,
+				pressure: input.pressure,
+			};
 			pendingPointsRef.current.push(...interpolateDrawState(previous, current));
 			previous = current;
+			stabilizedPointRef.current = current;
 			inputPointCountRef.current += 1;
 		}
 
@@ -129,7 +140,7 @@ export const useCanvasDraw = () => {
 		}
 		drawStateRef.current = {
 			isDrawing: true,
-			state: states[states.length - 1],
+			state: stabilizedPointRef.current ?? states[states.length - 1],
 		};
 	};
 

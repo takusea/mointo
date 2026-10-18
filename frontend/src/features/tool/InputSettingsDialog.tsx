@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Dialog from "~/components/Dialog";
+import Slider from "~/components/Slider";
 import Switch from "~/components/Switch";
 import { useI18n } from "~/features/i18n/useI18n";
 import { getPressureCurvePath } from "./pressureCurve";
@@ -87,11 +88,27 @@ const InputSettingsDialog = (props: Props) => {
 			cancelText={t("common.close")}
 		>
 			<div className="flex flex-col gap-2">
+				<div className="flex justify-between gap-1">
+					<span className="font-semibold">
+						{t("inputSettings.stabilization")}
+					</span>
+					<span>{`${String(tool.stabilization)}%`}</span>
+				</div>
+				<p>{t("inputSettings.stabilizationHint")}</p>
+				<Slider
+					id="inputStabilization"
+					min={0}
+					max={100}
+					step={1}
+					value={[tool.stabilization]}
+					onValueChange={([value]) => tool.setStabilization(value)}
+					aria-label={t("inputSettings.stabilizationLabel")}
+				/>
+				<div className="font-semibold">{t("inputSettings.pressure")}</div>
 				<Switch
 					id="inputPressure"
-					label={t("inputSettings.pressure")}
+					label={t("inputSettings.pressureLabel")}
 					checked={tool.pressureEnabled}
-					onInput={console.log}
 					onCheckedChange={tool.setPressureEnabled}
 				/>
 				{tool.pressureEnabled && (
