@@ -7,6 +7,8 @@ type Props = {
 	height: number;
 	transform: CSSProperties;
 	selection?: Selection;
+	transformBounds?: Selection;
+	transformRotation?: number;
 	isGridVisible: boolean;
 };
 
@@ -15,6 +17,8 @@ export const CanvasOverlay = ({
 	height,
 	transform,
 	selection,
+	transformBounds,
+	transformRotation = 0,
 	isGridVisible,
 }: Props) => (
 	<>
@@ -37,6 +41,28 @@ export const CanvasOverlay = ({
 						height: selection.height,
 					}}
 				/>
+			)}
+			{transformBounds != null && (
+				<div
+					className="absolute border border-primary"
+					style={{
+						left: transformBounds.x,
+						top: transformBounds.y,
+						width: transformBounds.width,
+						height: transformBounds.height,
+						transform: `rotate(${transformRotation}rad)`,
+						transformOrigin: "center",
+					}}
+				>
+					<div className="absolute -top-1 -left-1 size-2 border border-primary bg-white" />
+					<div className="absolute -top-1 -right-1 size-2 border border-primary bg-white" />
+					<div className="absolute -bottom-1 -left-1 size-2 border border-primary bg-white" />
+					<div className="absolute -right-1 -bottom-1 size-2 border border-primary bg-white" />
+					<div className="absolute top-1/2 -left-1 size-2 -translate-y-1/2 border border-primary bg-white" />
+					<div className="absolute top-1/2 -right-1 size-2 -translate-y-1/2 border border-primary bg-white" />
+					<div className="absolute -top-1 left-1/2 size-2 -translate-x-1/2 border border-primary bg-white" />
+					<div className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 border border-primary bg-white" />
+				</div>
 			)}
 		</div>
 		{isGridVisible && (

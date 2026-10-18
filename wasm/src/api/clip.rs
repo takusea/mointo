@@ -211,6 +211,28 @@ impl MointoCore {
         Ok(())
     }
 
+    pub fn preview_clip_pixels(
+        &mut self,
+        clip_id_str: String,
+        pixels: &[u8],
+    ) -> Result<(), JsValue> {
+        let clip_id = Uuid::parse_str(&clip_id_str)
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        let project = self.project.as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        if project.is_clip_locked(clip_id) {
+            return Err(JsValue::from_str("Clip is locked"));
+        }
+        let clip = project.get_clip_mut(clip_id)
+            .ok_or_else(|| JsValue::from_str("Clip does not exist"))?;
+        if clip.image.data.len() != pixels.len() {
+            return Err(JsValue::from_str("Pixel data dimensions do not match the clip"));
+        }
+        clip.image.data.copy_from_slice(pixels);
+        clip.mark_image_changed();
+        Ok(())
+    }
+
     pub fn move_clip(
         &mut self,
         clip_id_str: String,

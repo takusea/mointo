@@ -111,9 +111,7 @@ const InspectorLayout = () => {
 				</div>
 			)}
 			{isDesktop && (
-				<div
-					className="pointer-events-auto col-start-2 row-start-1 h-full"
-				>
+				<div className="pointer-events-auto col-start-2 row-start-1 h-full">
 					<Splitter
 						orientation="vertical"
 						label={t("editor.resizeToolInspector")}
@@ -132,9 +130,7 @@ const InspectorLayout = () => {
 				</div>
 			)}
 			{isDesktop && showClipInspector && (
-				<div
-					className="pointer-events-auto col-start-4 row-start-1 h-full"
-				>
+				<div className="pointer-events-auto col-start-4 row-start-1 h-full">
 					<Splitter
 						orientation="vertical"
 						label={t("editor.resizeClipInspector")}

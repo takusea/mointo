@@ -227,6 +227,13 @@ export class CoreService {
 		);
 	}
 
+	previewClipPixels(id: string, pixels: Uint8ClampedArray) {
+		return this.enqueue(
+			(core) => core.preview_clip_pixels(id, new Uint8Array(pixels)),
+			true,
+		);
+	}
+
 	moveClip(id: string, start: number, layerId: LayerId) {
 		return this.enqueue((core) => core.move_clip(id, start, layerId), true);
 	}

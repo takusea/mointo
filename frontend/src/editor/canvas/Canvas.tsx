@@ -1,7 +1,10 @@
 import { IconBucketDroplet } from "@tabler/icons-react";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
+import Button from "~/components/Button";
+import Card from "~/components/Card";
 import { useClip } from "~/features/clip/useClip";
+import { useI18n } from "~/features/i18n/useI18n";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
@@ -18,6 +21,7 @@ const DrawCanvas = () => {
 	const clipContext = useClip();
 	const layerContext = useLayer();
 	const toolContext = useTool();
+	const { t } = useI18n();
 	const isDesktop = useMediaQuery("(min-width: 720px)");
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const containerRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +54,7 @@ const DrawCanvas = () => {
 		toolContext.tool === "eyedropper" || isRightButtonDown
 			? "crosshair"
 			: toolContext.tool === "move"
-				? "move"
+				? canvasPointer.transformCursor
 				: toolContext.tool === "fill"
 					? isDesktop
 						? "none"
@@ -145,7 +149,16 @@ const DrawCanvas = () => {
 	return (
 		<div
 			className="absolute inset-0"
-			onPointerDown={canvasNavigation.handleContainerPointerDown}
+			style={{
+				cursor:
+					toolContext.tool === "move"
+						? canvasPointer.transformCursor
+						: undefined,
+			}}
+			onPointerDown={(event) => {
+				canvasNavigation.handleContainerPointerDown(event);
+				void canvasPointer.handleTransformOutsidePointerDown(event);
+			}}
 			onPointerMove={canvasNavigation.handleContainerPointerMove}
 			onPointerUp={canvasNavigation.handleContainerPointerUp}
 			onPointerCancel={canvasNavigation.handleContainerPointerCancel}
@@ -220,9 +233,42 @@ const DrawCanvas = () => {
 				width={projectContext.settings.width}
 				height={projectContext.settings.height}
 				transform={canvasTransform}
-				selection={canvasPointer.selection}
+				selection={
+					canvasPointer.transformSession == null
+						? canvasPointer.selection
+						: undefined
+				}
+				transformBounds={
+					canvasPointer.transformSession?.frameBounds ??
+					(toolContext.tool === "move"
+						? (clipContext.selection ?? {
+								x: 0,
+								y: 0,
+								width: canvasWidth,
+								height: canvasHeight,
+							})
+						: undefined)
+				}
+				transformRotation={canvasPointer.transformSession?.matrix.rotation ?? 0}
 				isGridVisible={canvasView.isGridVisible}
 			/>
+			{canvasPointer.transformSession != null && (
+				<div className="absolute top-2 left-1/2 z-20 -translate-x-1/2">
+					<Card size="small">
+						<div className="flex gap-1">
+							<Button
+								label={t("transform.apply")}
+								variant="primary"
+								onClick={() => void canvasPointer.applyTransform()}
+							/>
+							<Button
+								label={t("transform.cancel")}
+								onClick={() => void canvasPointer.cancelTransform()}
+							/>
+						</div>
+					</Card>
+				</div>
+			)}
 		</div>
 	);
 };
