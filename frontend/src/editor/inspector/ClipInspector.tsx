@@ -1,15 +1,23 @@
 import {
 	IconAlpha,
+	IconArrowAutofitHeight,
+	IconArrowAutofitWidth,
+	IconArrowsHorizontal,
+	IconArrowsMoveHorizontal,
+	IconArrowsMoveVertical,
 	IconEye,
 	IconEyeOff,
+	IconLayoutAlignLeft,
 	IconLock,
 	IconLockOpen,
+	IconRotate,
 } from "@tabler/icons-react";
 import Card from "~/components/Card";
 import IconButton from "~/components/IconButton";
 import NumberField from "~/components/NumberField";
 import Select from "~/components/Select/Select";
 import SelectItem from "~/components/Select/SelectItem";
+import Separator from "~/components/Separator";
 import TextField from "~/components/TextField";
 import { useI18n } from "~/features/i18n/useI18n";
 import type { ClipMetadata, ClipProperties } from "~/lib/clip";
@@ -98,30 +106,7 @@ const ClipInspector = ({
 						if (nextName !== clip.name) onNameChange(nextName);
 					}}
 				/>
-				<hr className="text-zinc-500/25" />
-				<span className="font-medium">{t("inspector.start")}</span>
-				<NumberField
-					id="clipStart"
-					min={0}
-					value={clip.start}
-					disabled={isLocked}
-					rightElement={"frame"}
-					onInteractionStart={onInteractionStart}
-					onInteractionEnd={onInteractionEnd}
-					onValueChange={onStartChange}
-				/>
-				<span className="font-medium">{t("inspector.length")}</span>
-				<NumberField
-					id="clipLength"
-					min={1}
-					value={clip.duration}
-					disabled={isLocked}
-					rightElement={"frame"}
-					onInteractionStart={onInteractionStart}
-					onInteractionEnd={onInteractionEnd}
-					onValueChange={onDurationChange}
-				/>
-				<hr className="text-zinc-500/25" />
+				<Separator />
 				<span className="font-medium">{t("inspector.size")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
@@ -130,7 +115,7 @@ const ClipInspector = ({
 						min={1}
 						value={clip.width}
 						disabled={isLocked}
-						leftElement="W"
+						leftElement={<IconArrowAutofitWidth />}
 						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
@@ -142,14 +127,42 @@ const ClipInspector = ({
 						min={1}
 						value={clip.height}
 						disabled={isLocked}
-						leftElement="H"
+						leftElement={<IconArrowAutofitHeight />}
 						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(height) => onSizeChange(clip.width, height)}
 					/>
 				</div>
-				<hr className="text-zinc-500/25" />
+				<Separator />
+				<span className="font-medium">{t("inspector.framePosition")}</span>
+				<div className="grid grid-cols-2 gap-2">
+					<NumberField
+						id="clipStart"
+						aria-label={t("inspector.start")}
+						min={0}
+						value={clip.start}
+						disabled={isLocked}
+						leftElement={<IconLayoutAlignLeft />}
+						rightElement="f"
+						onInteractionStart={onInteractionStart}
+						onInteractionEnd={onInteractionEnd}
+						onValueChange={onStartChange}
+					/>
+					<NumberField
+						id="clipLength"
+						aria-label={t("inspector.length")}
+						min={1}
+						value={clip.duration}
+						disabled={isLocked}
+						leftElement={<IconArrowsHorizontal />}
+						rightElement="f"
+						onInteractionStart={onInteractionStart}
+						onInteractionEnd={onInteractionEnd}
+						onValueChange={onDurationChange}
+					/>
+				</div>
+				<Separator />
 				<span className="font-medium">{t("inspector.position")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
@@ -157,8 +170,8 @@ const ClipInspector = ({
 						aria-label={t("inspector.positionX")}
 						value={transform.position[0]}
 						disabled={isLocked}
-						leftElement={"X"}
-						rightElement={"px"}
+						leftElement={<IconArrowsMoveHorizontal />}
+						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -173,8 +186,8 @@ const ClipInspector = ({
 						aria-label={t("inspector.positionY")}
 						value={transform.position[1]}
 						disabled={isLocked}
-						leftElement={"Y"}
-						rightElement={"px"}
+						leftElement={<IconArrowsMoveVertical />}
+						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -190,13 +203,14 @@ const ClipInspector = ({
 					<NumberField
 						id="clipAnchor"
 						aria-label={t("inspector.anchorX")}
+						aria-label={t("inspector.anchorX")}
 						min={0}
 						max={1}
 						step={0.01}
 						value={transform.anchor[0]}
 						disabled={isLocked}
-						leftElement={"X"}
-						rightElement={"px"}
+						leftElement={<IconArrowsMoveHorizontal />}
+						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -209,13 +223,14 @@ const ClipInspector = ({
 					<NumberField
 						id="clipAnchorY"
 						aria-label={t("inspector.anchorY")}
+						aria-label={t("inspector.anchorY")}
 						min={0}
 						max={1}
 						step={0.01}
 						value={transform.anchor[1]}
 						disabled={isLocked}
-						leftElement={"Y"}
-						rightElement={"px"}
+						leftElement={<IconArrowsMoveVertical />}
+						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -229,11 +244,13 @@ const ClipInspector = ({
 				<span className="font-medium">{t("inspector.rotation")}</span>
 				<NumberField
 					id="clipRotation"
+					aria-label={t("inspector.rotation")}
 					min={0}
 					max={360}
 					value={transform.rotation}
 					disabled={isLocked}
-					rightElement={"deg"}
+					leftElement={<IconRotate />}
+					rightElement="°"
 					onInteractionStart={onInteractionStart}
 					onInteractionEnd={onInteractionEnd}
 					onValueChange={(value) => {
@@ -248,12 +265,13 @@ const ClipInspector = ({
 					<NumberField
 						id="clipScale"
 						aria-label={t("inspector.scaleX")}
+						aria-label={t("inspector.scaleX")}
 						min={0}
 						max={1000}
 						value={transform.scale[0] * 100}
 						disabled={isLocked}
-						leftElement={"X"}
-						rightElement={"%"}
+						leftElement={<IconArrowsMoveHorizontal />}
+						rightElement="%"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -266,12 +284,13 @@ const ClipInspector = ({
 					<NumberField
 						id="clipScaleY"
 						aria-label={t("inspector.scaleY")}
+						aria-label={t("inspector.scaleY")}
 						min={0}
 						max={1000}
 						value={transform.scale[1] * 100}
 						disabled={isLocked}
-						leftElement={"Y"}
-						rightElement={"%"}
+						leftElement={<IconArrowsMoveVertical />}
+						rightElement="%"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -282,15 +301,17 @@ const ClipInspector = ({
 						}}
 					/>
 				</div>
-				<hr className="text-zinc-500/25" />
+				<Separator />
 				<span className="font-medium">{t("inspector.opacity")}</span>
 				<NumberField
 					id="clipOpacity"
+					aria-label={t("inspector.opacity")}
 					min={0}
 					max={100}
 					value={clip.opacity * 100}
 					disabled={isLocked}
-					rightElement={"%"}
+					leftElement={<IconAlpha />}
+					rightElement="%"
 					onInteractionStart={onInteractionStart}
 					onInteractionEnd={onInteractionEnd}
 					onValueChange={(value) =>

@@ -1,5 +1,6 @@
 import type React from "react";
 import { type JSX, useEffect, useRef, useState } from "react";
+import Tooltip from "~/components/Tooltip";
 
 type Props = Omit<React.ComponentProps<"input">, "className" | "type"> & {
 	leftElement?: string | JSX.Element;
@@ -137,7 +138,7 @@ const NumberField = ({
 
 	return (
 		<div
-			className={`flex h-8 gap-1 rounded-md border border-zinc-500/40 bg-white/50 px-2 -outline-offset-2 focus-within:outline-2 dark:bg-zinc-800/50 ${props.disabled ? "opacity-50" : cursor}`}
+			className={`flex h-8 gap-1 rounded-md border border-zinc-500/40 bg-white/50 pr-2 pl-1 -outline-offset-2 focus-within:outline-2 dark:bg-zinc-800/50 ${props.disabled ? "opacity-50" : cursor}`}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
@@ -148,7 +149,13 @@ const NumberField = ({
 		>
 			{leftElement && (
 				<div className="flex h-full items-center text-zinc-500">
-					{leftElement}
+					{props["aria-label"] ? (
+						<Tooltip label={props["aria-label"]} side="top">
+							<span className="flex h-full items-center">{leftElement}</span>
+						</Tooltip>
+					) : (
+						leftElement
+					)}
 				</div>
 			)}
 			<input
@@ -156,7 +163,7 @@ const NumberField = ({
 				ref={input}
 				type="number"
 				value={innerValue}
-				className="h-full min-w-0 flex-1 outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+				className="h-full min-w-0 flex-1 text-right outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 				onChange={handleChange}
 				onKeyDown={handleKeyDown}
 				onBlur={handleBlur}

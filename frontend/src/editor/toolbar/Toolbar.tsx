@@ -20,9 +20,11 @@ import {
 	IconPlayerTrackNext,
 	IconPlayerTrackPrev,
 	IconRefresh,
+	IconRestore,
 	IconRotate,
 	IconScissors,
 	IconZoom,
+	IconZoomReset,
 } from "@tabler/icons-react";
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -301,18 +303,20 @@ const Toolbar = () => {
 				<div className="flex gap-1">
 					<div className="w-24">
 						<NumberField
+							aria-label={t("toolbar.zoom")}
 							value={Number((canvasView.scale * 100).toFixed(2))}
 							max={canvasView.maxScale * 100}
 							min={canvasView.minScale * 100}
 							step={10}
-							rightElement={"%"}
+							leftElement={<IconZoom />}
+							rightElement="%"
 							onValueChange={(value) => canvasView.setScale(value / 100)}
 						/>
 					</div>
 					<IconButton
 						label={t("toolbar.resetZoom")}
 						shortcut={formatShortcut(shortcuts.resetZoom)}
-						icon={IconZoom}
+						icon={IconZoomReset}
 						onClick={() => canvasView.setScale(1)}
 					/>
 				</div>
@@ -321,18 +325,20 @@ const Toolbar = () => {
 				<div className="flex gap-1">
 					<div className="w-24">
 						<NumberField
+							aria-label={t("toolbar.rotation")}
 							value={canvasView.rotation}
 							max={180}
 							min={-180}
 							step={1}
-							rightElement={"deg"}
+							leftElement={<IconRotate />}
+							rightElement="°"
 							onValueChange={canvasView.setRotation}
 						/>
 					</div>
 					<IconButton
 						label={t("toolbar.resetRotate")}
 						shortcut={formatShortcut(shortcuts.resetRotation)}
-						icon={IconRotate}
+						icon={IconRestore}
 						onClick={() => canvasView.setRotation(0)}
 					/>
 				</div>
