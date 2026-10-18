@@ -1,3 +1,4 @@
+import { Separator } from "radix-ui/separator";
 import { useRef } from "react";
 
 type Orientation = "horizontal" | "vertical";
@@ -18,16 +19,14 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 	const isHorizontal = orientation === "horizontal";
 
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: A draggable separator is interactive, not a thematic break.
-		<div
-			role="separator"
+		<Separator
 			aria-label={label}
-			aria-orientation={orientation}
+			orientation={orientation}
 			aria-valuemin={min}
 			aria-valuemax={max}
 			aria-valuenow={value}
 			tabIndex={0}
-			className={`z-10 touch-none rounded-full hover:not-disabled:bg-zinc-500/20 ${
+			className={`group z-10 touch-none p-px ${
 				isHorizontal
 					? "h-full cursor-row-resize"
 					: "h-full w-full cursor-col-resize"
@@ -67,7 +66,15 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 					onResize(KEYBOARD_STEP);
 				}
 			}}
-		/>
+		>
+			<div
+				className={`rounded-full group-hover:not-disabled:bg-primary ${
+					isHorizontal
+						? "h-full cursor-row-resize"
+						: "h-full w-full cursor-col-resize"
+				}`}
+			/>
+		</Separator>
 	);
 };
 
