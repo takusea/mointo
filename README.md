@@ -1,100 +1,77 @@
-# Welcome to React Router!
+# mointo
 
-A modern, production-ready template for building full-stack React applications using React Router.
+mointo は、ブラウザー上で動作するアニメーションペイントアプリです。
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## 主な機能
 
-## Features
+- ペン・消しゴム・塗りつぶしなどのペイント機能
+- 再生・ループ・オニオンスキン表示などのアニメーション機能
+- クリップの移動・回転・拡大縮小などの動画編集機能
+- 画像の読み込み、プロジェクトの保存・読み込み（`.moiproj`）
+- GIF、APNG、PNG連番（ZIP）への書き出し
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## 必要な環境
 
-## Getting Started
+- Node.js（npmを含む）
+- Rustツールチェーン
+- `wasm-pack`
 
-### Installation
+## 開発環境の起動
 
-Install the dependencies:
+リポジトリのルートで以下を実行します。
 
-```bash
+```sh
+cd frontend
 npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Viteの開発サーバーが起動し、ターミナルに表示されたURLからアプリを開けます。
 
-## Building for Production
+起動にはWebAssemblyモジュールが必要です。生成していない場合は下記のWebAssemblyのビルドを行ってください。
 
-Create a production build:
+## WebAssemblyのビルド
 
-```bash
+描画・プロジェクト処理にはRust製WebAssemblyモジュールを使います。Rustソースを変更した場合や、生成済みモジュールがない場合は、`frontend`ディレクトリで次を実行してください。
+
+```sh
+npm run wasm
+```
+
+このコマンドは`wasm-pack`で`wasm`クレートをビルドし、生成物を`frontend/src/core/wasm`に出力します。
+
+## 本番ビルド
+
+```sh
+cd frontend
 npm run build
 ```
 
-## Deployment
+生成された静的ファイルは`frontend/dist`に出力されます。ローカルで本番ビルドを確認するには次を実行します。
 
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+```sh
+npm run preview
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Docker
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+リポジトリルートにあるDockerfileを使ってビルド・起動できます。
 
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+```sh
+docker build -t mointo .
+docker run --rm -p 8080:80 mointo
 ```
 
-## Styling
+起動後、`http://localhost:8080`を開きます。
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+## npmスクリプト
 
----
-
-Built with ❤️ using React Router.
+| コマンド             | 説明                            |
+| -------------------- | ------------------------------- |
+| `npm run dev`        | 開発サーバーを起動              |
+| `npm run build`      | 本番用フロントエンドをビルド    |
+| `npm run preview`    | 本番ビルドをローカルで配信      |
+| `npm run typecheck`  | TypeScriptの型を確認            |
+| `npm run lint:check` | Biomeでコードをチェック         |
+| `npm run lint:fix`   | Biomeで自動修正可能な問題を修正 |
+| `npm run wasm`       | Rust/WASMモジュールをビルド     |
