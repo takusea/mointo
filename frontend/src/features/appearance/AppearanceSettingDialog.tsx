@@ -22,6 +22,7 @@ const AppearanceSettingsDialog = (props: Props) => {
 		>
 			<div className="flex flex-col gap-2">
 				<span className="font-medium">{t("appearanceSettings.theme")}</span>
+				<p>{t("appearanceSettings.themeDescription")}</p>
 				<RadioGroup
 					value={appearance.ternaryDarkMode}
 					onValueChange={(value) => {
@@ -47,6 +48,7 @@ const AppearanceSettingsDialog = (props: Props) => {
 					/>
 				</RadioGroup>
 				<span className="font-medium">{t("appearanceSettings.accent")}</span>
+				<p>{t("appearanceSettings.accentDescription")}</p>
 				<Slider
 					id="accent-color"
 					min={0}
