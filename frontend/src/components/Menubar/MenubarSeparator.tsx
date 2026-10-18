@@ -2,7 +2,7 @@ import { Menubar } from "radix-ui";
 
 const MenubarSeparator = () => {
 	return (
-		<Menubar.Separator className="relative w-full h-px my-2 bg-zinc-500/25" />
+		<Menubar.Separator className="relative my-2 h-px w-full bg-zinc-500/25" />
 	);
 };
 

@@ -102,7 +102,7 @@ const InputSettingsDialog = (props: Props) => {
 							viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}
 							role="img"
 							aria-label={t("inputSettings.pressureCurve")}
-							className="w-full aspect-square touch-none rounded-md border border-zinc-500/40 bg-white/10"
+							className="aspect-square w-full touch-none rounded-md border border-zinc-500/40 bg-white/10"
 							onPointerDown={addPoint}
 							onPointerMove={updatePoint}
 							onPointerUp={() => setDraggingPoint(null)}

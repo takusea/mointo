@@ -137,7 +137,7 @@ const NumberField = ({
 
 	return (
 		<div
-			className={`flex gap-1 px-2 h-8 border border-zinc-500/40 bg-white/50 dark:bg-zinc-800/50 rounded-md focus-within:outline-2 ${props.disabled ? "opacity-50" : cursor}`}
+			className={`flex h-8 gap-1 rounded-md border border-zinc-500/40 bg-white/50 px-2 focus-within:outline-2 dark:bg-zinc-800/50 ${props.disabled ? "opacity-50" : cursor}`}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
@@ -147,7 +147,7 @@ const NumberField = ({
 			}}
 		>
 			{leftElement && (
-				<div className="text-zinc-500 h-full flex items-center">
+				<div className="flex h-full items-center text-zinc-500">
 					{leftElement}
 				</div>
 			)}
@@ -156,13 +156,13 @@ const NumberField = ({
 				ref={input}
 				type="number"
 				value={innerValue}
-				className="min-w-0 flex-1 h-full outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+				className="h-full min-w-0 flex-1 outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 				onChange={handleChange}
 				onKeyDown={handleKeyDown}
 				onBlur={handleBlur}
 			/>
 			{rightElement && (
-				<div className="text-zinc-500 h-full flex items-center">
+				<div className="flex h-full items-center text-zinc-500">
 					{rightElement}
 				</div>
 			)}

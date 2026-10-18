@@ -56,14 +56,14 @@ const TrackBody = ({
 			ref={ref}
 		>
 			<div
-				className="absolute top-0 w-px bg-primary z-50"
+				className="absolute top-0 z-50 w-px bg-primary"
 				style={{
 					height: `${bodyHeight}px`,
 					translate: `${currentFrame * frameWidth}px 0`,
 				}}
 			/>
 			<div
-				className="absolute top-0 pointer-events-none bg-white/50 dark:bg-zinc-800/50"
+				className="pointer-events-none absolute top-0 bg-white/50 dark:bg-zinc-800/50"
 				style={{
 					left: `${startFrame * frameWidth}px`,
 					height: `${bodyHeight}px`,
@@ -107,14 +107,14 @@ const TrackBody = ({
 				/>
 			))}
 			<div
-				className="absolute top-0 z-10 h-full w-px bg-zinc-500/25 pointer-events-none"
+				className="pointer-events-none absolute top-0 z-10 h-full w-px bg-zinc-500/25"
 				style={{
 					height: `${bodyHeight}px`,
 					left: `${startFrame * frameWidth}px`,
 				}}
 			/>
 			<div
-				className="absolute top-0 z-10 h-full w-px bg-zinc-500/25 pointer-events-none"
+				className="pointer-events-none absolute top-0 z-10 h-full w-px bg-zinc-500/25"
 				style={{
 					height: `${bodyHeight}px`,
 					left: `${(endFrame + 1) * frameWidth}px`,

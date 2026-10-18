@@ -26,14 +26,14 @@ const Editor = () => {
 
 	return (
 		<div
-			className="grid w-svw h-svh overflow-hidden"
+			className="grid h-svh w-svw overflow-hidden"
 			style={{
 				gridTemplateRows: `48px minmax(0, 1fr)`,
 			}}
 		>
 			<GlobalHeader />
 			<main
-				className="relative min-h-0 min-w-0 bg-zinc-50 dark:bg-zinc-950 grid p-2"
+				className="relative grid min-h-0 min-w-0 bg-zinc-50 p-2 dark:bg-zinc-950"
 				style={{
 					gridTemplateRows: `minmax(0, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
 				}}
@@ -41,7 +41,7 @@ const Editor = () => {
 				{project.settings ? (
 					<DrawCanvas />
 				) : (
-					<div className="absolute grid place-content-center w-full h-full gap-2">
+					<div className="absolute grid h-full w-full place-content-center gap-2">
 						<Button
 							label={t("app.newProject")}
 							icon={IconFilePlus}

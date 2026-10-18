@@ -47,7 +47,7 @@ const IconButton = ({
 			<button
 				{...props}
 				type="button"
-				className={`flex items-center justify-center rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${padding(size)} ${color(variant)}`}
+				className={`flex cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50 ${padding(size)} ${color(variant)}`}
 				aria-label={label}
 			>
 				<Icon />

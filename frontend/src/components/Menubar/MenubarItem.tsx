@@ -9,7 +9,7 @@ const MenubarItem = ({ label, shortcut, ...props }: Props) => {
 	return (
 		<Menubar.Item
 			{...props}
-			className="relative grid grid-cols-[24px_auto_auto] gap-1 pl-1 pr-2 h-8 items-center rounded-md cursor-pointer hover:not-data-disabled:bg-zinc-500/20 data-highlighted:bg-zinc-500/20 data-disabled:opacity-50 data-disabled:cursor-not-allowed"
+			className="relative grid h-8 cursor-pointer grid-cols-[24px_auto_auto] items-center gap-1 rounded-md pr-2 pl-1 hover:not-data-disabled:bg-zinc-500/20 data-disabled:cursor-not-allowed data-highlighted:bg-zinc-500/20 data-disabled:opacity-50"
 		>
 			<div />
 			{label}

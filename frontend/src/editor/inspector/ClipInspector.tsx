@@ -124,8 +124,30 @@ const ClipInspector = ({
 				<hr className="text-zinc-500/25" />
 				<span className="font-semibold">{t("inspector.size")}</span>
 				<div className="grid grid-cols-2 gap-2">
-					<NumberField id="clipWidth" aria-label={t("inspector.width")} min={1} value={clip.width} disabled={isLocked} leftElement="W" rightElement="px" onInteractionStart={onInteractionStart} onInteractionEnd={onInteractionEnd} onValueChange={(width) => onSizeChange(width, clip.height)} />
-					<NumberField id="clipHeight" aria-label={t("inspector.height")} min={1} value={clip.height} disabled={isLocked} leftElement="H" rightElement="px" onInteractionStart={onInteractionStart} onInteractionEnd={onInteractionEnd} onValueChange={(height) => onSizeChange(clip.width, height)} />
+					<NumberField
+						id="clipWidth"
+						aria-label={t("inspector.width")}
+						min={1}
+						value={clip.width}
+						disabled={isLocked}
+						leftElement="W"
+						rightElement="px"
+						onInteractionStart={onInteractionStart}
+						onInteractionEnd={onInteractionEnd}
+						onValueChange={(width) => onSizeChange(width, clip.height)}
+					/>
+					<NumberField
+						id="clipHeight"
+						aria-label={t("inspector.height")}
+						min={1}
+						value={clip.height}
+						disabled={isLocked}
+						leftElement="H"
+						rightElement="px"
+						onInteractionStart={onInteractionStart}
+						onInteractionEnd={onInteractionEnd}
+						onValueChange={(height) => onSizeChange(clip.width, height)}
+					/>
 				</div>
 				<hr className="text-zinc-500/25" />
 				<span className="font-semibold">{t("inspector.position")}</span>

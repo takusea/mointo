@@ -20,7 +20,7 @@ export const CanvasOverlay = ({
 	<>
 		<div
 			aria-hidden="true"
-			className="pointer-events-none absolute left-0 top-0"
+			className="pointer-events-none absolute top-0 left-0"
 			style={{
 				width,
 				height,
@@ -30,7 +30,7 @@ export const CanvasOverlay = ({
 		>
 			{selection != null && (
 				<div
-					className="absolute border border-dashed border-primary bg-primary/10"
+					className="absolute border border-primary border-dashed bg-primary/10"
 					style={{
 						left: selection.x,
 						top: selection.y,

@@ -41,7 +41,7 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 
 					return (
 						<div key={property.name}>
-							<div className="flex gap-1 justify-between">
+							<div className="flex justify-between gap-1">
 								<span>{t(property.label as MessageKey)}</span>
 								<span>{`${String(property.value)}${property.unit ?? ""}`}</span>
 							</div>

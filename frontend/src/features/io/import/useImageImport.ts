@@ -18,7 +18,8 @@ export const useImageImport = () => {
 			settings == null ||
 			layerId == null ||
 			layerContext.isLayerLocked(layerId)
-		) return;
+		)
+			return;
 
 		const input = document.createElement("input");
 		input.type = "file";

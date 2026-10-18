@@ -138,8 +138,8 @@ const Timeline = () => {
 
 	return (
 		<Card>
-			<div className="absolute inset-0 h-full min-h-0 min-w-0 grid grid-rows-[32px_minmax(0,1fr)] grid-cols-[auto_minmax(0,1fr)] overflow-hidden">
-				<div className="size-full flex items-center justify-between px-2 border-b border-r border-zinc-500/40">
+			<div className="absolute inset-0 grid h-full min-h-0 min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[32px_minmax(0,1fr)] overflow-hidden">
+				<div className="flex size-full items-center justify-between border-zinc-500/40 border-r border-b px-2">
 					<span>{playbackContext.startFrame}</span>
 					<span>-</span>
 					<span>{playbackContext.currentFrame}</span>

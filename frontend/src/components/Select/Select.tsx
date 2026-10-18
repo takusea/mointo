@@ -11,7 +11,7 @@ const Select = ({ children, placeholder, ...props }: Props) => {
 	return (
 		<SelectPrimitive.Root {...props}>
 			<SelectPrimitive.Trigger
-				className="h-8 px-2 border border-zinc-500/40 bg-white/50 dark:bg-zinc-800/50 hover:not-disabled:bg-zinc-200/50 dark:hover:not-disabled:bg-zinc-700/50 rounded-md flex gap-1 justify-between items-center not-disabled:cursor-pointer disabled:opacity-50"
+				className="flex h-8 not-disabled:cursor-pointer items-center justify-between gap-1 rounded-md border border-zinc-500/40 bg-white/50 px-2 hover:not-disabled:bg-zinc-200/50 disabled:opacity-50 dark:bg-zinc-800/50 dark:hover:not-disabled:bg-zinc-700/50"
 				aria-label={props.label}
 				id={props.id}
 			>
@@ -24,7 +24,7 @@ const Select = ({ children, placeholder, ...props }: Props) => {
 				<SelectPrimitive.Content
 					position="popper"
 					sideOffset={5}
-					className="overflow-hidden rounded-xl p-2 z-50 border border-zinc-500/40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl shadow-lg w-(--radix-select-trigger-width) max-h-(--radix-select-content-available-height)"
+					className="z-50 max-h-(--radix-select-content-available-height) w-(--radix-select-trigger-width) overflow-hidden rounded-xl border border-zinc-500/40 bg-white/90 p-2 shadow-lg backdrop-blur-xl dark:bg-zinc-950/90"
 				>
 					<SelectPrimitive.ScrollUpButton className="flex h-6 cursor-default items-center justify-center">
 						<IconChevronUp />

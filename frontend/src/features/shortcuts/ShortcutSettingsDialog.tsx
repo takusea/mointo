@@ -111,7 +111,7 @@ const ShortcutSettingsDialog = (props: Props) => {
 					</>
 				))}
 			</div>
-			<div className="mt-2 grid grid-cols-[1fr_auto] sticky p-2 bottom-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl">
+			<div className="sticky bottom-0 mt-2 grid grid-cols-[1fr_auto] bg-white/90 p-2 backdrop-blur-xl dark:bg-zinc-950/90">
 				{conflict && (
 					<p role="alert" className="mt-2 text-red-600">
 						{t("shortcutSettings.conflict")}

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 type Props = {
 	id: string;
@@ -127,7 +127,7 @@ const Clip = ({
 	return (
 		<div
 			key={id}
-			className={`absolute grid grid-cols-[1fr_8px] items-stretch rounded border overflow-hidden touch-none ${isSelected ? "bg-primary/25 border-primary" : "bg-zinc-500/25 border-zinc-500/40"} ${isHidden ? "opacity-40" : ""} ${isLocked ? "cursor-not-allowed" : ""}`}
+			className={`absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border ${isSelected ? "border-primary bg-primary/25" : "border-zinc-500/40 bg-zinc-500/25"} ${isHidden ? "opacity-40" : ""} ${isLocked ? "cursor-not-allowed" : ""}`}
 			style={{
 				left: `${startFrame * frameWidth}px`,
 				top: `${layerIndex * layerHeight}px`,
@@ -138,7 +138,7 @@ const Clip = ({
 			onPointerCancel={handlePointerUp}
 			onLostPointerCapture={handlePointerUp}
 		>
-			<div className="absolute h-full flex items-center text-nowrap pointer-events-none px-1">
+			<div className="pointer-events-none absolute flex h-full items-center text-nowrap px-1">
 				{name}
 			</div>
 			<div

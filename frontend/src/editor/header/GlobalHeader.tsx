@@ -33,7 +33,7 @@ const GlobalHeader = () => {
 	});
 
 	return (
-		<header className="relative grid grid-cols-[1fr_auto_1fr] items-center w-full px-2 gap-1 z-10 bg-white/90 dark:bg-zinc-950/90 border-b border-zinc-500/40 backdrop-blur-xl">
+		<header className="relative z-10 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-1 border-zinc-500/40 border-b bg-white/90 px-2 backdrop-blur-xl dark:bg-zinc-950/90">
 			{!isDesktop && (
 				<div
 					className={`grid grid-cols-[auto_1fr] ${isMenubarOpen ? "col-span-3" : ""}`}
@@ -65,7 +65,7 @@ const GlobalHeader = () => {
 							</Tooltip>
 						)}
 					</div>
-					<div className="flex justify-end min-w-max">
+					<div className="flex min-w-max justify-end">
 						<ExportButton
 							label={
 								exportProgress

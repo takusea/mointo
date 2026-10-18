@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useI18n } from "~/features/i18n/useI18n";
 import { usePlayback } from "~/features/playback/usePlayback";
+import { useProject } from "~/features/project/useProject";
 import { exportProject, type ProjectExportFormat } from "./projectExport";
 import { getProjectExporter } from "./projectExporters";
-import { useProject } from "~/features/project/useProject";
 
 export const useProjectExport = () => {
 	const { t } = useI18n();

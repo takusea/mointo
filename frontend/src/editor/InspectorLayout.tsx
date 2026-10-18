@@ -59,7 +59,7 @@ const InspectorLayout = () => {
 
 	return (
 		<div
-			className="relative grid min-h-0 min-w-0 pointer-events-none"
+			className="pointer-events-none relative grid min-h-0 min-w-0"
 			style={{
 				gridTemplateColumns,
 				gridTemplateRows: "minmax(0, 1fr)",
@@ -68,7 +68,7 @@ const InspectorLayout = () => {
 			{!isDesktop && (
 				<>
 					{!isToolInspectorOpen && (
-						<div className="absolute bottom-16 pointer-events-auto">
+						<div className="pointer-events-auto absolute bottom-16">
 							<Card size="small">
 								<IconButton
 									label={t("editor.openToolInspector")}
@@ -79,7 +79,7 @@ const InspectorLayout = () => {
 						</div>
 					)}
 					{selectedClip && clipContext.transform && !isClipInspectorOpen && (
-						<div className="absolute right-0 bottom-16 pointer-events-auto">
+						<div className="pointer-events-auto absolute right-0 bottom-16">
 							<Card size="small">
 								<IconButton
 									label={t("editor.openClipInspector")}
@@ -93,7 +93,7 @@ const InspectorLayout = () => {
 			)}
 			{showToolInspector && (
 				<div
-					className="z-10 h-full min-h-0 min-w-0 pb-16 overflow-y-auto pointer-events-none"
+					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto pb-16"
 					style={{
 						gridColumn: 1,
 						gridRow: 1,
@@ -102,7 +102,7 @@ const InspectorLayout = () => {
 					}}
 					ref={toolInspectorRef}
 				>
-					<div className="flex flex-col gap-2 pointer-events-auto">
+					<div className="pointer-events-auto flex flex-col gap-2">
 						<ToolInspector
 							properties={toolContext.properties}
 							onPropertyChange={(key, value) =>
@@ -119,7 +119,7 @@ const InspectorLayout = () => {
 			)}
 			{isDesktop && (
 				<div
-					className="h-full pointer-events-auto"
+					className="pointer-events-auto h-full"
 					style={{ gridColumn: 2, gridRow: 1 }}
 				>
 					<Splitter
@@ -141,7 +141,7 @@ const InspectorLayout = () => {
 			)}
 			{showClipInspector && selectedClip && clipContext.transform && (
 				<div
-					className="z-10 h-full min-h-0 min-w-0 pb-16 overflow-y-auto pointer-events-none"
+					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto pb-16"
 					style={{
 						gridColumn: isDesktop ? 5 : 1,
 						gridRow: 1,
@@ -150,7 +150,7 @@ const InspectorLayout = () => {
 					}}
 					ref={clipInspectorRef}
 				>
-					<div className="flex flex-col gap-2 pointer-events-auto">
+					<div className="pointer-events-auto flex flex-col gap-2">
 						<ClipInspector
 							clip={selectedClip}
 							isLayerLocked={layerContext.isLayerLocked(selectedClip.layer_id)}
@@ -196,7 +196,7 @@ const InspectorLayout = () => {
 			)}
 			{isDesktop && showClipInspector && (
 				<div
-					className="h-full pointer-events-auto"
+					className="pointer-events-auto h-full"
 					style={{ gridColumn: 4, gridRow: 1 }}
 				>
 					<Splitter
@@ -216,7 +216,7 @@ const InspectorLayout = () => {
 					/>
 				</div>
 			)}
-			<div className="absolute bottom-0 left-0 right-0 overflow-x-auto z-10 pointer-events-auto">
+			<div className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 overflow-x-auto">
 				<div className="mx-auto w-fit">
 					<Toolbar />
 				</div>

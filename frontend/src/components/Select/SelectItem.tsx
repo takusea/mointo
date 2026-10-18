@@ -7,7 +7,7 @@ const SelectItem = ({ children, ...props }: Props) => {
 	return (
 		<SelectPrimitive.Item
 			{...props}
-			className="flex items-center rounded-md h-8 p-2 px-8 data-disabled:opacity-50 data-disabled:pointer-events-none data-highlighted:bg-zinc-500/15 cursor-pointer"
+			className="flex h-8 cursor-pointer items-center rounded-md p-2 px-8 data-disabled:pointer-events-none data-highlighted:bg-zinc-500/15 data-disabled:opacity-50"
 		>
 			<SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
 			<SelectPrimitive.ItemIndicator className="absolute left-1">

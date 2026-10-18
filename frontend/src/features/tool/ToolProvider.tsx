@@ -1,7 +1,7 @@
 import { type JSX, useEffect, useState } from "react";
 import type { ToolProperty } from "~/core/CoreService";
 import { useCore } from "~/core/useCore";
-import { hasSameRgbColor, type HSVAColor } from "~/lib/color";
+import { type HSVAColor, hasSameRgbColor } from "~/lib/color";
 import { ToolContext } from "./ToolContext";
 import type { ToolKind } from "./type";
 

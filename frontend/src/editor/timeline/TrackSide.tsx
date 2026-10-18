@@ -35,7 +35,7 @@ const TrackSide = ({
 
 	return (
 		<div
-			className="border-r border-zinc-500/40"
+			className="border-zinc-500/40 border-r"
 			style={{
 				translate: `0 -${scrollY}px`,
 				height: `${layers.length * layerHeight}px`,
@@ -48,15 +48,15 @@ const TrackSide = ({
 				return (
 					<div
 						key={layer.id}
-						className={`overflow-hidden flex items-center justify-between gap-1 border-b border-zinc-500/40 ${isHidden ? "opacity-50" : ""}`}
+						className={`flex items-center justify-between gap-1 overflow-hidden border-zinc-500/40 border-b ${isHidden ? "opacity-50" : ""}`}
 						style={{ height: `${layerHeight}px` }}
 					>
 						{selectedLayerId === layer.id && (
-							<div className="absolute left-1 w-1 h-4 bg-primary rounded-full" />
+							<div className="absolute left-1 h-4 w-1 rounded-full bg-primary" />
 						)}
 						<button
 							type="button"
-							className="flex-1 h-full pl-3 pr-2 text-left"
+							className="h-full flex-1 pr-2 pl-3 text-left"
 							onClick={() => onLayerSelect(layer.id)}
 						>
 							{t("timeline.layer", { index: i })}

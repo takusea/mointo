@@ -7,12 +7,12 @@ type Props = React.ComponentProps<typeof RadioGroupPrimitive.Item> & {
 const RadioGroupItem = ({ id, label, ...props }: Props) => (
 	<RadioGroupPrimitive.Item
 		{...props}
-		className="group grid gap-2 grid-cols-[auto_1fr] place-content-center rounded-md hover:not-disabled:bg-zinc-500/20 p-2 cursor-pointer"
+		className="group grid cursor-pointer grid-cols-[auto_1fr] place-content-center gap-2 rounded-md p-2 hover:not-disabled:bg-zinc-500/20"
 	>
-		<div className="size-6 rounded-full border border-zinc-500/40 bg-zinc-500/25 flex items-center justify-center group-data-[state=checked]:bg-primary">
-			<RadioGroupPrimitive.Indicator className="bg-white size-2 rounded-full" />
+		<div className="flex size-6 items-center justify-center rounded-full border border-zinc-500/40 bg-zinc-500/25 group-data-[state=checked]:bg-primary">
+			<RadioGroupPrimitive.Indicator className="size-2 rounded-full bg-white" />
 		</div>
-		<span className="flex items-center cursor-pointer">{label}</span>
+		<span className="flex cursor-pointer items-center">{label}</span>
 	</RadioGroupPrimitive.Item>
 );
 

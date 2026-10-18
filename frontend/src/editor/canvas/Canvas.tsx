@@ -49,14 +49,14 @@ const DrawCanvas = () => {
 		toolContext.tool === "eyedropper" || isRightButtonDown
 			? "crosshair"
 			: toolContext.tool === "move"
-			? "move"
-			: toolContext.tool === "fill"
-				? isDesktop
-					? "none"
-					: "cell"
-				: toolContext.tool === "select"
-					? "crosshair"
-					: "none";
+				? "move"
+				: toolContext.tool === "fill"
+					? isDesktop
+						? "none"
+						: "cell"
+					: toolContext.tool === "select"
+						? "crosshair"
+						: "none";
 	const updateCursorPosition = (event: PointerEvent<HTMLCanvasElement>) => {
 		if (cursorStyle !== "none") return;
 		const bounds = event.currentTarget.parentElement?.getBoundingClientRect();

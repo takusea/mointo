@@ -47,9 +47,9 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 	};
 
 	return (
-		<div className="relative flex flex-col gap-1 max-w-64 w-full mx-auto">
+		<div className="relative mx-auto flex w-full max-w-64 flex-col gap-1">
 			<div
-				className="absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))] mask-[radial-gradient(transparent,transparent_60%,white_61%,white)]"
+				className="mask-[radial-gradient(transparent,transparent_60%,white_61%,white)] absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))]"
 				onPointerMove={handleHueMove}
 			>
 				<div
@@ -57,15 +57,15 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 						top: `${50 + Math.sin(currentColor.h / 57 - 2.6) * 46}%`,
 						left: `${50 + Math.cos(currentColor.h / 57 - 2.6) * 46}%`,
 					}}
-					className="pointer-events-none absolute translate-x-[-50%] translate-y-[-50%] w-2 h-2 border border-black shadow-inner shadow-white rounded-full"
+					className="pointer-events-none absolute h-2 w-2 translate-x-[-50%] translate-y-[-50%] rounded-full border border-black shadow-inner shadow-white"
 				/>
 			</div>
 			<div
 				style={{ "--hue": currentColor.h } as React.CSSProperties}
-				className="aspect-square p-[20%] touch-none"
+				className="aspect-square touch-none p-[20%]"
 			>
 				<div
-					className="relative w-full h-full bg-[linear-gradient(to_bottom,#fff0_0%,#000_100%),linear-gradient(to_right,#fff_0%,hsl(var(--hue)_100%_50%)_100%)]"
+					className="relative h-full w-full bg-[linear-gradient(to_bottom,#fff0_0%,#000_100%),linear-gradient(to_right,#fff_0%,hsl(var(--hue)_100%_50%)_100%)]"
 					onPointerMove={handleSLMove}
 				>
 					<div
@@ -73,12 +73,12 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 							bottom: `${currentColor.v * 100}%`,
 							left: `${currentColor.s * 100}%`,
 						}}
-						className="pointer-events-none absolute translate-x-[-50%] translate-y-[50%] w-2 h-2 border border-black shadow-inner shadow-white rounded-full"
+						className="pointer-events-none absolute h-2 w-2 translate-x-[-50%] translate-y-[50%] rounded-full border border-black shadow-inner shadow-white"
 					/>
 				</div>
 			</div>
 			<div
-				className="absolute bottom-0 left-0 w-4 h-4 rounded border border-zinc-500/40 bg-(--color)"
+				className="absolute bottom-0 left-0 h-4 w-4 rounded border border-zinc-500/40 bg-(--color)"
 				style={
 					{
 						"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b})`,
