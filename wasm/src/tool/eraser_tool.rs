@@ -38,14 +38,27 @@ impl Tool for EraserTool {
                 let right = left + 1.0;
                 let top = py as f32 - (y + 0.5);
                 let bottom = top + 1.0;
-                let nearest_x = if left > 0.0 { left } else if right < 0.0 { right } else { 0.0 };
-                let nearest_y = if top > 0.0 { top } else if bottom < 0.0 { bottom } else { 0.0 };
+                let nearest_x = if left > 0.0 {
+                    left
+                } else if right < 0.0 {
+                    right
+                } else {
+                    0.0
+                };
+                let nearest_y = if top > 0.0 {
+                    top
+                } else if bottom < 0.0 {
+                    bottom
+                } else {
+                    0.0
+                };
                 if nearest_x * nearest_x + nearest_y * nearest_y > radius * radius {
                     continue;
                 }
                 let farthest_x = left.abs().max(right.abs());
                 let farthest_y = top.abs().max(bottom.abs());
-                let fully_covered = farthest_x * farthest_x + farthest_y * farthest_y <= radius * radius;
+                let fully_covered =
+                    farthest_x * farthest_x + farthest_y * farthest_y <= radius * radius;
                 let coverage = if fully_covered {
                     1.0
                 } else {
@@ -61,7 +74,9 @@ impl Tool for EraserTool {
                             }
                         }
                     }
-                    if covered == 0 { continue; }
+                    if covered == 0 {
+                        continue;
+                    }
                     covered as f32 / (samples * samples) as f32
                 };
                 let idx = ((py * fw + px) * 4) as usize;
@@ -82,7 +97,7 @@ impl Tool for EraserTool {
                 min: 1.0,
                 max: 100.0,
                 step: 1.0,
-                unit: None,
+                unit: Some("px".into()),
             },
             ToolProperty {
                 name: "antialiasing".into(),

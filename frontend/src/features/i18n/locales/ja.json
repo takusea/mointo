@@ -108,7 +108,7 @@
 	"toolbar.resetRotate": "回転をリセット",
 	"toolbar.flipHorizontal": "左右反転",
 	"toolbar.flipVertical": "上下反転",
-	"toolInspector.propertyOfTool": "{tool} ツールの設定",
+	"toolInspector.propertyOfTool": "{tool} ツールのプロパティ",
 	"toolInspector.antialiasing": "アンチエイリアス品質",
 	"toolInspector.size": "サイズ",
 	"inputSettings.title": "入力設定",
