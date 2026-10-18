@@ -59,7 +59,7 @@ const InspectorLayout = () => {
 
 	return (
 		<div
-			className="pointer-events-none relative grid min-h-0 min-w-0"
+			className="pointer-events-none relative grid min-h-0 min-w-0 pb-18"
 			style={{
 				gridTemplateColumns,
 				gridTemplateRows: "minmax(0, 1fr)",
@@ -93,7 +93,7 @@ const InspectorLayout = () => {
 			)}
 			{showToolInspector && (
 				<div
-					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto pb-16"
+					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl"
 					style={{
 						gridColumn: 1,
 						gridRow: 1,
@@ -163,7 +163,7 @@ const InspectorLayout = () => {
 			)}
 			{showClipInspector && selectedClip && clipContext.transform && (
 				<div
-					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto pb-16"
+					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl"
 					style={{
 						gridColumn: isDesktop ? 5 : 1,
 						gridRow: 1,
@@ -216,8 +216,8 @@ const InspectorLayout = () => {
 					</div>
 				</div>
 			)}
-			<div className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 overflow-x-auto">
-				<div className="mx-auto w-fit">
+			<div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 overflow-x-auto rounded-2xl">
+				<div className="pointer-events-auto mx-auto w-fit">
 					<Toolbar />
 				</div>
 			</div>
