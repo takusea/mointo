@@ -1,3 +1,4 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
@@ -9,6 +10,7 @@ export default defineConfig({
 		tsconfigPaths: true,
 	},
 	plugins: [
+		cloudflare(),
 		react({ compiler: true }),
 		tailwindcss(),
 		basicSsl(),
