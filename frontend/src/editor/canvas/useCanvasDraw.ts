@@ -4,6 +4,9 @@ import { useTool } from "~/features/tool/useTool";
 import { hsvaToRgba } from "~/lib/color";
 import type { DrawState } from "./type";
 
+// Accumulate every point, then send the batch every few input points.
+const DRAW_APPLY_POINT_INTERVAL = 5;
+
 export const useCanvasDraw = () => {
 	const core = useCore();
 	const toolContext = useTool();
@@ -15,8 +18,16 @@ export const useCanvasDraw = () => {
 	const drawingClipIdRef = useRef<string | undefined>(undefined);
 	const pendingPointsRef = useRef<DrawState[]>([]);
 	const drawFrameRef = useRef<number | null>(null);
+	const inputPointCountRef = useRef(0);
 
 	const rgbaColor = hsvaToRgba(toolContext.color);
+	const sizeProperty = toolContext.properties.find(
+		(property) => property.name === "size",
+	);
+	const brushSize =
+		typeof sizeProperty?.value === "number"
+			? sizeProperty.value
+			: Number(sizeProperty?.value ?? 1);
 
 	const updateDrawState = (newState: typeof drawState) => {
 		drawStateRef.current = newState;
@@ -25,6 +36,7 @@ export const useCanvasDraw = () => {
 
 	const beginDraw = (state: DrawState, clipId: string) => {
 		drawingClipIdRef.current = clipId;
+		inputPointCountRef.current = 0;
 		updateDrawState({ isDrawing: true, state });
 	};
 
@@ -56,6 +68,7 @@ export const useCanvasDraw = () => {
 	const finishDraw = () => {
 		flushPoints();
 		drawingClipIdRef.current = undefined;
+		inputPointCountRef.current = 0;
 		updateDrawState({ isDrawing: false });
 	};
 
@@ -77,7 +90,13 @@ export const useCanvasDraw = () => {
 		const dy = current.y - prev.y;
 		const dPressure = current.pressure - prev.pressure;
 		const distance = Math.hypot(dx, dy);
-		const steps = Math.ceil(distance);
+		// Large brushes cover more distance per dab. Keeping one dab per pixel
+		// makes a large brush repeat expensive raster work unnecessarily.
+		const effectiveSize = Math.max(
+			1,
+			brushSize * Math.min(prev.pressure, current.pressure),
+		);
+		const steps = Math.ceil(distance / Math.max(1, effectiveSize * 0.5));
 		if (steps === 0) return [current];
 
 		const drawStates = [];
@@ -99,10 +118,14 @@ export const useCanvasDraw = () => {
 		for (const current of states) {
 			pendingPointsRef.current.push(...interpolateDrawState(previous, current));
 			previous = current;
+			inputPointCountRef.current += 1;
 		}
 
-		if (drawFrameRef.current == null) {
-			drawFrameRef.current = requestAnimationFrame(flushPoints);
+		if (inputPointCountRef.current >= DRAW_APPLY_POINT_INTERVAL) {
+			inputPointCountRef.current %= DRAW_APPLY_POINT_INTERVAL;
+			if (drawFrameRef.current == null) {
+				drawFrameRef.current = requestAnimationFrame(flushPoints);
+			}
 		}
 		drawStateRef.current = {
 			isDrawing: true,

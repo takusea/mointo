@@ -48,24 +48,41 @@ impl Tool for CircleBrushTool {
                     continue;
                 }
 
-                let mut covered = 0;
-                for sy in 0..samples {
-                    for sx in 0..samples {
-                        let sample_x = px as f32 + (sx as f32 + 0.5) / samples as f32;
-                        let sample_y = py as f32 + (sy as f32 + 0.5) / samples as f32;
-                        let dx = sample_x - (x + 0.5);
-                        let dy = sample_y - (y + 0.5);
-                        if dx * dx + dy * dy <= radius * radius {
-                            covered += 1;
-                        }
-                    }
-                }
-                if covered == 0 {
+                // Pixels fully inside the circle need no supersampling. This keeps
+                // antialiasing cost proportional to the perimeter, not the area.
+                let left = px as f32 - (x + 0.5);
+                let right = left + 1.0;
+                let top = py as f32 - (y + 0.5);
+                let bottom = top + 1.0;
+                let nearest_x = if left > 0.0 { left } else if right < 0.0 { right } else { 0.0 };
+                let nearest_y = if top > 0.0 { top } else if bottom < 0.0 { bottom } else { 0.0 };
+                if nearest_x * nearest_x + nearest_y * nearest_y > radius * radius {
                     continue;
                 }
+                let farthest_x = left.abs().max(right.abs());
+                let farthest_y = top.abs().max(bottom.abs());
+                let fully_covered = farthest_x * farthest_x + farthest_y * farthest_y <= radius * radius;
+
+                let coverage = if fully_covered {
+                    1.0
+                } else {
+                    let mut covered = 0;
+                    for sy in 0..samples {
+                        for sx in 0..samples {
+                            let sample_x = px as f32 + (sx as f32 + 0.5) / samples as f32;
+                            let sample_y = py as f32 + (sy as f32 + 0.5) / samples as f32;
+                            let dx = sample_x - (x + 0.5);
+                            let dy = sample_y - (y + 0.5);
+                            if dx * dx + dy * dy <= radius * radius {
+                                covered += 1;
+                            }
+                        }
+                    }
+                    if covered == 0 { continue; }
+                    covered as f32 / (samples * samples) as f32
+                };
 
                 let idx = ((py * fw + px) * 4) as usize;
-                let coverage = covered as f32 / (samples * samples) as f32;
                 let (base, accumulated_coverage) = self
                     .stroke_pixels
                     .entry(idx)
