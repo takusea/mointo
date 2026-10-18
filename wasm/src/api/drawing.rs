@@ -42,8 +42,7 @@ impl FlippenCore {
         }
         let action = Box::new(DrawStrokeAction::new(clip_id));
         if let Some(project) = self.project.as_mut() {
-            self.action_manager.do_action(action, project);
-            self.action_manager.begin_pixel_recording();
+            self.action_manager.begin_pending_action(action, project);
         }
     }
 
@@ -51,7 +50,16 @@ impl FlippenCore {
         if let Some(tool) = self.tools.get_mut(ToolId::Pen) {
             tool.end_stroke();
         }
-        self.action_manager.end_pixel_recording();
+        self.action_manager.commit_pending_action();
+    }
+
+    pub fn cancel_draw(&mut self) {
+        if let Some(tool) = self.tools.get_mut(ToolId::Pen) {
+            tool.end_stroke();
+        }
+        if let Some(project) = self.project.as_mut() {
+            self.action_manager.cancel_pending_action(project);
+        }
     }
 
     pub fn begin_action_group(&mut self) {

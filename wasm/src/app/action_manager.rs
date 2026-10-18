@@ -9,6 +9,7 @@ pub struct ActionManager {
     action_group: Vec<Box<dyn UndoableAction>>,
     action_group_depth: usize,
     recording_pixel_changes: bool,
+    pending_action: Option<Box<dyn UndoableAction>>,
 }
 
 impl ActionManager {
@@ -19,6 +20,7 @@ impl ActionManager {
             action_group: Vec::new(),
             action_group_depth: 0,
             recording_pixel_changes: false,
+            pending_action: None,
         }
     }
 
@@ -31,6 +33,37 @@ impl ActionManager {
             self.undo_stack.push(action);
         }
         self.redo_stack.clear();
+    }
+
+    pub fn begin_pending_action(
+        &mut self,
+        mut action: Box<dyn UndoableAction>,
+        project: &mut Project,
+    ) {
+        self.recording_pixel_changes = false;
+        action.apply(project);
+        self.pending_action = Some(action);
+        self.recording_pixel_changes = true;
+    }
+
+    pub fn commit_pending_action(&mut self) {
+        self.recording_pixel_changes = false;
+        let Some(action) = self.pending_action.take() else {
+            return;
+        };
+        if self.action_group_depth > 0 {
+            self.action_group.push(action);
+        } else {
+            self.undo_stack.push(action);
+        }
+        self.redo_stack.clear();
+    }
+
+    pub fn cancel_pending_action(&mut self, project: &mut Project) {
+        self.recording_pixel_changes = false;
+        if let Some(mut action) = self.pending_action.take() {
+            action.undo(project);
+        }
     }
 
     pub fn undo(&mut self, project: &mut Project) {
@@ -88,6 +121,10 @@ impl ActionManager {
     }
 
     pub fn record_pixel_changes_to_latest(&mut self, clip_id: Uuid, changes: Vec<PixelChange>) {
+        if let Some(action) = self.pending_action.as_mut() {
+            action.record_pixel_changes(clip_id, changes);
+            return;
+        }
         let action = if self.action_group_depth > 0 {
             self.action_group.last_mut()
         } else {

@@ -109,7 +109,11 @@ export const useCanvasPointer = (
 				isMultiTouchRef.current = true;
 				if (canvasDraw.drawState.isDrawing) {
 					canvasDraw.finishDraw();
-					void core.endDraw();
+					await core.cancelDraw();
+					const canvas = canvasRef.current;
+					if (canvas != null) {
+						render(canvas, isOnionSkin, layerContext.selectedLayerId);
+					}
 				}
 				return;
 			}

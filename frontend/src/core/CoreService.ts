@@ -322,6 +322,10 @@ export class CoreService {
 		return this.enqueue((core) => core.end_draw(), true);
 	}
 
+	cancelDraw() {
+		return this.enqueue((core) => core.cancel_draw(), true);
+	}
+
 	beginActionGroup() {
 		return this.enqueue((core) => core.begin_action_group());
 	}
