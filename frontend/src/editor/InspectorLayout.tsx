@@ -59,10 +59,9 @@ const InspectorLayout = () => {
 
 	return (
 		<div
-			className="pointer-events-none relative grid size-full min-h-0 min-w-0 pb-18"
+			className="pointer-events-none relative grid size-full min-h-0 min-w-0 grid-rows-[minmax(0,1fr)] pb-18"
 			style={{
 				gridTemplateColumns,
-				gridTemplateRows: "minmax(0, 1fr)",
 			}}
 		>
 			{!isDesktop && (
@@ -93,13 +92,7 @@ const InspectorLayout = () => {
 			)}
 			{showToolInspector && (
 				<div
-					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl"
-					style={{
-						gridColumn: 1,
-						gridRow: 1,
-						width: isDesktop ? undefined : "min(85vw, 320px)",
-						justifySelf: isDesktop ? undefined : "start",
-					}}
+					className={`pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl ${isDesktop ? "col-start-1" : "w-[min(85vw,320px)] justify-self-start"}`}
 					ref={toolInspectorRef}
 				>
 					<div className="pointer-events-auto flex flex-col gap-2">
@@ -119,8 +112,7 @@ const InspectorLayout = () => {
 			)}
 			{isDesktop && (
 				<div
-					className="pointer-events-auto h-full"
-					style={{ gridColumn: 2, gridRow: 1 }}
+					className="pointer-events-auto col-start-2 row-start-1 h-full"
 				>
 					<Splitter
 						orientation="vertical"
@@ -141,8 +133,7 @@ const InspectorLayout = () => {
 			)}
 			{isDesktop && showClipInspector && (
 				<div
-					className="pointer-events-auto h-full"
-					style={{ gridColumn: 4, gridRow: 1 }}
+					className="pointer-events-auto col-start-4 row-start-1 h-full"
 				>
 					<Splitter
 						orientation="vertical"
@@ -163,13 +154,7 @@ const InspectorLayout = () => {
 			)}
 			{showClipInspector && selectedClip && clipContext.transform && (
 				<div
-					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl"
-					style={{
-						gridColumn: isDesktop ? 5 : 1,
-						gridRow: 1,
-						width: isDesktop ? undefined : "min(85vw, 320px)",
-						justifySelf: isDesktop ? undefined : "end",
-					}}
+					className={`pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl ${isDesktop ? "col-start-5" : "col-start-1 w-[min(85vw,320px)] justify-self-end"}`}
 					ref={clipInspectorRef}
 				>
 					<div className="pointer-events-auto flex flex-col gap-2">

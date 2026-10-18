@@ -20,12 +20,11 @@ export const CanvasOverlay = ({
 	<>
 		<div
 			aria-hidden="true"
-			className="pointer-events-none absolute top-0 left-0"
+			className="pointer-events-none absolute top-0 left-0 origin-center"
 			style={{
 				width,
 				height,
 				...transform,
-				transformOrigin: "center",
 			}}
 		>
 			{selection != null && (
@@ -43,14 +42,13 @@ export const CanvasOverlay = ({
 		{isGridVisible && (
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 [image-rendering:pixelated]"
+				className="pointer-events-none absolute inset-0 bg-size-[16px_16px] [image-rendering:pixelated]"
 				style={{
 					width,
 					height,
 					...transform,
 					backgroundImage:
 						"linear-gradient(to right, rgb(0 0 0 / 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgb(0 0 0 / 0.25) 1px, transparent 1px)",
-					backgroundSize: "16px 16px",
 				}}
 			/>
 		)}

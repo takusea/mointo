@@ -144,9 +144,8 @@ const InputSettingsDialog = (props: Props) => {
 									cx={x * CURVE_VIEWBOX}
 									cy={(1 - y) * CURVE_VIEWBOX}
 									r="3"
-									className={`${index === 0 || index === tool.pressureCurve.length - 1 ? "fill-zinc-400" : "fill-primary"} stroke-white`}
+									className={`cursor-grab touch-none stroke-white ${index === 0 || index === tool.pressureCurve.length - 1 ? "fill-zinc-400" : "fill-primary"}`}
 									strokeWidth="1"
-									style={{ touchAction: "none", cursor: "grab" }}
 									onPointerDown={(pointerEvent) => {
 										pointerEvent.stopPropagation();
 										pointerEvent.currentTarget.ownerSVGElement?.setPointerCapture(
