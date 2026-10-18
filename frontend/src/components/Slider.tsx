@@ -5,8 +5,8 @@ type Props = React.ComponentProps<typeof SliderPrimitive.Root>;
 const Slider = (props: Props) => {
 	return (
 		<SliderPrimitive.Root
-			className="relative flex items-center h-8 cursor-pointer touch-none select-none"
 			{...props}
+			className="relative flex items-center h-8 cursor-pointer touch-none select-none"
 		>
 			<SliderPrimitive.Track className="relative h-2 grow rounded-full overflow-hidden">
 				<div className="h-full w-full border border-zinc-500/40 bg-zinc-500/20 rounded-full"></div>

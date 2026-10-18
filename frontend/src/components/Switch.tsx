@@ -6,8 +6,8 @@ type Props = React.ComponentProps<typeof SwitchPrimitive.Root> & {
 
 const Switch = ({ label, ...props }: Props) => (
 	<SwitchPrimitive.Root
-		className="group grid gap-2 grid-cols-[1fr_auto] place-content-center rounded-md hover:not-disabled:bg-zinc-500/20 p-2 cursor-pointer"
 		{...props}
+		className="group grid gap-2 grid-cols-[1fr_auto] place-content-center rounded-md hover:not-disabled:bg-zinc-500/20 p-2 cursor-pointer"
 	>
 		<span className="flex items-center cursor-pointer">{label}</span>
 		<div className="relative flex items-center px-1 h-6 w-10 rounded-full border border-zinc-500/40 bg-zinc-500/20 group-data-[state=checked]:bg-primary cursor-pointer">

@@ -39,9 +39,9 @@ const Button = ({
 }: Props) => {
 	return (
 		<button
+			{...props}
 			type="button"
 			className={`grid grid-cols-[auto_auto] items-center justify-center rounded-md font-semibold cursor-pointer text-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${padding(size)} ${color(variant)}`}
-			{...props}
 		>
 			{Icon && (
 				<div className="mr-1">

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Slider from "~/components/Slider";
-import { useI18n } from "~/features/i18n/useI18n";
 import { type HSVAColor, hsvaToRgba, rgbaToHsva } from "~/lib/color";
 import ToggleGroup from "../ToggleGroup/ToggleGroup";
 import ToggleGroupItem from "../ToggleGroup/ToggleGroupItem";
@@ -12,7 +11,6 @@ type Props = {
 
 const ColorSlider = ({ currentColor, onCurrentColorChange }: Props) => {
 	const [mode, setMode] = useState<"rgb" | "hsv">("rgb");
-	const { t } = useI18n();
 	const rgbaColor = hsvaToRgba(currentColor);
 	const channels =
 		mode === "rgb"

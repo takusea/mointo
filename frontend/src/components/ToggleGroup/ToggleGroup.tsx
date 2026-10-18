@@ -4,8 +4,8 @@ type Props = React.ComponentProps<typeof ToggleGroupPrimitive.Root>;
 
 const ToggleGroup = (props: Props) => (
 	<ToggleGroupPrimitive.Root
-		className="h-8 flex border border-zinc-500/40 bg-zinc-500/20 rounded-md"
 		{...props}
+		className="h-8 flex border border-zinc-500/40 bg-zinc-500/20 rounded-md"
 	/>
 );
 
