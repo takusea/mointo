@@ -1,4 +1,4 @@
-use super::FlippenCore;
+use super::MointoCore;
 use crate::action::draw_stroke_action::DrawStrokeAction;
 use crate::action::set_layer_lock_action::SetLayerLockAction;
 use crate::action::set_layer_visibility_action::SetLayerVisibilityAction;
@@ -21,7 +21,7 @@ fn parse_tool_id(current_tool: &str) -> Option<ToolId> {
 }
 
 #[wasm_bindgen]
-impl FlippenCore {
+impl MointoCore {
     pub fn begin_draw(&mut self, clip_id_str: String) {
         let clip_id = match Uuid::parse_str(&clip_id_str) {
             Ok(id) => id,

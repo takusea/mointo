@@ -2,8 +2,8 @@ import { type JSX, useEffect } from "react";
 import { useLocalStorage, useTernaryDarkMode } from "usehooks-ts";
 import { AppearanceContext } from "./AppearanceContext";
 
-const THEME_STORAGE_KEY = "flippen.theme";
-const ACCENTCOLOR_STORAGE_KEY = "flippen.accentColor";
+const THEME_STORAGE_KEY = "mointo.theme";
+const ACCENTCOLOR_STORAGE_KEY = "mointo.accentColor";
 
 export const AppearanceProvider = ({ children }: { children: JSX.Element }) => {
 	const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } =

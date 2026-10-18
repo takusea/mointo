@@ -208,26 +208,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
-name = "flippen_wasm"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "cgmath",
- "console_error_panic_hook",
- "futures-channel",
- "gloo",
- "js-sys",
- "rmp-serde",
- "serde",
- "serde_bytes",
- "uuid",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "wgpu",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -718,6 +698,26 @@ name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
+
+[[package]]
+name = "mointo_wasm"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "cgmath",
+ "console_error_panic_hook",
+ "futures-channel",
+ "gloo",
+ "js-sys",
+ "rmp-serde",
+ "serde",
+ "serde_bytes",
+ "uuid",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "wgpu",
+]
 
 [[package]]
 name = "naga"

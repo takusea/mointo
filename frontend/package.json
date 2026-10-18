@@ -1,5 +1,5 @@
 {
-	"name": "flippen",
+	"name": "mointo",
 	"type": "module",
 	"scripts": {
 		"build": "vite build",

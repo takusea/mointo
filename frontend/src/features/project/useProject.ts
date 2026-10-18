@@ -34,7 +34,7 @@ export const useProject = () => {
 	};
 
 	useDocumentTitle(
-		projectSettings ? `${projectSettings.title} - Flippen` : "Flippen",
+		projectSettings ? `${projectSettings.title} - mointo` : "mointo",
 	);
 
 	const open = () => {

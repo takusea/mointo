@@ -305,7 +305,7 @@ const GlobalMenubar = () => {
 			</MenubarMenu>
 			<MenubarMenu label={t("menubar.help")}>
 				<MenubarItem
-					label={t("menubar.aboutFlippen")}
+					label={t("menubar.about")}
 					onSelect={() => dialogs.open("about")}
 				/>
 			</MenubarMenu>

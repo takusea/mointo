@@ -1,4 +1,4 @@
-use super::FlippenCore;
+use super::MointoCore;
 use crate::app::composition::LayerId;
 use crate::gpu::GpuRenderer;
 use js_sys::Uint8ClampedArray;
@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use web_sys::HtmlCanvasElement;
 
 #[wasm_bindgen]
-impl FlippenCore {
+impl MointoCore {
     pub async fn render_frame_to_canvas_with_onion(
         &mut self,
         frame_index: u32,

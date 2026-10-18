@@ -12,7 +12,7 @@ use crate::tool;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
-pub struct FlippenCore {
+pub struct MointoCore {
     project: Option<Project>,
     tools: ToolRegistry,
     action_manager: ActionManager,
@@ -20,7 +20,7 @@ pub struct FlippenCore {
 }
 
 #[wasm_bindgen]
-impl FlippenCore {
+impl MointoCore {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         console_error_panic_hook::set_once();
@@ -44,7 +44,10 @@ impl FlippenCore {
         );
         tools.insert(
             ToolId::Fill,
-            Box::new(tool::fill_tool::FillTool { tolerance: 500, opacity: 100 }),
+            Box::new(tool::fill_tool::FillTool {
+                tolerance: 500,
+                opacity: 100,
+            }),
         );
 
         Self {

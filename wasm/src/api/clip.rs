@@ -1,4 +1,4 @@
-use super::FlippenCore;
+use super::MointoCore;
 use crate::action::add_clip_action::AddClipAction;
 use crate::action::change_clip_duration_action::ChangeClipDurationAction;
 use crate::action::delete_clip_action::DeleteClipAction;
@@ -35,7 +35,7 @@ struct ClipMetadataView<'a> {
 }
 
 #[wasm_bindgen]
-impl FlippenCore {
+impl MointoCore {
     pub fn get_clips(&mut self) -> JsValue {
         let project = match &mut self.project {
             Some(p) => p,

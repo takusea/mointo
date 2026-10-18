@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use super::FlippenCore;
+use super::MointoCore;
 use crate::app::project::Project;
 
 fn decode_project(data: &[u8]) -> Result<Project, String> {
@@ -10,7 +10,7 @@ fn decode_project(data: &[u8]) -> Result<Project, String> {
 }
 
 #[wasm_bindgen]
-impl FlippenCore {
+impl MointoCore {
     pub fn export(&self) -> Vec<u8> {
         rmp_serde::to_vec(&self.project).unwrap()
     }

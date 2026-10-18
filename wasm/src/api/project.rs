@@ -1,4 +1,4 @@
-use super::FlippenCore;
+use super::MointoCore;
 use crate::app::project::Project;
 use crate::app::project_settings::ProjectSettings;
 use gloo::utils::format::JsValueSerdeExt;
@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 
 #[wasm_bindgen]
-impl FlippenCore {
+impl MointoCore {
     pub fn create_project(&mut self, settings: JsValue) -> Result<(), JsValue> {
         let settings: ProjectSettings = settings
             .into_serde()

@@ -15,16 +15,16 @@ export const ToolProvider = ({ children }: Props) => {
 	const [tool, setTool] = useState<ToolKind>("pen");
 	const [properties, setProperties] = useState<ToolProperty[]>([]);
 	const [pressureEnabled, setPressureEnabled] = useState(
-		() => localStorage.getItem("flippen.pressureEnabled") !== "false",
+		() => localStorage.getItem("mointo.pressureEnabled") !== "false",
 	);
 	const [stabilization, setStabilization] = useState(() => {
-		const value = Number(localStorage.getItem("flippen.stabilization"));
+		const value = Number(localStorage.getItem("mointo.stabilization"));
 		return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
 	});
 	const [pressureCurve, setPressureCurve] = useState<[number, number][]>(() => {
 		try {
 			const value: unknown = JSON.parse(
-				localStorage.getItem("flippen.pressureCurve") ?? "null",
+				localStorage.getItem("mointo.pressureCurve") ?? "null",
 			);
 			if (
 				Array.isArray(value) &&
@@ -78,16 +78,13 @@ export const ToolProvider = ({ children }: Props) => {
 	};
 
 	useEffect(() => {
-		localStorage.setItem("flippen.pressureEnabled", String(pressureEnabled));
+		localStorage.setItem("mointo.pressureEnabled", String(pressureEnabled));
 	}, [pressureEnabled]);
 	useEffect(() => {
-		localStorage.setItem("flippen.stabilization", String(stabilization));
+		localStorage.setItem("mointo.stabilization", String(stabilization));
 	}, [stabilization]);
 	useEffect(() => {
-		localStorage.setItem(
-			"flippen.pressureCurve",
-			JSON.stringify(pressureCurve),
-		);
+		localStorage.setItem("mointo.pressureCurve", JSON.stringify(pressureCurve));
 	}, [pressureCurve]);
 
 	useEffect(() => {

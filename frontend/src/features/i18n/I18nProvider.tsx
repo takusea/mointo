@@ -7,7 +7,7 @@ import {
 	messages,
 } from "./I18nContext";
 
-const STORAGE_KEY = "flippen.language";
+const STORAGE_KEY = "mointo.language";
 
 const getInitialLocale = (): Locale =>
 	navigator.language.toLowerCase().startsWith("ja") ? "ja" : "en";

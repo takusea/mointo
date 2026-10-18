@@ -23,7 +23,7 @@
 	"shortcutSettings.pressKeys": "キーを入力…",
 	"shortcutSettings.conflict": "このショートカットはすでに割り当てられています。",
 	"shortcutSettings.reset": "初期設定に戻す",
-	"about.title": "Flippenについて",
+	"about.title": "mointoについて",
 	"shortcut.newProject": "新しいプロジェクト",
 	"shortcut.openProject": "プロジェクトを開く",
 	"shortcut.saveProject": "プロジェクトを保存",
@@ -213,6 +213,6 @@
 	"menubar.settingsAction": "設定…",
 	"menubar.languageSettings": "言語設定…",
 	"menubar.shortcutSettings": "ショートカット設定…",
-	"menubar.aboutFlippen": "Flippen について…",
+	"menubar.about": "mointo について…",
 	"common.close": "閉じる"
 }

@@ -7,7 +7,7 @@ import {
 	type Shortcuts,
 } from "./shortcutDefinitions";
 
-const STORAGE_KEY = "flippen.shortcuts";
+const STORAGE_KEY = "mointo.shortcuts";
 
 type Props = {
 	children: JSX.Element;

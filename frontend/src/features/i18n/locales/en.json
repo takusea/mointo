@@ -23,7 +23,7 @@
 	"shortcutSettings.pressKeys": "Press keys...",
 	"shortcutSettings.conflict": "This shortcut is already assigned.",
 	"shortcutSettings.reset": "Restore Defaults",
-	"about.title": "About Flippen",
+	"about.title": "About mointo",
 	"shortcut.newProject": "New Project",
 	"shortcut.openProject": "Open Project",
 	"shortcut.saveProject": "Save Project",
@@ -213,6 +213,6 @@
 	"menubar.inputSettings": "Input Settings...",
 	"menubar.languageSettings": "Language Settings...",
 	"menubar.shortcutSettings": "Shortcut Settings...",
-	"menubar.aboutFlippen": "About Flippen...",
+	"menubar.about": "About mointo...",
 	"common.close": "Close"
 }

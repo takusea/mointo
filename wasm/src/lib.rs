@@ -5,4 +5,4 @@ mod core;
 mod gpu;
 mod tool;
 
-pub use api::FlippenCore;
+pub use api::MointoCore;

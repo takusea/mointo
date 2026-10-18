@@ -2,9 +2,9 @@ import type { ProjectSettings } from "~/features/project/type";
 import type { ClipMetadata, ClipProperties } from "~/lib/clip";
 import type { LayerId, LayerState } from "~/lib/layer";
 import type { Transform } from "~/lib/transform";
-import init, { FlippenCore } from "./wasm/flippen_wasm";
+import init, { MointoCore } from "./wasm/mointo_wasm";
 
-type WasmOperation<T> = (core: FlippenCore) => T | PromiseLike<T>;
+type WasmOperation<T> = (core: MointoCore) => T | PromiseLike<T>;
 
 export type ToolPoint = {
 	x: number;
@@ -35,7 +35,7 @@ export type CoreSnapshot = {
 export class CoreService {
 	private static wasmInitialization: ReturnType<typeof init> | undefined;
 
-	private constructor(private readonly core: FlippenCore) {}
+	private constructor(private readonly core: MointoCore) {}
 
 	private readonly listeners = new Set<() => void>();
 	private operationQueue: Promise<void> = Promise.resolve();
@@ -58,7 +58,7 @@ export class CoreService {
 			});
 		}
 		await CoreService.wasmInitialization;
-		return new CoreService(new FlippenCore());
+		return new CoreService(new MointoCore());
 	}
 
 	subscribe = (listener: () => void) => {
