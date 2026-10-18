@@ -18,7 +18,7 @@ const LanguageSettingDialog = (props: Props) => {
 			cancelText={t("common.close")}
 		>
 			<div className="flex flex-col gap-2">
-				<span className="font-semibold">{t("languageSettings.language")}</span>
+				<span className="font-medium">{t("languageSettings.language")}</span>
 				<RadioGroup
 					value={locale}
 					onValueChange={(value) => {

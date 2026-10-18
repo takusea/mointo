@@ -96,7 +96,7 @@ const TrackSide = ({
 						)}
 						<button
 							type="button"
-							className="h-full flex-1 pr-2 pl-3 text-left"
+							className="h-full flex-1 pr-2 pl-3 text-left font-medium"
 							tabIndex={i === 0 ? 0 : -1}
 							data-layer-index={i}
 							data-control-index={0}

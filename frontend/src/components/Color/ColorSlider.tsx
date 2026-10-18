@@ -57,7 +57,7 @@ const ColorSlider = ({ currentColor, onCurrentColorChange }: Props) => {
 					key={key}
 					className="grid grid-cols-[1rem_1fr_2rem] items-center gap-1"
 				>
-					<span>{label}</span>
+					<span className="font-medium">{label}</span>
 					<Slider
 						min={0}
 						max={max}

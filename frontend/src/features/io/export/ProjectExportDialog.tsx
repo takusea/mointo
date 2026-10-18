@@ -31,7 +31,7 @@ const ProjectExportDialog = (props: Props) => {
 			}}
 		>
 			<div className="flex flex-col gap-2">
-				<span className="font-semibold">{t("projectExport.format")}</span>
+				<span className="font-medium">{t("projectExport.format")}</span>
 				<Select
 					id="project-export-format"
 					label={t("projectExport.format")}

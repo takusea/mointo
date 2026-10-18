@@ -41,7 +41,7 @@ const Button = ({
 		<button
 			{...props}
 			type="button"
-			className={`grid cursor-pointer grid-cols-[auto_auto] items-center justify-center text-nowrap rounded-md font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${padding(size)} ${color(variant)}`}
+			className={`grid cursor-pointer grid-cols-[auto_auto] items-center justify-center text-nowrap rounded-md font-medium disabled:cursor-not-allowed disabled:opacity-50 ${padding(size)} ${color(variant)}`}
 		>
 			{Icon && (
 				<div className="mr-1">

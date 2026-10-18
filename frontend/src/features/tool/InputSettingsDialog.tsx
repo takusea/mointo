@@ -89,7 +89,7 @@ const InputSettingsDialog = (props: Props) => {
 		>
 			<div className="flex flex-col gap-2">
 				<div className="flex justify-between gap-1">
-					<span className="font-semibold">
+					<span className="font-medium">
 						{t("inputSettings.stabilization")}
 					</span>
 					<span>{`${String(tool.stabilization)}%`}</span>
@@ -104,7 +104,7 @@ const InputSettingsDialog = (props: Props) => {
 					onValueChange={([value]) => tool.setStabilization(value)}
 					aria-label={t("inputSettings.stabilizationLabel")}
 				/>
-				<div className="font-semibold">{t("inputSettings.pressure")}</div>
+				<div className="font-medium">{t("inputSettings.pressure")}</div>
 				<Switch
 					id="inputPressure"
 					label={t("inputSettings.pressureLabel")}
@@ -113,7 +113,7 @@ const InputSettingsDialog = (props: Props) => {
 				/>
 				{tool.pressureEnabled && (
 					<>
-						<p className="font-semibold">{t("inputSettings.pressureCurve")}</p>
+						<p className="font-medium">{t("inputSettings.pressureCurve")}</p>
 						<p>{t("inputSettings.curveHint")}</p>
 						<svg
 							viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}

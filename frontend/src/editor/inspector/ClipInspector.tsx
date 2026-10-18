@@ -80,7 +80,7 @@ const ClipInspector = ({
 						onClick={() => onPropertiesChange({ locked: !isLocked })}
 					/>
 				</div>
-				<span className="font-semibold">{t("inspector.name")}</span>
+				<span className="font-medium">{t("inspector.name")}</span>
 				<TextField
 					key={`${clip.id}:${clip.name}`}
 					id="clipName"
@@ -99,7 +99,7 @@ const ClipInspector = ({
 					}}
 				/>
 				<hr className="text-zinc-500/25" />
-				<span className="font-semibold">{t("inspector.start")}</span>
+				<span className="font-medium">{t("inspector.start")}</span>
 				<NumberField
 					id="clipStart"
 					min={0}
@@ -110,7 +110,7 @@ const ClipInspector = ({
 					onInteractionEnd={onInteractionEnd}
 					onValueChange={onStartChange}
 				/>
-				<span className="font-semibold">{t("inspector.length")}</span>
+				<span className="font-medium">{t("inspector.length")}</span>
 				<NumberField
 					id="clipLength"
 					min={1}
@@ -122,7 +122,7 @@ const ClipInspector = ({
 					onValueChange={onDurationChange}
 				/>
 				<hr className="text-zinc-500/25" />
-				<span className="font-semibold">{t("inspector.size")}</span>
+				<span className="font-medium">{t("inspector.size")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipWidth"
@@ -150,7 +150,7 @@ const ClipInspector = ({
 					/>
 				</div>
 				<hr className="text-zinc-500/25" />
-				<span className="font-semibold">{t("inspector.position")}</span>
+				<span className="font-medium">{t("inspector.position")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipPosition"
@@ -185,7 +185,7 @@ const ClipInspector = ({
 						}}
 					/>
 				</div>
-				<span className="font-semibold">{t("inspector.anchor")}</span>
+				<span className="font-medium">{t("inspector.anchor")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipAnchor"
@@ -226,7 +226,7 @@ const ClipInspector = ({
 						}}
 					/>
 				</div>
-				<span className="font-semibold">{t("inspector.rotation")}</span>
+				<span className="font-medium">{t("inspector.rotation")}</span>
 				<NumberField
 					id="clipRotation"
 					min={0}
@@ -243,7 +243,7 @@ const ClipInspector = ({
 						});
 					}}
 				/>
-				<span className="font-semibold">{t("inspector.scale")}</span>
+				<span className="font-medium">{t("inspector.scale")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipScale"
@@ -283,7 +283,7 @@ const ClipInspector = ({
 					/>
 				</div>
 				<hr className="text-zinc-500/25" />
-				<span className="font-semibold">{t("inspector.opacity")}</span>
+				<span className="font-medium">{t("inspector.opacity")}</span>
 				<NumberField
 					id="clipOpacity"
 					min={0}
@@ -297,7 +297,7 @@ const ClipInspector = ({
 						onPropertiesChange({ opacity: value / 100 })
 					}
 				/>
-				<span className="font-semibold">{t("inspector.blendMode")}</span>
+				<span className="font-medium">{t("inspector.blendMode")}</span>
 				<Select
 					id="clipBlendMode"
 					value={clip.blend_mode}
