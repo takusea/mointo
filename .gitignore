@@ -3,14 +3,11 @@
 /wasm/pkg
 **/*.rs.bk
 
-# wasm-pack build artifacts
-/frontend/app/pkg
-
 # Node.js / React
 /frontend/node_modules
 /frontend/dist
+/frontend/dev-dist
 /frontend/.vite
-/frontend/.react-router
 /frontend/build
 
 # VS Code
