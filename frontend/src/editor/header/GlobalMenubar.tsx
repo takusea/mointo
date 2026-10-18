@@ -4,7 +4,7 @@ import MenubarItem from "~/components/Menubar/MenubarItem";
 import MenubarMenu from "~/components/Menubar/MenubarMenu";
 import MenubarRoot from "~/components/Menubar/MenubarRoot";
 import MenubarSeparator from "~/components/Menubar/MenubarSeparator";
-import { fixedShortcuts, formatShortcut } from "~/constants/shortcuts";
+import { formatShortcut } from "~/constants/shortcuts";
 import { useDialogs } from "~/editor/dialogs/useDialogs";
 import { useClip } from "~/features/clip/useClip";
 import { useUndo } from "~/features/history/useUndo";

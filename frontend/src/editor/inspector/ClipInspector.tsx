@@ -203,7 +203,6 @@ const ClipInspector = ({
 					<NumberField
 						id="clipAnchor"
 						aria-label={t("inspector.anchorX")}
-						aria-label={t("inspector.anchorX")}
 						min={0}
 						max={1}
 						step={0.01}
@@ -222,7 +221,6 @@ const ClipInspector = ({
 					/>
 					<NumberField
 						id="clipAnchorY"
-						aria-label={t("inspector.anchorY")}
 						aria-label={t("inspector.anchorY")}
 						min={0}
 						max={1}
@@ -265,7 +263,6 @@ const ClipInspector = ({
 					<NumberField
 						id="clipScale"
 						aria-label={t("inspector.scaleX")}
-						aria-label={t("inspector.scaleX")}
 						min={0}
 						max={1000}
 						value={transform.scale[0] * 100}
@@ -283,7 +280,6 @@ const ClipInspector = ({
 					/>
 					<NumberField
 						id="clipScaleY"
-						aria-label={t("inspector.scaleY")}
 						aria-label={t("inspector.scaleY")}
 						min={0}
 						max={1000}
