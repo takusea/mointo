@@ -137,7 +137,7 @@ const NumberField = ({
 
 	return (
 		<div
-			className={`flex h-8 gap-1 rounded-md border border-zinc-500/40 bg-white/50 px-2 focus-within:outline-2 dark:bg-zinc-800/50 ${props.disabled ? "opacity-50" : cursor}`}
+			className={`flex h-8 gap-1 rounded-md border border-zinc-500/40 bg-white/50 px-2 -outline-offset-2 focus-within:outline-2 dark:bg-zinc-800/50 ${props.disabled ? "opacity-50" : cursor}`}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}

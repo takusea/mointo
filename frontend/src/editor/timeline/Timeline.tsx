@@ -76,6 +76,36 @@ const Timeline = () => {
 		});
 	}
 
+	function handleLayerFocus(layerIndex: number) {
+		const viewport = timelineViewportRef.current;
+		if (viewport == null) return;
+
+		const top = layerIndex * layerHeight;
+		let nextScrollTop = viewport.scrollTop;
+		if (top < nextScrollTop) nextScrollTop = top;
+		else if (top + layerHeight > nextScrollTop + viewport.clientHeight) {
+			nextScrollTop = top + layerHeight - viewport.clientHeight;
+		}
+		if (nextScrollTop === viewport.scrollTop) return;
+		viewport.scrollTop = nextScrollTop;
+		setScrollPosition((position) => ({ ...position, y: nextScrollTop }));
+	}
+
+	function handleFrameFocus(frame: number) {
+		const viewport = timelineViewportRef.current;
+		if (viewport == null) return;
+
+		const left = frame * frameWidth;
+		let nextScrollLeft = viewport.scrollLeft;
+		if (left < nextScrollLeft) nextScrollLeft = left;
+		else if (left > nextScrollLeft + viewport.clientWidth) {
+			nextScrollLeft = left - viewport.clientWidth;
+		}
+		if (nextScrollLeft === viewport.scrollLeft) return;
+		viewport.scrollLeft = nextScrollLeft;
+		setScrollPosition((position) => ({ ...position, x: nextScrollLeft }));
+	}
+
 	function updateStartFrame(startFrame: number) {
 		const settings = projectContext.settings;
 		if (settings == null || startFrame === settings.startFrame) return;
@@ -157,6 +187,7 @@ const Timeline = () => {
 						onFrameChange={playbackContext.setCurrentFrame}
 						onStartFrameChange={updateStartFrame}
 						onEndFrameChange={updateEndFrame}
+						onFrameFocus={handleFrameFocus}
 						onWheel={handleHorizontalZoom}
 					/>
 				</div>
@@ -170,6 +201,7 @@ const Timeline = () => {
 						onLayerShow={layerContext.showLayer}
 						onLayerHide={layerContext.hideLayer}
 						onLayerLockToggle={layerContext.toggleLayerLock}
+						onLayerFocus={handleLayerFocus}
 						onWheel={handleVerticalZoom}
 					/>
 				</div>

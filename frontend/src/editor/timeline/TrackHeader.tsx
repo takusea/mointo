@@ -12,6 +12,7 @@ type Props = {
 	onFrameChange: (frame: number) => void;
 	onStartFrameChange: (frame: number) => void;
 	onEndFrameChange: (frame: number) => void;
+	onFrameFocus: (frame: number) => void;
 	onWheel: (event: React.WheelEvent<HTMLDivElement>) => void;
 };
 
@@ -25,6 +26,7 @@ const TrackHeader = ({
 	onFrameChange,
 	onStartFrameChange,
 	onEndFrameChange,
+	onFrameFocus,
 	onWheel,
 }: Props) => {
 	const { t } = useI18n();
@@ -102,10 +104,30 @@ const TrackHeader = ({
 		event.preventDefault();
 		event.stopPropagation();
 		if (isStart) {
-			onStartFrameChange(Math.max(minFrame, Math.min(nextFrame, maxFrame)));
+			const frame = Math.max(minFrame, Math.min(nextFrame, maxFrame));
+			onStartFrameChange(frame);
+			onFrameFocus(frame);
 		} else {
-			onEndFrameChange(Math.max(minFrame, Math.min(nextFrame, maxFrame)));
+			const frame = Math.max(minFrame, Math.min(nextFrame, maxFrame));
+			onEndFrameChange(frame);
+			onFrameFocus(frame + 1);
 		}
+	}
+
+	function handleRangeFocus(
+		event: React.FocusEvent<HTMLButtonElement>,
+		frame: number,
+	) {
+		// The translated header is clipped by its grid cell. Browsers may scroll
+		// that overflow-hidden cell to reveal a focused range handle, shifting
+		// the header independently from TrackBody. Keep the cell fixed and let
+		// Timeline scroll the shared TrackBody viewport instead.
+		const clip = event.currentTarget.parentElement?.parentElement;
+		if (clip != null) {
+			clip.scrollLeft = 0;
+			clip.scrollTop = 0;
+		}
+		onFrameFocus(frame);
 	}
 
 	return (
@@ -144,21 +166,23 @@ const TrackHeader = ({
 				onPointerDown={(event) => handleRangePointerDown(event, startFrame)}
 				onPointerMove={(event) => handleRangePointerMove(event, true)}
 				onKeyDown={(event) => handleRangeKeyDown(event, true)}
+				onFocus={(event) => handleRangeFocus(event, startFrame)}
 			></button>
 			<button
 				type="button"
 				aria-label={t("timeline.endFrame", { frame: endFrame })}
 				title={t("timeline.endFrame", { frame: endFrame })}
-				className="absolute top-0 z-10 h-full -translate-x-full cursor-ew-resize touch-none border-primary border-r-2"
+				className="absolute top-0 z-10 h-full -translate-x-full cursor-ew-resize touch-none border-primary border-r-2 outline-offset-1"
 				style={{
 					left: `${(endFrame + 1) * frameWidth}px`,
 				}}
 				onPointerDown={(event) => handleRangePointerDown(event, endFrame + 1)}
 				onPointerMove={(event) => handleRangePointerMove(event, false)}
 				onKeyDown={(event) => handleRangeKeyDown(event, false)}
+				onFocus={(event) => handleRangeFocus(event, endFrame + 1)}
 			></button>
 			<div
-				className="pointer-events-none absolute flex h-full items-center border-primary border-b-2 px-1"
+				className="pointer-events-none absolute flex h-full items-center border-primary border-b-2 px-1 outline-offset-1"
 				style={{
 					translate: `${currentFrame * frameWidth}px 0`,
 					width: `${frameWidth}px`,

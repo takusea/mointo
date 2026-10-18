@@ -11,10 +11,26 @@ const preventWheelDefault = (event: WheelEvent) => {
 	}
 };
 const preventKeydownDefault = (event: KeyboardEvent) => {
+	if (event.key === "Escape") {
+		if (document.activeElement instanceof HTMLElement) {
+			document.activeElement.blur();
+		}
+		return;
+	}
+
 	const target = event.target;
+	const ignoredKeys = [
+		"Tab",
+		"Enter",
+		"ArrowUp",
+		"ArrowDown",
+		"ArrowLeft",
+		"ArrowRight",
+	];
 	if (
-		target instanceof HTMLElement &&
-		(target.isContentEditable || target.closest("input, textarea, select"))
+		ignoredKeys.includes(event.key) ||
+		(target instanceof HTMLElement &&
+			(target.isContentEditable || target.closest("input, textarea, select")))
 	) {
 		return;
 	}

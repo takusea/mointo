@@ -7,8 +7,8 @@ type Props = React.ComponentProps<typeof Menubar.Menu> & {
 const MenubarMenu = ({ label, children, ...props }: Props) => {
 	return (
 		<Menubar.Menu {...props}>
-			<Menubar.Trigger className="group h-12 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
-				<div className="flex h-8 items-center justify-between text-nowrap rounded-md px-2 font-medium group-hover:not-disabled:bg-zinc-500/20 group-data-[state=open]:bg-zinc-500/20">
+			<Menubar.Trigger className="group h-12 cursor-pointer outline-none disabled:cursor-not-allowed disabled:opacity-50">
+				<div className="flex h-8 items-center justify-between text-nowrap rounded-md px-2 font-medium group-focus-within:outline-2 group-hover:not-disabled:bg-zinc-500/20 group-data-[state=open]:bg-zinc-500/20">
 					{label}
 				</div>
 			</Menubar.Trigger>

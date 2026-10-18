@@ -76,6 +76,7 @@
 	"projectExport.pngSequence": "PNG連番 (ZIP)",
 	"nav.projectSettings": "プロジェクト設定",
 	"nav.untitled": "名称未設定",
+	"toolbar.label": "エディターツールバー",
 	"toolbar.undo": "元に戻す",
 	"toolbar.redo": "やり直し",
 	"toolbar.cut": "切り取り",

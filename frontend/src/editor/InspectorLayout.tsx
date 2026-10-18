@@ -139,6 +139,28 @@ const InspectorLayout = () => {
 					/>
 				</div>
 			)}
+			{isDesktop && showClipInspector && (
+				<div
+					className="pointer-events-auto h-full"
+					style={{ gridColumn: 4, gridRow: 1 }}
+				>
+					<Splitter
+						orientation="vertical"
+						label={t("editor.resizeClipInspector")}
+						value={clipInspectorWidth}
+						min={MIN_INSPECTOR_WIDTH}
+						max={maxInspectorWidth}
+						onResize={(delta) =>
+							setClipInspectorWidth((width) =>
+								Math.min(
+									maxInspectorWidth,
+									Math.max(MIN_INSPECTOR_WIDTH, width - delta),
+								),
+							)
+						}
+					/>
+				</div>
+			)}
 			{showClipInspector && selectedClip && clipContext.transform && (
 				<div
 					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto pb-16"
@@ -192,28 +214,6 @@ const InspectorLayout = () => {
 							}}
 						/>
 					</div>
-				</div>
-			)}
-			{isDesktop && showClipInspector && (
-				<div
-					className="pointer-events-auto h-full"
-					style={{ gridColumn: 4, gridRow: 1 }}
-				>
-					<Splitter
-						orientation="vertical"
-						label={t("editor.resizeClipInspector")}
-						value={clipInspectorWidth}
-						min={MIN_INSPECTOR_WIDTH}
-						max={maxInspectorWidth}
-						onResize={(delta) =>
-							setClipInspectorWidth((width) =>
-								Math.min(
-									maxInspectorWidth,
-									Math.max(MIN_INSPECTOR_WIDTH, width - delta),
-								),
-							)
-						}
-					/>
 				</div>
 			)}
 			<div className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 overflow-x-auto">

@@ -24,6 +24,7 @@ import {
 	IconScissors,
 	IconZoom,
 } from "@tabler/icons-react";
+import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import Card from "~/components/Card";
 import IconButton from "~/components/IconButton";
@@ -45,6 +46,51 @@ const Toolbar = () => {
 	const canvasView = useCanvasView();
 	const undoStack = useUndo();
 	const { shortcuts } = useShortcuts();
+	const toolbar = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const controls = toolbar.current?.querySelectorAll<HTMLElement>(
+			"button:not(:disabled), input:not(:disabled)",
+		);
+		controls?.forEach((control, index) => {
+			control.tabIndex = index === 0 ? 0 : -1;
+		});
+	}, []);
+
+	const handleToolbarFocus = (event: React.FocusEvent<HTMLDivElement>) => {
+		const target = event.target;
+		if (
+			!(target instanceof HTMLElement) ||
+			!toolbar.current?.contains(target)
+		) {
+			return;
+		}
+
+		for (const control of toolbar.current.querySelectorAll<HTMLElement>(
+			"button:not(:disabled), input:not(:disabled)",
+		)) {
+			control.tabIndex = control === target ? 0 : -1;
+		}
+	};
+
+	const handleToolbarKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+		if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+		const controls = Array.from(
+			event.currentTarget.querySelectorAll<HTMLElement>(
+				"button:not(:disabled), input:not(:disabled)",
+			),
+		);
+		const currentIndex = controls.indexOf(event.target as HTMLElement);
+		if (currentIndex < 0) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+		const direction = event.key === "ArrowRight" ? 1 : -1;
+		const nextIndex =
+			(currentIndex + direction + controls.length) % controls.length;
+		controls[nextIndex]?.focus();
+	};
 
 	useHotkeys(shortcuts.undo, undoStack.undo);
 	useHotkeys(shortcuts.redo, undoStack.redo);
@@ -90,7 +136,14 @@ const Toolbar = () => {
 	useHotkeys(shortcuts.selectTool, () => toolContext.setTool("select"));
 
 	return (
-		<div className="flex gap-2">
+		<div
+			ref={toolbar}
+			role="toolbar"
+			aria-label={t("toolbar.label")}
+			className="flex gap-2"
+			onFocusCapture={handleToolbarFocus}
+			onKeyDown={handleToolbarKeyDown}
+		>
 			<Card size="small">
 				<div className="flex gap-1">
 					<IconButton

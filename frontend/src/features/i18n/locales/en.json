@@ -76,6 +76,7 @@
 	"projectExport.pngSequence": "PNG sequence (ZIP)",
 	"nav.projectSettings": "Project Settings",
 	"nav.untitled": "Untitled",
+	"toolbar.label": "Editor toolbar",
 	"toolbar.undo": "Undo",
 	"toolbar.redo": "Redo",
 	"toolbar.cut": "Cut",
