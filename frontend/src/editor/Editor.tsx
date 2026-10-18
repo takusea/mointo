@@ -37,7 +37,7 @@ const Editor = () => {
 					{project.settings ? (
 						<DrawCanvas />
 					) : (
-						<div className="absolute grid h-full w-full place-content-center gap-2">
+						<div className="absolute grid size-full place-content-center gap-2">
 							<Button
 								label={t("app.newProject")}
 								icon={IconFilePlus}

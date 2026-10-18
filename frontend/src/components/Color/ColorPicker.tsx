@@ -65,7 +65,7 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 				className="aspect-square touch-none p-[20%]"
 			>
 				<div
-					className="relative h-full w-full bg-[linear-gradient(to_bottom,#fff0_0%,#000_100%),linear-gradient(to_right,#fff_0%,hsl(var(--hue)_100%_50%)_100%)]"
+					className="relative size-full bg-[linear-gradient(to_bottom,#fff0_0%,#000_100%),linear-gradient(to_right,#fff_0%,hsl(var(--hue)_100%_50%)_100%)]"
 					onPointerMove={handleSLMove}
 				>
 					<div

@@ -29,7 +29,7 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 			className={`group z-10 touch-none p-px ${
 				isHorizontal
 					? "h-full cursor-row-resize"
-					: "h-full w-full cursor-col-resize"
+					: "size-full cursor-col-resize"
 			}`}
 			onPointerDown={(event) => {
 				if (event.button !== 0) return;
@@ -71,7 +71,7 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 				className={`rounded-full group-hover:not-disabled:bg-primary ${
 					isHorizontal
 						? "h-full cursor-row-resize"
-						: "h-full w-full cursor-col-resize"
+						: "size-full cursor-col-resize"
 				}`}
 			/>
 		</Separator>
