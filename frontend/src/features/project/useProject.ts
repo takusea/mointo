@@ -41,7 +41,7 @@ export const useProject = () => {
 		if (!confirmDiscard()) return;
 		const input = document.createElement("input");
 		input.type = "file";
-		input.accept = ".flip";
+		input.accept = ".moiproj";
 		input.addEventListener("change", () => {
 			const file = input.files?.[0];
 			if (!file) {
@@ -70,7 +70,7 @@ export const useProject = () => {
 		});
 		const link = document.createElement("a");
 		link.href = URL.createObjectURL(blob);
-		link.download = "export.flip";
+		link.download = "export.moiproj";
 		link.click();
 		link.remove();
 		setSavedRevision(core.getSnapshot().revision);
