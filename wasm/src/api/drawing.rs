@@ -100,7 +100,7 @@ impl MointoCore {
         pressure: f32,
     ) {
         let points = [x as f64, y as f64, pressure as f64];
-        self.apply_tool_points(clip_id_str, current_tool, &points, color);
+        self.apply_tool_points(clip_id_str, current_tool, &points, color, 0);
     }
 
     pub fn apply_tool_points(
@@ -109,6 +109,7 @@ impl MointoCore {
         current_tool: &str,
         points: &[f64],
         color: &[u8],
+        frame_index: u32,
     ) {
         if points.len() % 3 != 0 {
             eprintln!("Point data must contain x, y, and pressure for each point.");
@@ -155,12 +156,13 @@ impl MointoCore {
         };
 
         let (width, height) = (clip.image.width, clip.image.height);
+        let (transform, _) = clip.values_at(frame_index);
         let alpha_locked = clip.metadata.alpha_locked;
         let color_array = [color[0], color[1], color[2], color[3]];
 
         let mut changes = Vec::new();
         for point in points.chunks_exact(3) {
-            let (x, y) = match clip.transform.inverse_transform_point(
+            let (x, y) = match transform.inverse_transform_point(
                 (point[0] as f32, point[1] as f32),
                 (width as f32 / 2.0, height as f32 / 2.0),
             ) {

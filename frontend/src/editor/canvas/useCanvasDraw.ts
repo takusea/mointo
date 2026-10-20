@@ -7,7 +7,7 @@ import type { DrawState } from "./type";
 // Accumulate every point, then send the batch every few input points.
 const DRAW_APPLY_POINT_INTERVAL = 5;
 
-export const useCanvasDraw = () => {
+export const useCanvasDraw = (currentFrame: number) => {
 	const core = useCore();
 	const toolContext = useTool();
 
@@ -57,7 +57,13 @@ export const useCanvasDraw = () => {
 			rgbaColor.b,
 			rgbaColor.a,
 		]);
-		void core.applyToolPoints(clipId, toolContext.tool, points, color);
+		void core.applyToolPoints(
+			clipId,
+			toolContext.tool,
+			points,
+			color,
+			currentFrame,
+		);
 	}, [
 		core,
 		rgbaColor.a,
@@ -65,6 +71,7 @@ export const useCanvasDraw = () => {
 		rgbaColor.g,
 		rgbaColor.r,
 		toolContext.tool,
+		currentFrame,
 	]);
 
 	const finishDraw = () => {
@@ -85,6 +92,7 @@ export const useCanvasDraw = () => {
 			tool,
 			[state],
 			new Uint8Array([rgbaColor.r, rgbaColor.g, rgbaColor.b, rgbaColor.a]),
+			currentFrame,
 		);
 	};
 

@@ -357,6 +357,7 @@ export class CoreService {
 		tool: string,
 		points: ToolPoint[],
 		color: Uint8Array,
+		frame: number,
 	) {
 		return this.enqueue((core) => {
 			if (points.length === 0) return;
@@ -370,7 +371,7 @@ export class CoreService {
 				packedPoints[offset + 2] = point.pressure;
 			}
 
-			core.apply_tool_points(clipId, tool, packedPoints, color);
+			core.apply_tool_points(clipId, tool, packedPoints, color, frame);
 		});
 	}
 
