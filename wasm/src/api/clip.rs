@@ -504,6 +504,43 @@ impl MointoCore {
             .and_then(|p| p.composition.find_clip(id))
         {
             if !clip.metadata.locked {
+                let key_value = clip
+                    .keyframes
+                    .iter()
+                    .find(|key| {
+                        key.frame == frame && key.property == property && !key.preview
+                    })
+                    .map(|key| key.value.clone());
+                let is_last_property_key = clip
+                    .keyframes
+                    .iter()
+                    .filter(|key| key.property == property && !key.preview)
+                    .count()
+                    == 1;
+
+                if is_last_property_key {
+                    if let Some(value) = key_value {
+                        match (property.as_str(), value) {
+                            ("position", ClipKeyframeValue::Pair(value)) => {
+                                clip.transform.position = value;
+                            }
+                            ("rotation", ClipKeyframeValue::Scalar(value)) => {
+                                clip.transform.rotation = value;
+                            }
+                            ("scale", ClipKeyframeValue::Pair(value)) => {
+                                clip.transform.scale = value;
+                            }
+                            ("anchor", ClipKeyframeValue::Pair(value)) => {
+                                clip.transform.anchor = value;
+                            }
+                            ("opacity", ClipKeyframeValue::Scalar(value)) => {
+                                clip.metadata.opacity = value;
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+
                 clip.keyframes
                     .retain(|key| key.frame != frame || key.property != property);
             }

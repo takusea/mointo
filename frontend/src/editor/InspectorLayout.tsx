@@ -285,6 +285,9 @@ const InspectorLayout = () => {
 											key.frame === playback.currentFrame &&
 											key.property === property,
 									);
+									const hasPropertyKeys = selectedKeys.some(
+										(key) => key.property === property,
+									);
 									if (hasKey)
 										void core.setClipKeyframe(
 											selectedClip.id,
@@ -292,13 +295,18 @@ const InspectorLayout = () => {
 											property,
 											value,
 										);
-									else
+									else if (hasPropertyKeys)
 										void core.setClipPreviewKeyframe(
 											selectedClip.id,
 											playback.currentFrame,
 											property,
 											value,
 										);
+									else
+										void clipContext.changeTransform(selectedClip.id, {
+											...(clipContext.transform ?? transform),
+											[property]: value,
+										});
 								}
 							}}
 							onInteractionStart={() => {
@@ -332,24 +340,34 @@ const InspectorLayout = () => {
 							}}
 							onOpacityChange={(opacity) => {
 								const frame = playback.currentFrame;
-								if (
-									selectedKeys.some(
-										(key) => key.frame === frame && key.property === "opacity",
-									)
-								)
+								const hasKey = selectedKeys.some(
+									(key) => key.frame === frame && key.property === "opacity",
+								);
+								const hasOpacityKeys = selectedKeys.some(
+									(key) => key.property === "opacity",
+								);
+								if (hasKey)
 									void core.setClipKeyframe(
 										selectedClip.id,
 										frame,
 										"opacity",
 										opacity,
 									);
-								else
+								else if (hasOpacityKeys)
 									void core.setClipPreviewKeyframe(
 										selectedClip.id,
 										frame,
 										"opacity",
 										opacity,
 									);
+								else
+									void clipContext.changeClipProperties(selectedClip.id, {
+										hidden: selectedClip.hidden,
+										alpha_locked: selectedClip.alpha_locked,
+										locked: selectedClip.locked,
+										opacity,
+										blend_mode: selectedClip.blend_mode,
+									});
 							}}
 							onFrameSelect={playback.setCurrentFrame}
 						/>
