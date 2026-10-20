@@ -21,8 +21,9 @@ export default defineConfig({
 			},
 			manifest: {
 				name: "mointo",
-				short_name: "mointo",
 				description: "Animation Paint App",
+				display: "standalone",
+				start_url: "/",
 				icons: [
 					{
 						src: "pwa-64x64.png",
