@@ -110,6 +110,7 @@ mod tests {
                 blend_mode: BlendMode::Normal,
             },
             transform: Default::default(),
+            keyframes: Vec::new(),
             image,
             image_revision: 0,
         };

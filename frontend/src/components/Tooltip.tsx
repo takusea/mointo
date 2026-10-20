@@ -3,7 +3,7 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 type Props = React.ComponentProps<typeof TooltipPrimitive.Root> & {
 	label: string;
 	shortcut?: string;
-	side: "top" | "right" | "bottom" | "left";
+	side?: "top" | "right" | "bottom" | "left";
 };
 
 const Tooltip = ({ label, shortcut, side, children, ...props }: Props) => {

@@ -28,12 +28,7 @@ impl AddClipAction {
         }
     }
 
-    pub fn with_image_size(
-        start_frame: u32,
-        layer_id: LayerId,
-        width: u32,
-        height: u32,
-    ) -> Self {
+    pub fn with_image_size(start_frame: u32, layer_id: LayerId, width: u32, height: u32) -> Self {
         Self {
             start_frame,
             layer_id,
@@ -65,6 +60,7 @@ impl Action for AddClipAction {
                 blend_mode: crate::app::clip::BlendMode::default(),
             },
             transform: Transform::default(),
+            keyframes: Vec::new(),
             image: {
                 let (width, height) = self
                     .image_size

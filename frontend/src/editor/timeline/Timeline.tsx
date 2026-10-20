@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import Card from "~/components/Card";
 import { useCore } from "~/core/useCore";
+import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useClip } from "~/features/clip/useClip";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
@@ -19,6 +20,7 @@ const WHEEL_ZOOM_SENSITIVITY = 0.0015;
 
 const Timeline = () => {
 	const core = useCore();
+	const coreSnapshot = useCoreSnapshot();
 	const clipContext = useClip();
 	const playbackContext = usePlayback();
 	const projectContext = useProject();
@@ -209,6 +211,7 @@ const Timeline = () => {
 					ref={timelineViewportRef}
 					layers={layerContext.layers}
 					clips={clipContext.clips}
+					clipKeyframes={coreSnapshot.clipKeyframes}
 					layerHeight={layerHeight}
 					frameWidth={frameWidth}
 					maxFrameCount={playbackContext.maxFrameCount}
@@ -223,6 +226,9 @@ const Timeline = () => {
 					onClipSelect={clipContext.selectClip}
 					onClipMove={clipContext.moveClip}
 					onClipDurationChange={clipContext.changeClipDuration}
+					onKeyframeMove={(id, property, fromFrame, toFrame) => {
+						void core.moveClipKeyframe(id, fromFrame, toFrame, property);
+					}}
 					onInteractionStart={() => void core.beginActionGroup()}
 					onInteractionEnd={() => void core.endActionGroup()}
 				/>

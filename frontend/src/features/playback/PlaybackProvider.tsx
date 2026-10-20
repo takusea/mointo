@@ -51,6 +51,10 @@ export const PlaybackProvider = ({ children }: Props) => {
 		setCurrentFrame(Math.min(Math.max(frame, startFrame), endFrame));
 	};
 
+	useEffect(() => {
+		if (currentFrame >= 0) void core.clearClipPreviewKeyframes();
+	}, [core, currentFrame]);
+
 	const play = () => {
 		if (!project.settings) return;
 		setIsPlaying(true);

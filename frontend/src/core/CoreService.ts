@@ -25,6 +25,15 @@ export type ToolProperty = {
 export type CoreSnapshot = {
 	clips: ClipMetadata[];
 	clipTransforms: Record<string, Transform>;
+	clipKeyframes: Record<
+		string,
+		{ frame: number; property: string; value: number | [number, number] }[]
+	>;
+	clipPreviewKeyframes: Record<
+		string,
+		{ frame: number; property: string; value: number | [number, number] }[]
+	>;
+	clipPreviewOpacities: Record<string, number>;
 	layers: LayerState[];
 	projectSettings: ProjectSettings | undefined;
 	canUndo: boolean;
@@ -40,9 +49,13 @@ export class CoreService {
 	private readonly listeners = new Set<() => void>();
 	private operationQueue: Promise<void> = Promise.resolve();
 	private revision = 0;
+	private hasClipPreview = false;
 	private snapshot: CoreSnapshot = {
 		clips: [],
 		clipTransforms: {},
+		clipKeyframes: {},
+		clipPreviewKeyframes: {},
+		clipPreviewOpacities: {},
 		layers: [],
 		projectSettings: undefined,
 		canUndo: false,
@@ -81,6 +94,42 @@ export class CoreService {
 					return transform === undefined
 						? []
 						: [[clip.id, transform as Transform] as const];
+				}),
+			),
+			clipKeyframes: Object.fromEntries(
+				clips.map((clip) => [
+					clip.id,
+					(
+						(this.core.get_clip_keyframes(clip.id) as
+							| {
+									frame: number;
+									property: string;
+									value: number | [number, number];
+									preview: boolean;
+							  }[]
+							| undefined) ?? []
+					).filter((key) => !key.preview),
+				]),
+			),
+			clipPreviewKeyframes: Object.fromEntries(
+				clips.map((clip) => [
+					clip.id,
+					(
+						(this.core.get_clip_keyframes(clip.id) as
+							| {
+									frame: number;
+									property: string;
+									value: number | [number, number];
+									preview: boolean;
+							  }[]
+							| undefined) ?? []
+					).filter((key) => key.preview),
+				]),
+			),
+			clipPreviewOpacities: Object.fromEntries(
+				clips.flatMap((clip) => {
+					const opacity = this.core.get_clip_preview_opacity(clip.id);
+					return opacity == null ? [] : [[clip.id, opacity] as const];
 				}),
 			),
 			layers,
@@ -365,6 +414,56 @@ export class CoreService {
 				anchor: transform.anchor,
 			});
 		}, true);
+	}
+
+	setClipKeyframe(
+		id: string,
+		frame: number,
+		property: string,
+		value: number | [number, number],
+	) {
+		return this.enqueue(
+			(core) => core.set_clip_keyframe(id, frame, property, value),
+			true,
+		);
+	}
+
+	setClipPreviewKeyframe(
+		id: string,
+		frame: number,
+		property: string,
+		value: number | [number, number],
+	) {
+		this.hasClipPreview = true;
+		return this.enqueue(
+			(core) => core.set_clip_preview_keyframe(id, frame, property, value),
+			true,
+		);
+	}
+
+	clearClipPreviewKeyframes() {
+		if (!this.hasClipPreview) return Promise.resolve();
+		this.hasClipPreview = false;
+		return this.enqueue((core) => core.clear_clip_preview_keyframes(), true);
+	}
+
+	deleteClipKeyframe(id: string, frame: number, property: string) {
+		return this.enqueue(
+			(core) => core.delete_clip_keyframe(id, frame, property),
+			true,
+		);
+	}
+
+	moveClipKeyframe(
+		id: string,
+		fromFrame: number,
+		toFrame: number,
+		property: string,
+	) {
+		return this.enqueue(
+			(core) => core.move_clip_keyframe(id, fromFrame, toFrame, property),
+			true,
+		);
 	}
 
 	renderFrame(frame: number) {

@@ -76,6 +76,10 @@ impl Composition {
 
     pub fn move_clip_to_layer(&mut self, clip_id: ClipId, new_start: u32, layer_id: LayerId) {
         if let Some(clip) = self.clips.iter_mut().find(|c| c.metadata.id == clip_id) {
+            let delta = new_start as i64 - clip.metadata.start as i64;
+            for keyframe in &mut clip.keyframes {
+                keyframe.frame = (keyframe.frame as i64 + delta).max(0) as u32;
+            }
             clip.metadata.start = new_start;
             clip.metadata.layer_id = layer_id;
         }
@@ -187,7 +191,7 @@ impl Composition {
         width: u32,
         height: u32,
     ) -> Result<Image, String> {
-        let mut clips: Vec<&Clip> = self
+        let mut clips: Vec<Clip> = self
             .clips
             .iter()
             .filter(|clip| clip.contains_frame(frame_index))
@@ -196,9 +200,17 @@ impl Composition {
                 self.layer_index(clip.metadata.layer_id)
                     .is_some_and(|index| !self.is_layer_hidden(index))
             })
+            .map(|clip| {
+                let mut clip = clip.clone();
+                let (transform, opacity) = clip.values_at(frame_index);
+                clip.transform = transform;
+                clip.metadata.opacity = opacity;
+                clip
+            })
             .collect();
         clips.sort_by_key(|clip| self.layer_index(clip.metadata.layer_id).unwrap());
-        renderer.render_frame(&clips, width, height).await
+        let refs: Vec<_> = clips.iter().collect();
+        renderer.render_frame(&refs, width, height).await
     }
 
     pub async fn render_frame_gpu_to_canvas(
@@ -208,7 +220,7 @@ impl Composition {
         width: u32,
         height: u32,
     ) -> Result<(), String> {
-        let mut clips: Vec<&Clip> = self
+        let mut clips: Vec<Clip> = self
             .clips
             .iter()
             .filter(|clip| clip.contains_frame(frame_index))
@@ -217,9 +229,17 @@ impl Composition {
                 self.layer_index(clip.metadata.layer_id)
                     .is_some_and(|index| !self.is_layer_hidden(index))
             })
+            .map(|clip| {
+                let mut clip = clip.clone();
+                let (transform, opacity) = clip.values_at(frame_index);
+                clip.transform = transform;
+                clip.metadata.opacity = opacity;
+                clip
+            })
             .collect();
         clips.sort_by_key(|clip| self.layer_index(clip.metadata.layer_id).unwrap());
-        renderer.render_frame_to_canvas(&clips, width, height).await
+        let refs: Vec<_> = clips.iter().collect();
+        renderer.render_frame_to_canvas(&refs, width, height).await
     }
 
     pub async fn render_frame_gpu_to_canvas_with_onion(
@@ -327,6 +347,7 @@ mod tests {
                 name: "Clip".to_string(),
             },
             transform: Default::default(),
+            keyframes: Vec::new(),
             image: crate::core::image::Image::new(1, 1),
             image_revision: 0,
         };

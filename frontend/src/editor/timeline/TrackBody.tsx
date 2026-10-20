@@ -7,6 +7,10 @@ type TrackBodyProps = {
 	ref: RefObject<HTMLDivElement | null>;
 	layers: LayerState[];
 	clips: ClipMetadata[];
+	clipKeyframes: Record<
+		string,
+		{ frame: number; property: string; value: number | [number, number] }[]
+	>;
 	layerHeight: number;
 	frameWidth: number;
 	maxFrameCount: number;
@@ -21,6 +25,12 @@ type TrackBodyProps = {
 	onClipSelect: (id: string) => void;
 	onClipMove: (id: string, start: number, layerId: LayerId) => Promise<void>;
 	onClipDurationChange: (id: string, duration: number) => Promise<void>;
+	onKeyframeMove: (
+		id: string,
+		property: string,
+		fromFrame: number,
+		toFrame: number,
+	) => void;
 	onInteractionStart: () => void;
 	onInteractionEnd: () => void;
 };
@@ -29,6 +39,7 @@ const TrackBody = ({
 	ref,
 	layers,
 	clips,
+	clipKeyframes,
 	layerHeight,
 	frameWidth,
 	maxFrameCount,
@@ -43,6 +54,7 @@ const TrackBody = ({
 	onClipSelect,
 	onClipMove,
 	onClipDurationChange,
+	onKeyframeMove,
 	onInteractionStart,
 	onInteractionEnd,
 }: TrackBodyProps) => {
@@ -84,6 +96,7 @@ const TrackBody = ({
 				<Clip
 					key={clip.id}
 					id={clip.id}
+					keyframes={clipKeyframes[clip.id] ?? []}
 					name={clip.name}
 					layerHeight={layerHeight}
 					frameWidth={frameWidth}
@@ -102,6 +115,9 @@ const TrackBody = ({
 					onDurationChange={(duration) => {
 						void onClipDurationChange(clip.id, duration);
 					}}
+					onKeyframeMove={(property, fromFrame, toFrame) =>
+						onKeyframeMove(clip.id, property, fromFrame, toFrame)
+					}
 					onInteractionStart={onInteractionStart}
 					onInteractionEnd={onInteractionEnd}
 				/>

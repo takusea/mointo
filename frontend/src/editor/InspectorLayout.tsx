@@ -5,6 +5,7 @@ import Card from "~/components/Card";
 import IconButton from "~/components/IconButton";
 import Splitter from "~/components/Splitter";
 import { useCore } from "~/core/useCore";
+import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import ClipInspector from "~/editor/inspector/ClipInspector";
 import ColorInspector from "~/editor/inspector/ColorInspector";
 import ToolInspector from "~/editor/inspector/ToolInspector";
@@ -12,11 +13,66 @@ import Toolbar from "~/editor/toolbar/Toolbar";
 import { useClip } from "~/features/clip/useClip";
 import { useI18n } from "~/features/i18n/useI18n";
 import { useLayer } from "~/features/layer/useLayer";
+import { usePlayback } from "~/features/playback/usePlayback";
 import { useTool } from "~/features/tool/useTool";
 
 const MIN_INSPECTOR_WIDTH = 200;
 const DEFAULT_TOOL_INSPECTOR_WIDTH = 240;
 const DEFAULT_CLIP_INSPECTOR_WIDTH = 256;
+
+const evaluateKeyframes = (
+	keys: { frame: number; property: string; value: number | [number, number] }[],
+	previews: {
+		frame: number;
+		property: string;
+		value: number | [number, number];
+	}[],
+	frame: number,
+	fallback: import("~/lib/transform").Transform,
+	defaultOpacity: number,
+) => {
+	const scalar = (property: string, base: number) => {
+		const preview = previews.find(
+			(key) => key.frame === frame && key.property === property,
+		);
+		if (preview) return preview.value as number;
+		const ordered = keys
+			.filter((key) => key.property === property)
+			.sort((a, b) => a.frame - b.frame);
+		const left = [...ordered].reverse().find((key) => key.frame <= frame);
+		const right = ordered.find((key) => key.frame >= frame);
+		if (!left) return (right?.value as number | undefined) ?? base;
+		if (!right || left.frame === right.frame) return left.value as number;
+		const a = left.value as number;
+		const b = right.value as number;
+		return a + (b - a) * ((frame - left.frame) / (right.frame - left.frame));
+	};
+	const pair = (property: string, base: [number, number]): [number, number] => {
+		const preview = previews.find(
+			(key) => key.frame === frame && key.property === property,
+		);
+		if (preview) return preview.value as [number, number];
+		const ordered = keys
+			.filter((key) => key.property === property)
+			.sort((a, b) => a.frame - b.frame);
+		const left = [...ordered].reverse().find((key) => key.frame <= frame);
+		const right = ordered.find((key) => key.frame >= frame);
+		const a = (left?.value ?? right?.value ?? base) as [number, number];
+		if (!left || !right || left.frame === right.frame) return a;
+		const b = right.value as [number, number];
+		const t = (frame - left.frame) / (right.frame - left.frame);
+		return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+	};
+	return {
+		transform: {
+			position: pair("position", fallback.position),
+			rotation: scalar("rotation", fallback.rotation),
+			scale: pair("scale", fallback.scale),
+			anchor: pair("anchor", fallback.anchor),
+		},
+		opacity: scalar("opacity", defaultOpacity),
+	};
+};
 
 const InspectorLayout = () => {
 	const isDesktop = useMediaQuery("(min-width: 720px)");
@@ -33,9 +89,27 @@ const InspectorLayout = () => {
 	const core = useCore();
 	const clipContext = useClip();
 	const layerContext = useLayer();
+	const playback = usePlayback();
+	const snapshot = useCoreSnapshot();
 	const selectedClip = clipContext.clips.find(
 		(clip) => clip.id === clipContext.selectedClipId,
 	);
+	const selectedKeys = selectedClip
+		? (snapshot.clipKeyframes[selectedClip.id] ?? [])
+		: [];
+	const fallbackOpacity = selectedClip
+		? (snapshot.clipPreviewOpacities[selectedClip.id] ?? selectedClip.opacity)
+		: 1;
+	const evaluated =
+		selectedClip && clipContext.transform
+			? evaluateKeyframes(
+					selectedKeys,
+					snapshot.clipPreviewKeyframes[selectedClip.id] ?? [],
+					playback.currentFrame,
+					clipContext.transform,
+					fallbackOpacity,
+				)
+			: undefined;
 	const maxInspectorWidth = Math.max(
 		MIN_INSPECTOR_WIDTH,
 		Math.floor(document.documentElement.clientWidth / 2),
@@ -155,9 +229,13 @@ const InspectorLayout = () => {
 				>
 					<div className="pointer-events-auto flex flex-col gap-2">
 						<ClipInspector
-							clip={selectedClip}
+							clip={
+								evaluated
+									? { ...selectedClip, opacity: evaluated.opacity }
+									: selectedClip
+							}
 							isLayerLocked={layerContext.isLayerLocked(selectedClip.layer_id)}
-							transform={clipContext.transform}
+							transform={evaluated?.transform ?? clipContext.transform}
 							onStartChange={(start) =>
 								clipContext.moveClip(
 									selectedClip.id,
@@ -184,15 +262,96 @@ const InspectorLayout = () => {
 									...properties,
 								})
 							}
-							onTransformChange={(transform) =>
-								clipContext.changeTransform(selectedClip.id, transform)
-							}
+							onTransformChange={(transform) => {
+								const previous =
+									evaluated?.transform ?? clipContext.transform ?? transform;
+								const values: Record<string, number | [number, number]> = {
+									position: transform.position,
+									rotation: transform.rotation,
+									scale: transform.scale,
+									anchor: transform.anchor,
+								};
+								const old: Record<string, number | [number, number]> = {
+									position: previous.position,
+									rotation: previous.rotation,
+									scale: previous.scale,
+									anchor: previous.anchor,
+								};
+								for (const [property, value] of Object.entries(values)) {
+									if (JSON.stringify(value) === JSON.stringify(old[property]))
+										continue;
+									const hasKey = selectedKeys.some(
+										(key) =>
+											key.frame === playback.currentFrame &&
+											key.property === property,
+									);
+									if (hasKey)
+										void core.setClipKeyframe(
+											selectedClip.id,
+											playback.currentFrame,
+											property,
+											value,
+										);
+									else
+										void core.setClipPreviewKeyframe(
+											selectedClip.id,
+											playback.currentFrame,
+											property,
+											value,
+										);
+								}
+							}}
 							onInteractionStart={() => {
 								void core.beginActionGroup();
 							}}
 							onInteractionEnd={() => {
 								void core.endActionGroup();
 							}}
+							currentFrame={playback.currentFrame}
+							keyframes={selectedKeys}
+							onKeyframeToggle={(property, value) => {
+								if (
+									selectedKeys.some(
+										(key) =>
+											key.frame === playback.currentFrame &&
+											key.property === property,
+									)
+								)
+									void core.deleteClipKeyframe(
+										selectedClip.id,
+										playback.currentFrame,
+										property,
+									);
+								else
+									void core.setClipKeyframe(
+										selectedClip.id,
+										playback.currentFrame,
+										property,
+										value,
+									);
+							}}
+							onOpacityChange={(opacity) => {
+								const frame = playback.currentFrame;
+								if (
+									selectedKeys.some(
+										(key) => key.frame === frame && key.property === "opacity",
+									)
+								)
+									void core.setClipKeyframe(
+										selectedClip.id,
+										frame,
+										"opacity",
+										opacity,
+									);
+								else
+									void core.setClipPreviewKeyframe(
+										selectedClip.id,
+										frame,
+										"opacity",
+										opacity,
+									);
+							}}
+							onFrameSelect={playback.setCurrentFrame}
 						/>
 					</div>
 				</div>

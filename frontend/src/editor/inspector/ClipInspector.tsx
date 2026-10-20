@@ -7,6 +7,7 @@ import {
 	IconArrowsMoveVertical,
 	IconEye,
 	IconEyeOff,
+	IconKeyframe,
 	IconLayoutAlignLeft,
 	IconLock,
 	IconLockOpen,
@@ -35,6 +36,18 @@ type Props = {
 	onTransformChange: (transform: Transform) => void;
 	onInteractionStart: () => void;
 	onInteractionEnd: () => void;
+	currentFrame: number;
+	keyframes: {
+		frame: number;
+		property: string;
+		value: number | [number, number];
+	}[];
+	onKeyframeToggle: (
+		property: string,
+		value: number | [number, number],
+	) => void;
+	onOpacityChange: (opacity: number) => void;
+	onFrameSelect: (frame: number) => void;
 };
 
 const ClipInspector = ({
@@ -49,6 +62,10 @@ const ClipInspector = ({
 	onTransformChange,
 	onInteractionStart,
 	onInteractionEnd,
+	currentFrame,
+	keyframes,
+	onKeyframeToggle,
+	onOpacityChange,
 }: Props) => {
 	const { t } = useI18n();
 	const isLocked = clip.locked || isLayerLocked;
@@ -163,7 +180,24 @@ const ClipInspector = ({
 					/>
 				</div>
 				<Separator />
-				<span className="font-medium">{t("inspector.position")}</span>
+				<div className="flex items-center justify-between gap-1 font-medium">
+					{t("inspector.position")}
+					<IconButton
+						icon={IconKeyframe}
+						label={t("inspector.togglePropertyKeyframe", {
+							property: t("inspector.position"),
+						})}
+						variant={
+							keyframes.some(
+								(k) => k.frame === currentFrame && k.property === "position",
+							)
+								? "primary"
+								: undefined
+						}
+						disabled={isLocked}
+						onClick={() => onKeyframeToggle("position", transform.position)}
+					/>
+				</div>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipPosition"
@@ -198,7 +232,24 @@ const ClipInspector = ({
 						}}
 					/>
 				</div>
-				<span className="font-medium">{t("inspector.anchor")}</span>
+				<span className="flex items-center justify-between gap-1 font-medium">
+					{t("inspector.anchor")}
+					<IconButton
+						icon={IconKeyframe}
+						label={t("inspector.togglePropertyKeyframe", {
+							property: t("inspector.anchor"),
+						})}
+						variant={
+							keyframes.some(
+								(k) => k.frame === currentFrame && k.property === "anchor",
+							)
+								? "primary"
+								: undefined
+						}
+						disabled={isLocked}
+						onClick={() => onKeyframeToggle("anchor", transform.anchor)}
+					/>
+				</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipAnchor"
@@ -209,7 +260,6 @@ const ClipInspector = ({
 						value={transform.anchor[0]}
 						disabled={isLocked}
 						leftElement={<IconArrowsMoveHorizontal />}
-						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -228,7 +278,6 @@ const ClipInspector = ({
 						value={transform.anchor[1]}
 						disabled={isLocked}
 						leftElement={<IconArrowsMoveVertical />}
-						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
 						onValueChange={(value) => {
@@ -239,7 +288,24 @@ const ClipInspector = ({
 						}}
 					/>
 				</div>
-				<span className="font-medium">{t("inspector.rotation")}</span>
+				<span className="flex items-center justify-between gap-1 font-medium">
+					{t("inspector.rotation")}
+					<IconButton
+						icon={IconKeyframe}
+						label={t("inspector.togglePropertyKeyframe", {
+							property: t("inspector.rotation"),
+						})}
+						variant={
+							keyframes.some(
+								(k) => k.frame === currentFrame && k.property === "rotation",
+							)
+								? "primary"
+								: undefined
+						}
+						disabled={isLocked}
+						onClick={() => onKeyframeToggle("rotation", transform.rotation)}
+					/>
+				</span>
 				<NumberField
 					id="clipRotation"
 					aria-label={t("inspector.rotation")}
@@ -258,7 +324,24 @@ const ClipInspector = ({
 						});
 					}}
 				/>
-				<span className="font-medium">{t("inspector.scale")}</span>
+				<span className="flex items-center justify-between gap-1 font-medium">
+					{t("inspector.scale")}
+					<IconButton
+						icon={IconKeyframe}
+						label={t("inspector.togglePropertyKeyframe", {
+							property: t("inspector.scale"),
+						})}
+						variant={
+							keyframes.some(
+								(k) => k.frame === currentFrame && k.property === "scale",
+							)
+								? "primary"
+								: undefined
+						}
+						disabled={isLocked}
+						onClick={() => onKeyframeToggle("scale", transform.scale)}
+					/>
+				</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipScale"
@@ -298,7 +381,24 @@ const ClipInspector = ({
 					/>
 				</div>
 				<Separator />
-				<span className="font-medium">{t("inspector.opacity")}</span>
+				<span className="flex items-center justify-between gap-1 font-medium">
+					{t("inspector.opacity")}{" "}
+					<IconButton
+						icon={IconKeyframe}
+						label={t("inspector.togglePropertyKeyframe", {
+							property: t("inspector.opacity"),
+						})}
+						variant={
+							keyframes.some(
+								(k) => k.frame === currentFrame && k.property === "opacity",
+							)
+								? "primary"
+								: undefined
+						}
+						disabled={isLocked}
+						onClick={() => onKeyframeToggle("opacity", clip.opacity)}
+					/>
+				</span>
 				<NumberField
 					id="clipOpacity"
 					aria-label={t("inspector.opacity")}
@@ -310,9 +410,7 @@ const ClipInspector = ({
 					rightElement="%"
 					onInteractionStart={onInteractionStart}
 					onInteractionEnd={onInteractionEnd}
-					onValueChange={(value) =>
-						onPropertiesChange({ opacity: value / 100 })
-					}
+					onValueChange={(value) => onOpacityChange(value / 100)}
 				/>
 				<span className="font-medium">{t("inspector.blendMode")}</span>
 				<Select

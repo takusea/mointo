@@ -78,9 +78,97 @@ pub struct ClipMetadata {
 pub struct Clip {
     pub metadata: ClipMetadata,
     pub transform: Transform,
+    #[serde(serialize_with = "serialize_committed_keyframes")]
+    pub keyframes: Vec<ClipKeyframe>,
     pub image: Image,
     #[serde(skip)]
     pub image_revision: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ClipKeyframe {
+    pub frame: u32,
+    pub property: String,
+    pub value: ClipKeyframeValue,
+    #[serde(default)]
+    pub preview: bool,
+}
+
+fn serialize_committed_keyframes<S>(keys: &[ClipKeyframe], serializer: S) -> Result<S::Ok, S::Error>
+where S: serde::Serializer {
+    keys.iter().filter(|key| !key.preview).collect::<Vec<_>>().serialize(serializer)
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(untagged)]
+pub enum ClipKeyframeValue {
+    Scalar(f32),
+    Pair((f32, f32)),
+}
+
+impl Clip {
+    pub fn values_at(&self, frame: u32) -> (Transform, f32) {
+        let keys: Vec<_> = self.keyframes.iter().collect();
+        let scalar = |property: &str, base: f32| {
+            let mut track: Vec<_> = keys.iter().filter(|key| key.property == property).collect();
+            track.sort_by_key(|key| key.frame);
+            let before = track.iter().rev().find(|key| key.frame <= frame).copied();
+            let after = track.iter().find(|key| key.frame >= frame).copied();
+            match (before, after) {
+                (Some(a), Some(b)) if a.frame != b.frame => lerp(
+                    scalar_value(&a.value),
+                    scalar_value(&b.value),
+                    (frame - a.frame) as f32 / (b.frame - a.frame) as f32,
+                ),
+                (Some(key), _) | (_, Some(key)) => scalar_value(&key.value),
+                _ => base,
+            }
+        };
+        let pair = |property: &str, base: (f32, f32)| {
+            let mut track: Vec<_> = keys.iter().filter(|key| key.property == property).collect();
+            track.sort_by_key(|key| key.frame);
+            let before = track.iter().rev().find(|key| key.frame <= frame).copied();
+            let after = track.iter().find(|key| key.frame >= frame).copied();
+            let mix_pair =
+                |a: (f32, f32), b: (f32, f32), t: f32| (lerp(a.0, b.0, t), lerp(a.1, b.1, t));
+            match (before, after) {
+                (Some(a), Some(b)) if a.frame != b.frame => mix_pair(
+                    pair_value(&a.value),
+                    pair_value(&b.value),
+                    (frame - a.frame) as f32 / (b.frame - a.frame) as f32,
+                ),
+                (Some(key), _) | (_, Some(key)) => pair_value(&key.value),
+                _ => base,
+            }
+        };
+        (
+            Transform {
+                position: pair("position", self.transform.position),
+                rotation: scalar("rotation", self.transform.rotation),
+                scale: pair("scale", self.transform.scale),
+                anchor: pair("anchor", self.transform.anchor),
+            },
+            scalar("opacity", self.metadata.opacity),
+        )
+    }
+}
+
+fn lerp(a: f32, b: f32, t: f32) -> f32 {
+    a + (b - a) * t
+}
+
+fn scalar_value(value: &ClipKeyframeValue) -> f32 {
+    match value {
+        ClipKeyframeValue::Scalar(value) => *value,
+        ClipKeyframeValue::Pair((x, _)) => *x,
+    }
+}
+
+fn pair_value(value: &ClipKeyframeValue) -> (f32, f32) {
+    match value {
+        ClipKeyframeValue::Pair(value) => *value,
+        ClipKeyframeValue::Scalar(value) => (*value, *value),
+    }
 }
 
 impl Clip {
@@ -153,6 +241,7 @@ mod tests {
                 blend_mode: BlendMode::Normal,
             },
             transform: Transform::default(),
+            keyframes: Vec::new(),
             image: Image::new(1, 1),
             image_revision: 0,
         };
