@@ -2,6 +2,7 @@ import Dialog from "~/components/Dialog";
 import RadioGroup from "~/components/RadioGroup/RadioGroup";
 import RadioGroupItem from "~/components/RadioGroup/RadioGroupItem";
 import Slider from "~/components/Slider";
+import Switch from "~/components/Switch";
 import { useI18n } from "../i18n/useI18n";
 import { useAppearance } from "./useAppearance";
 
@@ -49,8 +50,14 @@ const AppearanceSettingsDialog = (props: Props) => {
 				</RadioGroup>
 				<span className="font-medium">{t("appearanceSettings.accent")}</span>
 				<p>{t("appearanceSettings.accentDescription")}</p>
+				<Switch
+					label={t("appearanceSettings.monochrome")}
+					checked={appearance.isMono}
+					onCheckedChange={appearance.setIsMono}
+				/>
 				<Slider
 					id="accent-color"
+					disabled={appearance.isMono}
 					min={0}
 					max={360}
 					value={[appearance.accentColor]}

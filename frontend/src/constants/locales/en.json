@@ -15,6 +15,7 @@
 	"appearanceSettings.themeDark": "Dark",
 	"appearanceSettings.accent": "Accent Color",
 	"appearanceSettings.accentDescription": "Configure the application's accent color.",
+	"appearanceSettings.monochrome": "Monochrome",
 	"languageSettings.title": "Language Settings",
 	"languageSettings.languageDescription": "Configure the application's language.",
 	"languageSettings.english": "English",

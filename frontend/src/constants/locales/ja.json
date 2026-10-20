@@ -15,6 +15,7 @@
 	"appearanceSettings.themeDark": "ダーク",
 	"appearanceSettings.accent": "アクセントカラー",
 	"appearanceSettings.accentDescription": "アプリケーションのアクセントカラーを設定します。",
+	"appearanceSettings.monochrome": "モノクロ",
 	"languageSettings.title": "言語設定",
 	"languageSettings.languageDescription": "アプリケーションの言語を設定します。",
 	"languageSettings.english": "English",

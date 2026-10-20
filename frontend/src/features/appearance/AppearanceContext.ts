@@ -6,6 +6,8 @@ type AppearanceContextValue = {
 	setTernaryDarkMode: Dispatch<SetStateAction<TernaryDarkMode>>;
 	accentColor: number;
 	setAccentColor: Dispatch<SetStateAction<number>>;
+	isMono: boolean;
+	setIsMono: Dispatch<SetStateAction<boolean>>;
 };
 
 export const AppearanceContext = createContext<AppearanceContextValue | null>(

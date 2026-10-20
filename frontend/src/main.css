@@ -2,10 +2,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-	--color-primary: light-dark(
-		oklch(60% 0.15 var(--hue)),
-		oklch(80% 0.15 var(--hue))
-	);
+	--color-primary: var(--color-primary);
 	--color-primary-hover: light-dark(
 		oklch(from var(--color-primary) calc(l * 0.9) c h),
 		oklch(from var(--color-primary) calc(l * 1.1) c h)
@@ -28,6 +25,7 @@
 		var(--color-zinc-50),
 		var(--color-zinc-950)
 	);
+	--color-indicator: var(--color-indicator);
 	--color-clear-hover: color-mix(
 		in oklch,
 		var(--color-zinc-500) 20%,
@@ -41,9 +39,20 @@
 }
 
 :root {
-	--hue: attr(data-accent-color);
+	--hue: attr(data-accent-color type(<number>));
+	--color-primary: light-dark(
+		oklch(60% 0.15 var(--hue)),
+		oklch(80% 0.15 var(--hue))
+	);
+	--color-indicator: light-dark(var(--color-zinc-50), var(--color-zinc-50));
+
 	overscroll-behavior-y: none;
 	color-scheme: light dark;
+}
+
+:root[data-monochrome] {
+	--color-primary: light-dark(var(--color-zinc-950), var(--color-zinc-50));
+	--color-indicator: light-dark(var(--color-zinc-50), var(--color-zinc-950));
 }
 
 :root[data-theme="light"] {
