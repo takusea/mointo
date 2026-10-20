@@ -26,7 +26,7 @@ const Dialog = ({
 		<DialogPrimitive.Root {...props}>
 			<DialogPrimitive.Portal>
 				<DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
-				<DialogPrimitive.Content className="fixed top-1/2 left-1/2 z-50 grid max-h-[85vh] w-[90vw] max-w-120 -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] gap-4 rounded-xl border border-zinc-500/40 bg-white/90 p-4 backdrop-blur-xl dark:bg-zinc-950/90">
+				<DialogPrimitive.Content className="fixed top-1/2 left-1/2 z-50 grid max-h-[85vh] w-[90vw] max-w-120 -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] gap-4 rounded-xl border border-border bg-background p-4 shadow-2xl backdrop-blur-xl">
 					<div className="flex w-full items-start justify-between">
 						<DialogPrimitive.Title className="font-medium text-lg">
 							{title}

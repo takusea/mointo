@@ -138,7 +138,7 @@ const NumberField = ({
 
 	return (
 		<div
-			className={`flex h-8 gap-1 rounded-md border border-zinc-500/40 bg-white/50 pr-2 pl-1 -outline-offset-2 focus-within:outline-2 dark:bg-zinc-800/50 ${props.disabled ? "opacity-50" : cursor}`}
+			className={`flex h-8 gap-1 rounded-md border border-border bg-surface pr-2 pl-1 -outline-offset-2 focus-within:outline-2 ${props.disabled ? "opacity-50" : cursor}`}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
@@ -148,7 +148,7 @@ const NumberField = ({
 			}}
 		>
 			{leftElement && (
-				<div className="flex h-full items-center text-zinc-500">
+				<div className="flex h-full items-center text-foreground-muted">
 					{props["aria-label"] ? (
 						<Tooltip label={props["aria-label"]} side="top">
 							<span className="flex h-full items-center">{leftElement}</span>
@@ -169,7 +169,7 @@ const NumberField = ({
 				onBlur={handleBlur}
 			/>
 			{rightElement && (
-				<div className="flex h-full items-center text-zinc-500">
+				<div className="flex h-full items-center text-foreground-muted">
 					{rightElement}
 				</div>
 			)}

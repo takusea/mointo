@@ -119,7 +119,7 @@ const InputSettingsDialog = (props: Props) => {
 							viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}
 							role="img"
 							aria-label={t("inputSettings.pressureCurve")}
-							className="aspect-square w-full touch-none rounded-md border border-zinc-500/40 bg-white/10"
+							className="aspect-square w-full touch-none rounded-md border border-border bg-surface"
 							onPointerDown={addPoint}
 							onPointerMove={updatePoint}
 							onPointerUp={() => setDraggingPoint(null)}
@@ -144,7 +144,7 @@ const InputSettingsDialog = (props: Props) => {
 									cx={x * CURVE_VIEWBOX}
 									cy={(1 - y) * CURVE_VIEWBOX}
 									r="3"
-									className={`cursor-grab touch-none stroke-white ${index === 0 || index === tool.pressureCurve.length - 1 ? "fill-zinc-400" : "fill-primary"}`}
+									className={`cursor-grab touch-none stroke-foreground ${index === 0 || index === tool.pressureCurve.length - 1 ? "fill-foreground-muted" : "fill-primary"}`}
 									strokeWidth="1"
 									onPointerDown={(pointerEvent) => {
 										pointerEvent.stopPropagation();

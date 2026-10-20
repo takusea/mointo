@@ -21,7 +21,7 @@ const padding = (size: Size) => {
 const Card = ({ children, size = "medium" }: Props) => {
 	return (
 		<div
-			className={`relative overflow-hidden border border-zinc-500/40 bg-white/90 backdrop-blur-xl dark:bg-zinc-950/90 ${padding(size)}`}
+			className={`relative overflow-hidden border border-border bg-background backdrop-blur-xl ${padding(size)}`}
 		>
 			{children}
 		</div>

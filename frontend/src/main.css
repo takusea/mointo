@@ -2,8 +2,42 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-	--color-primary: oklch(72.126% 0.13582 var(--hue));
-	--color-primary-hover: oklch(from var(--color-primary) calc(l * 0.9) c h);
+	--color-primary: light-dark(
+		oklch(60% 0.15 var(--hue)),
+		oklch(80% 0.15 var(--hue))
+	);
+	--color-primary-hover: light-dark(
+		oklch(from var(--color-primary) calc(l * 0.9) c h),
+		oklch(from var(--color-primary) calc(l * 1.1) c h)
+	);
+	--color-background: light-dark(
+		color-mix(in oklch, var(--color-zinc-50) 90%, transparent 10%),
+		color-mix(in oklch, var(--color-zinc-950) 90%, transparent 10%)
+	);
+	--color-surface: light-dark(
+		color-mix(in oklch, var(--color-white) 50%, transparent 50%),
+		color-mix(in oklch, var(--color-zinc-800) 50%, transparent 50%)
+	);
+	--color-surface-hover: light-dark(
+		oklch(from var(--color-surface) calc(l * 0.9) c h),
+		oklch(from var(--color-surface) calc(l * 1.1) c h)
+	);
+	--color-foreground: light-dark(var(--color-zinc-950), var(--color-zinc-50));
+	--color-foreground-muted: var(--color-zinc-500);
+	--color-foreground-primary: light-dark(
+		var(--color-zinc-50),
+		var(--color-zinc-950)
+	);
+	--color-clear-hover: color-mix(
+		in oklch,
+		var(--color-zinc-500) 20%,
+		transparent 80%
+	);
+	--color-border: color-mix(
+		in oklch,
+		var(--color-zinc-500) 40%,
+		transparent 60%
+	);
 }
 
 :root {
@@ -29,5 +63,5 @@ body {
 		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
 		Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
-	@apply bg-white dark:bg-zinc-950 text-zinc-950 dark:text-white;
+	@apply bg-background text-foreground;
 }

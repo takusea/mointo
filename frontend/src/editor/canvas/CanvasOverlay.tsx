@@ -33,7 +33,7 @@ export const CanvasOverlay = ({
 		>
 			{selection != null && (
 				<div
-					className="absolute border border-primary border-dashed bg-primary/10"
+					className="absolute border border-primary border-dashed"
 					style={{
 						left: selection.x,
 						top: selection.y,

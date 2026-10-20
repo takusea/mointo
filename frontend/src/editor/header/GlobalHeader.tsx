@@ -33,7 +33,7 @@ const GlobalHeader = () => {
 	});
 
 	return (
-		<header className="relative z-10 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-1 border-zinc-500/40 border-b bg-white/90 px-2 backdrop-blur-xl dark:bg-zinc-950/90">
+		<header className="relative z-10 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-1 border-border border-b bg-background px-2 backdrop-blur-xl">
 			{!isDesktop && (
 				<div
 					className={`grid grid-cols-[auto_1fr] ${isMenubarOpen ? "col-span-3" : ""}`}

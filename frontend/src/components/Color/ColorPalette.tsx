@@ -14,7 +14,7 @@ const ColorPalette = ({ colorHistory, onCurrentColorChange }: Props) => {
 					<button
 						type="button"
 						key={`${color.h}${color.s}${color.v}${color.a}`}
-						className="aspect-square cursor-pointer rounded border border-zinc-500/40 bg-(--color)"
+						className="aspect-square cursor-pointer rounded border border-border bg-(--color)"
 						style={
 							{
 								"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b})`,

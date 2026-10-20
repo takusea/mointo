@@ -132,7 +132,7 @@ const TrackHeader = ({
 
 	return (
 		<div
-			className="h-full border-zinc-500/40 border-b"
+			className="h-full border-border border-b"
 			style={{
 				translate: `-${scrollX}px 0`,
 				width: `${totalFrames * frameWidth}px`,
@@ -141,7 +141,7 @@ const TrackHeader = ({
 			onWheel={onWheel}
 		>
 			<div
-				className="pointer-events-none absolute top-0 h-full bg-white/50 dark:bg-zinc-800/50"
+				className="pointer-events-none absolute top-0 h-full bg-surface"
 				style={{
 					left: `${startFrame * frameWidth}px`,
 					width: `${(endFrame - startFrame + 1) * frameWidth}px`,
@@ -151,7 +151,7 @@ const TrackHeader = ({
 				<div
 					// biome-ignore lint/suspicious/noArrayIndexKey: Frame ticks are positional and have no persistent identity.
 					key={i}
-					className="absolute bottom-0 h-2 w-px bg-zinc-500/25"
+					className="absolute bottom-0 h-2 w-px bg-border"
 					style={{ left: `${(i + 1) * frameWidth}px` }}
 				/>
 			))}

@@ -12,14 +12,14 @@ const Tooltip = ({ label, shortcut, side, children, ...props }: Props) => {
 			<TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
 			<TooltipPrimitive.Portal>
 				<TooltipPrimitive.Content
-					className="z-50 select-none rounded-md border border-zinc-500/40 bg-white/90 p-2 leading-none shadow-md backdrop-blur-xl dark:bg-zinc-950/90"
+					className="z-50 select-none rounded-md border border-border bg-background p-2 leading-none shadow-md backdrop-blur-xl"
 					side={side}
 				>
 					<span className="flex items-center gap-2">
 						<span>{label}</span>
 						{shortcut && <span className="opacity-50">{shortcut}</span>}
 					</span>
-					<TooltipPrimitive.Arrow className="-mt-px border-zinc-500/40 fill-white/90 drop-shadow-[0_1px_0] drop-shadow-zinc-500 dark:fill-zinc-950/90" />
+					<TooltipPrimitive.Arrow className="-mt-px border-border fill-background drop-shadow-[0_1px_0] drop-shadow-border" />
 				</TooltipPrimitive.Content>
 			</TooltipPrimitive.Portal>
 		</TooltipPrimitive.Root>

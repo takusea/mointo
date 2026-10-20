@@ -177,7 +177,7 @@ const DrawCanvas = () => {
 				id="draw-canvas"
 				width={canvasWidth}
 				height={canvasHeight}
-				className="absolute inset-0 outline outline-zinc-500/40 [image-rendering:pixelated]"
+				className="absolute inset-0 outline outline-border [image-rendering:pixelated]"
 				style={{ ...canvasTransform, cursor: cursorStyle }}
 				onPointerEnter={updateCursorPosition}
 				onPointerLeave={() => setCursorPosition(null)}

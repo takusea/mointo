@@ -75,7 +75,7 @@ const TrackSide = ({
 	return (
 		<div
 			ref={sideRef}
-			className="border-zinc-500/40 border-r"
+			className="border-border border-r"
 			style={{
 				translate: `0 -${scrollY}px`,
 				height: `${layers.length * layerHeight}px`,
@@ -88,7 +88,7 @@ const TrackSide = ({
 				return (
 					<div
 						key={layer.id}
-						className={`flex items-center justify-between gap-1 overflow-hidden border-zinc-500/40 border-b ${isHidden ? "opacity-50" : ""}`}
+						className={`flex items-center justify-between gap-1 overflow-hidden border-border border-b ${isHidden ? "opacity-50" : ""}`}
 						style={{ height: `${layerHeight}px` }}
 					>
 						{selectedLayerId === layer.id && (

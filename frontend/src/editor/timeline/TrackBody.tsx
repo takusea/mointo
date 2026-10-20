@@ -63,7 +63,7 @@ const TrackBody = ({
 				}}
 			/>
 			<div
-				className="pointer-events-none absolute top-0 bg-white/50 dark:bg-zinc-800/50"
+				className="pointer-events-none absolute top-0 bg-surface"
 				style={{
 					left: `${startFrame * frameWidth}px`,
 					height: `${bodyHeight}px`,
@@ -73,7 +73,7 @@ const TrackBody = ({
 			{layers.map((layer, i) => (
 				<div
 					key={layer.id}
-					className="absolute top-0 left-0 h-px bg-zinc-500/25"
+					className="absolute top-0 left-0 h-px bg-border"
 					style={{
 						top: `${(i + 1) * layerHeight - 1}px`,
 						width: `${frameWidth * maxFrameCount}px`,
@@ -107,14 +107,14 @@ const TrackBody = ({
 				/>
 			))}
 			<div
-				className="pointer-events-none absolute top-0 z-10 h-full w-px bg-zinc-500/25"
+				className="pointer-events-none absolute top-0 z-10 h-full w-px bg-border"
 				style={{
 					height: `${bodyHeight}px`,
 					left: `${startFrame * frameWidth}px`,
 				}}
 			/>
 			<div
-				className="pointer-events-none absolute top-0 z-10 h-full w-px bg-zinc-500/25"
+				className="pointer-events-none absolute top-0 z-10 h-full w-px bg-border"
 				style={{
 					height: `${bodyHeight}px`,
 					left: `${(endFrame + 1) * frameWidth}px`,

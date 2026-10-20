@@ -28,7 +28,7 @@ const Editor = () => {
 		<div className="grid h-svh w-svw grid-rows-[48px_minmax(0,1fr)] overflow-hidden">
 			<GlobalHeader />
 			<main
-				className="relative grid min-h-0 min-w-0 bg-zinc-50 p-2 dark:bg-zinc-950"
+				className="relative grid min-h-0 min-w-0 p-2"
 				style={{
 					gridTemplateRows: `minmax(0, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
 				}}

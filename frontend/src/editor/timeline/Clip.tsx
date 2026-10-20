@@ -127,7 +127,7 @@ const Clip = ({
 	return (
 		<div
 			key={id}
-			className={`absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border font-medium ${isSelected ? "border-primary bg-primary/25" : "border-zinc-500/40 bg-zinc-500/25"} ${isHidden ? "opacity-40" : ""} ${isLocked ? "cursor-not-allowed" : ""}`}
+			className={`absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border font-medium ${isSelected ? "border-primary bg-primary/25" : "border-border bg-surface"} ${isHidden ? "opacity-40" : ""} ${isLocked ? "cursor-not-allowed" : ""}`}
 			style={{
 				left: `${startFrame * frameWidth}px`,
 				top: `${layerIndex * layerHeight}px`,
@@ -147,7 +147,7 @@ const Clip = ({
 				onPointerMove={isLocked ? undefined : handlePointerMove}
 			/>
 			<div
-				className={`${isSelected ? "bg-primary" : "bg-zinc-500/40"} ${isLocked ? "" : "cursor-w-resize"}`}
+				className={`${isSelected ? "bg-primary" : "bg-border"} ${isLocked ? "" : "cursor-w-resize"}`}
 				data-resize="true"
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handleRightPointerMove}

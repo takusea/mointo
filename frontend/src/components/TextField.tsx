@@ -35,7 +35,7 @@ const TextField = ({
 				onChange?.(event);
 			}}
 			onBlur={handleBlur}
-			className="h-8 rounded-md border border-zinc-500/40 bg-white/50 px-2 dark:bg-zinc-800/50"
+			className="h-8 rounded-md border border-border bg-surface px-2"
 		/>
 	);
 };

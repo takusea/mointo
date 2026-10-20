@@ -24,9 +24,9 @@ const padding = (size: Size) => {
 const color = (variant: Variant) => {
 	switch (variant) {
 		case "default":
-			return "hover:not-disabled:bg-zinc-500/20";
+			return "hover:not-disabled:bg-clear-hover";
 		case "primary":
-			return "text-white bg-primary hover:not-disabled:bg-primary-hover";
+			return "text-foreground-primary bg-primary hover:not-disabled:bg-primary-hover";
 	}
 };
 
