@@ -2,7 +2,13 @@ import { useState } from "react";
 import Dialog from "~/components/Dialog";
 import { useI18n } from "~/features/i18n/useI18n";
 import ProjectSettingsForm from "./ProjectSettingsForm";
-import { DEFAULT_END_FRAME, DEFAULT_START_FRAME } from "./type";
+import {
+	DEFAULT_END_FRAME,
+	DEFAULT_FRAME_RATE,
+	DEFAULT_HEIGHT,
+	DEFAULT_START_FRAME,
+	DEFAULT_WIDTH,
+} from "./type";
 import { useProject } from "./useProject";
 
 type Props = {
@@ -14,16 +20,14 @@ const CreateNewProjectDialog = (props: Props) => {
 	const { t } = useI18n();
 	const project = useProject();
 
-	const [projectSettings, setProjectSettings] = useState(
-		project.settings ?? {
-			title: t("nav.untitled"),
-			width: 1280,
-			height: 720,
-			frameRate: 8,
-			startFrame: DEFAULT_START_FRAME,
-			endFrame: DEFAULT_END_FRAME,
-		},
-	);
+	const [projectSettings, setProjectSettings] = useState({
+		title: t("nav.untitled"),
+		width: DEFAULT_WIDTH,
+		height: DEFAULT_HEIGHT,
+		frameRate: DEFAULT_FRAME_RATE,
+		startFrame: DEFAULT_START_FRAME,
+		endFrame: DEFAULT_END_FRAME,
+	});
 
 	return (
 		<Dialog
