@@ -15,6 +15,10 @@ export default defineConfig({
 		tailwindcss(),
 		basicSsl(),
 		VitePWA({
+			workbox: {
+				globDirectory: ".cloudflare/output/v0/workers/default/assets/",
+				swDest: ".cloudflare/output/v0/workers/default/assets/sw.js",
+			},
 			registerType: "autoUpdate",
 			devOptions: {
 				enabled: true,
