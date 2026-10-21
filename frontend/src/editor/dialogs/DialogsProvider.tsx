@@ -29,14 +29,18 @@ export const DialogsProvider = ({ children }: Props) => {
 			}}
 		>
 			{children}
-			<CreateNewProjectDialog
-				open={activeDialog === "createProject"}
-				onOpenChange={handleOpenChange("createProject")}
-			/>
-			<EditProjectSettingsDialog
-				open={activeDialog === "editProjectSettings"}
-				onOpenChange={handleOpenChange("editProjectSettings")}
-			/>
+			{activeDialog === "createProject" && (
+				<CreateNewProjectDialog
+					open
+					onOpenChange={handleOpenChange("createProject")}
+				/>
+			)}
+			{activeDialog === "editProjectSettings" && (
+				<EditProjectSettingsDialog
+					open
+					onOpenChange={handleOpenChange("editProjectSettings")}
+				/>
+			)}
 			<ProjectExportDialog
 				open={activeDialog === "exportProject"}
 				onOpenChange={handleOpenChange("exportProject")}
