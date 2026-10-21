@@ -374,7 +374,7 @@ const InspectorLayout = () => {
 					</div>
 				</div>
 			)}
-			<div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 overflow-x-auto rounded-2xl">
+			<div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 overflow-x-auto rounded-xl">
 				<div className="pointer-events-auto mx-auto w-fit">
 					<Toolbar />
 				</div>
