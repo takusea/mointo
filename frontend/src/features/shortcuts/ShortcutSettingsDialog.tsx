@@ -76,7 +76,7 @@ const ShortcutSettingsDialog = (props: Props) => {
 						(typeof shortcutDefinitions)[ShortcutId],
 					][]
 				).map(([id, definition]) => (
-					<>
+					<div className="contents" key={id}>
 						<span>{t(definition.label)}</span>
 						<Button
 							onClick={() => {
@@ -108,7 +108,7 @@ const ShortcutSettingsDialog = (props: Props) => {
 									: formatShortcut(shortcuts[id])
 							}
 						></Button>
-					</>
+					</div>
 				))}
 			</div>
 			<div className="sticky bottom-0 mt-2 grid grid-cols-[1fr_auto] bg-background p-2 backdrop-blur-xl">

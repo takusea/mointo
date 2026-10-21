@@ -9,10 +9,11 @@ const TextField = ({
 	onChange,
 	onBlur,
 	value,
+	defaultValue,
 	...props
 }: Props) => {
 	const [innerValue, setInnerValue] = useState(
-		value?.toString() ?? props.defaultValue?.toString() ?? "",
+		value?.toString() ?? defaultValue?.toString() ?? "",
 	);
 
 	useEffect(() => {
