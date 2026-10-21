@@ -543,10 +543,7 @@ export const useCanvasPointer = (
 			if (isMultiTouchRef.current) return;
 		}
 		if (selection.finishSelection(event)) return;
-		if (
-			toolContext.tool === "eyedropper" &&
-			!canvasDraw.drawState.isDrawing
-		)
+		if (toolContext.tool === "eyedropper" && !canvasDraw.drawState.isDrawing)
 			return;
 
 		if (

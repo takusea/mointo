@@ -36,7 +36,11 @@ export const useCanvasDraw = (currentFrame: number) => {
 		setDrawState(newState);
 	};
 
-	const beginDraw = (state: DrawState, clipId: string, tool = toolContext.tool) => {
+	const beginDraw = (
+		state: DrawState,
+		clipId: string,
+		tool = toolContext.tool,
+	) => {
 		drawingClipIdRef.current = clipId;
 		drawingToolRef.current = tool;
 		inputPointCountRef.current = 0;
