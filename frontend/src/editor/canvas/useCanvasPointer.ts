@@ -294,19 +294,22 @@ export const useCanvasPointer = (
 			}
 		}
 		if (canvasRef.current == null) return;
-		if (!(event.buttons & 1) || event.shiftKey) return;
-		if (toolContext.tool === "eyedropper") {
+		const isPenEraser =
+			event.pointerType === "pen" &&
+			(event.button === 5 || (event.buttons & 32) !== 0);
+		if ((!(event.buttons & 1) && !isPenEraser) || event.shiftKey) return;
+		if (!isPenEraser && toolContext.tool === "eyedropper") {
 			event.currentTarget.setPointerCapture(event.pointerId);
 			await pickColor(event.clientX, event.clientY);
 			return;
 		}
 
-		if (toolContext.tool === "select") {
+		if (!isPenEraser && toolContext.tool === "select") {
 			selection.beginSelection(event);
 			return;
 		}
 
-		if (toolContext.tool === "move") {
+		if (!isPenEraser && toolContext.tool === "move") {
 			if (clipContext.selectedClipId == null) {
 				return;
 			}
@@ -391,8 +394,12 @@ export const useCanvasPointer = (
 			y,
 			pressure: getPointerPressure(event.nativeEvent),
 		};
-		canvasDraw.beginDraw(drawState, clipId);
-		if (toolContext.tool === "fill") {
+		canvasDraw.beginDraw(
+			drawState,
+			clipId,
+			isPenEraser ? "eraser" : toolContext.tool,
+		);
+		if (!isPenEraser && toolContext.tool === "fill") {
 			canvasDraw.draw(drawState);
 		}
 		render(canvasRef.current, isOnionSkin, layerContext.selectedLayerId);
@@ -503,7 +510,8 @@ export const useCanvasPointer = (
 
 		if (
 			!canvasDraw.drawState.isDrawing ||
-			!(event.buttons & 1) ||
+			(!(event.buttons & 1) &&
+				!(event.pointerType === "pen" && (event.buttons & 32) !== 0)) ||
 			event.shiftKey ||
 			event.ctrlKey
 		) {
@@ -535,9 +543,16 @@ export const useCanvasPointer = (
 			if (isMultiTouchRef.current) return;
 		}
 		if (selection.finishSelection(event)) return;
-		if (toolContext.tool === "eyedropper") return;
+		if (
+			toolContext.tool === "eyedropper" &&
+			!canvasDraw.drawState.isDrawing
+		)
+			return;
 
-		if (moveDragRef.current != null || toolContext.tool === "move") {
+		if (
+			moveDragRef.current != null ||
+			(toolContext.tool === "move" && !canvasDraw.drawState.isDrawing)
+		) {
 			const hadMoveDrag = moveDragRef.current != null;
 			moveDragRef.current = null;
 			if (!hadMoveDrag) return;

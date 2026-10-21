@@ -16,6 +16,7 @@ export const useCanvasDraw = (currentFrame: number) => {
 	>({ isDrawing: false });
 	const drawStateRef = useRef<typeof drawState>(drawState);
 	const drawingClipIdRef = useRef<string | undefined>(undefined);
+	const drawingToolRef = useRef<typeof toolContext.tool | null>(null);
 	const pendingPointsRef = useRef<DrawState[]>([]);
 	const drawFrameRef = useRef<number | null>(null);
 	const inputPointCountRef = useRef(0);
@@ -35,8 +36,9 @@ export const useCanvasDraw = (currentFrame: number) => {
 		setDrawState(newState);
 	};
 
-	const beginDraw = (state: DrawState, clipId: string) => {
+	const beginDraw = (state: DrawState, clipId: string, tool = toolContext.tool) => {
 		drawingClipIdRef.current = clipId;
+		drawingToolRef.current = tool;
 		inputPointCountRef.current = 0;
 		stabilizedPointRef.current = state;
 		updateDrawState({ isDrawing: true, state });
@@ -59,7 +61,7 @@ export const useCanvasDraw = (currentFrame: number) => {
 		]);
 		void core.applyToolPoints(
 			clipId,
-			toolContext.tool,
+			drawingToolRef.current ?? toolContext.tool,
 			points,
 			color,
 			currentFrame,
@@ -77,6 +79,7 @@ export const useCanvasDraw = (currentFrame: number) => {
 	const finishDraw = () => {
 		flushPoints();
 		drawingClipIdRef.current = undefined;
+		drawingToolRef.current = null;
 		inputPointCountRef.current = 0;
 		stabilizedPointRef.current = null;
 		updateDrawState({ isDrawing: false });
@@ -86,7 +89,7 @@ export const useCanvasDraw = (currentFrame: number) => {
 		if (drawingClipIdRef.current == null) return;
 
 		const clipId = drawingClipIdRef.current;
-		const tool = toolContext.tool;
+		const tool = drawingToolRef.current ?? toolContext.tool;
 		void core.applyToolPoints(
 			clipId,
 			tool,
