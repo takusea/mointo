@@ -57,6 +57,7 @@ export const PlaybackProvider = ({ children }: Props) => {
 
 	const play = () => {
 		if (!project.settings) return;
+		if (currentFrame >= endFrame) setCurrentFrame(startFrame);
 		setIsPlaying(true);
 	};
 
