@@ -15,6 +15,9 @@ impl MointoCore {
             .map_err(|error| JsValue::from_str(&error.to_string()))?;
         let mut project = Project::new(settings);
         let paper_layer_id = project.composition.get_layers()[0].id;
+        project
+            .composition
+            .set_layer_locked_by_id(paper_layer_id, true);
         let mut image = Image::new(project.settings.width, project.settings.height);
         for pixel in image.data.chunks_exact_mut(4) {
             pixel.copy_from_slice(&[255, 255, 255, 255]);
