@@ -55,6 +55,60 @@ export const useClipCommands = ({
 		return newClip.id;
 	};
 
+	const duplicateClip = async (id: string | undefined) => {
+		const clip = clips.find((candidate) => candidate.id === id);
+		if (clip == null || clip.locked || isLayerLocked(clip.layer_id)) return;
+
+		const otherClips = clips.filter(
+			(candidate) =>
+				candidate.id !== clip.id && candidate.layer_id === clip.layer_id,
+		);
+		let start = clip.start + clip.duration;
+		while (
+			otherClips.some(
+				(candidate) =>
+					start < candidate.start + candidate.duration &&
+					candidate.start < start + clip.duration,
+				)
+		) {
+			start = Math.max(
+				start + 1,
+				...otherClips
+					.filter((candidate) => candidate.start < start + clip.duration)
+					.map((candidate) => candidate.start + candidate.duration),
+			);
+		}
+
+		const existingIds = new Set(clips.map((candidate) => candidate.id));
+		await core.beginActionGroup();
+		try {
+			const nextClips = await core.addClip(start, clip.layer_id);
+			const duplicate = nextClips.find(
+				(candidate) =>
+					!existingIds.has(candidate.id) &&
+					candidate.layer_id === clip.layer_id &&
+					candidate.start === start,
+			);
+			if (duplicate == null) return;
+
+			await core.changeClipDuration(duplicate.id, clip.duration);
+			await core.changeClipName(duplicate.id, clip.name);
+			await core.changeClipSize(duplicate.id, clip.width, clip.height);
+			await core.changeClipProperties(duplicate.id, {
+				hidden: clip.hidden,
+				alpha_locked: clip.alpha_locked,
+				locked: clip.locked,
+				opacity: clip.opacity,
+				blend_mode: clip.blend_mode,
+			});
+			const pixels = await core.getClipPixels(clip.id);
+			if (pixels != null) await core.replaceClipPixels(duplicate.id, pixels);
+			onClipSelected(duplicate.id, duplicate.layer_id, true);
+		} finally {
+			await core.endActionGroup();
+		}
+	};
+
 	const deleteClip = async (id: string) => {
 		const clip = clips.find((candidate) => candidate.id === id);
 		if (clip == null || isLayerLocked(clip.layer_id)) return;
@@ -160,5 +214,6 @@ export const useClipCommands = ({
 		changeClipSize,
 		changeClipProperties,
 		ensureClipAt,
+		duplicateClip,
 	};
 };

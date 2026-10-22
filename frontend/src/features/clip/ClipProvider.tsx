@@ -70,6 +70,8 @@ export const ClipProvider = ({ children }: Props) => {
 				setSelection: selectionState.setSelection,
 				...clipboard,
 				selectAll: selectionState.selectAll,
+				duplicateSelectedClip: () =>
+					commands.duplicateClip(selectionState.selectedClipId),
 				...commands,
 				changeTransform: clipTransform.changeTransform,
 			}}

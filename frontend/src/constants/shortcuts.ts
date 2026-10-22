@@ -11,6 +11,7 @@ export const shortcutDefinitions = {
 	copy: { label: "shortcut.copy", defaultKey: "ctrl+c" },
 	paste: { label: "shortcut.paste", defaultKey: "ctrl+v" },
 	selectAll: { label: "shortcut.selectAll", defaultKey: "ctrl+a" },
+	duplicateClip: { label: "shortcut.duplicateClip", defaultKey: "ctrl+d" },
 	clearSelection: { label: "shortcut.clearSelection", defaultKey: "escape" },
 	zoomIn: { label: "shortcut.zoomIn", defaultKey: "ctrl+shift+equal" },
 	zoomOut: { label: "shortcut.zoomOut", defaultKey: "ctrl+minus" },

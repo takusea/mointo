@@ -20,6 +20,7 @@ export type ClipContextValue = {
 	cut: () => Promise<void>;
 	paste: () => Promise<void>;
 	selectAll: () => void;
+	duplicateSelectedClip: () => Promise<void>;
 	addClip: (start: number, layerId: LayerId) => Promise<void>;
 	deleteClip: (id: string) => Promise<void>;
 	moveClip: (id: string, start: number, layerId: LayerId) => Promise<void>;

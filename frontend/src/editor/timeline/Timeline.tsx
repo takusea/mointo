@@ -32,6 +32,9 @@ const Timeline = () => {
 			clipContext.deleteClip(clipContext.selectedClipId);
 		}
 	});
+	useHotkeys(shortcuts.duplicateClip, () => {
+		void clipContext.duplicateSelectedClip();
+	});
 
 	const [layerHeight, setTrackHeight] = useState<number>(32);
 	const [frameWidth, setFrameWidth] = useState<number>(16);
