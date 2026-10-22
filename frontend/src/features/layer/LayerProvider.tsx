@@ -21,7 +21,7 @@ export const LayerProvider = ({ children }: Props) => {
 		) {
 			return;
 		}
-		setSelectedLayerId(layers[0]?.id ?? null);
+		setSelectedLayerId(layers[1]?.id ?? layers[0]?.id ?? null);
 	}, [layers, selectedLayerId]);
 
 	const showLayer = async (layerId: LayerId) => {
