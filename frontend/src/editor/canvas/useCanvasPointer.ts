@@ -217,6 +217,7 @@ export const useCanvasPointer = (
 		event: React.PointerEvent<HTMLDivElement>,
 	) => {
 		if (
+			playbackContext.isPlaying ||
 			event.target !== event.currentTarget ||
 			toolContext.tool !== "move" ||
 			!(event.buttons & 1) ||
@@ -278,6 +279,7 @@ export const useCanvasPointer = (
 	const handlePointerDown = async (
 		event: React.PointerEvent<HTMLCanvasElement>,
 	) => {
+		if (playbackContext.isPlaying) return;
 		if (event.pointerType === "touch") {
 			touchPointerIdsRef.current.add(event.pointerId);
 			if (touchPointerIdsRef.current.size >= 2) {
@@ -409,6 +411,7 @@ export const useCanvasPointer = (
 	const handlePointerMove = async (
 		event: React.PointerEvent<HTMLCanvasElement>,
 	) => {
+		if (playbackContext.isPlaying) return;
 		if (
 			event.pointerType === "touch" &&
 			(isMultiTouchRef.current || touchPointerIdsRef.current.size >= 2)
@@ -534,6 +537,7 @@ export const useCanvasPointer = (
 	};
 
 	const handlePointerUp = (event: React.PointerEvent<HTMLCanvasElement>) => {
+		if (playbackContext.isPlaying) return;
 		if (event.pointerType === "touch") {
 			touchPointerIdsRef.current.delete(event.pointerId);
 			if (touchPointerIdsRef.current.size < 2) {
