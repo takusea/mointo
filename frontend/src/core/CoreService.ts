@@ -146,6 +146,7 @@ export class CoreService {
 	private enqueue<T>(operation: WasmOperation<T>, notify = false): Promise<T> {
 		const result = this.operationQueue.then(async () => {
 			const value = await operation(this.core);
+			this.core.sync_clip_assets();
 			if (notify) this.notify();
 			return value;
 		});
@@ -263,6 +264,14 @@ export class CoreService {
 
 	deleteClip(id: string) {
 		return this.enqueue((core) => core.delete_clip(id), true);
+	}
+
+	linkClips(sourceId: string, targetId: string) {
+		return this.enqueue((core) => core.link_clips(sourceId, targetId), true);
+	}
+
+	unlinkClip(id: string) {
+		return this.enqueue((core) => core.unlink_clip(id), true);
 	}
 
 	getClipPixels(id: string) {

@@ -59,6 +59,7 @@ impl Action for AddClipAction {
                 opacity: 1.0,
                 blend_mode: crate::app::clip::BlendMode::default(),
             },
+            asset_id: Uuid::new_v4(),
             transform: Transform::default(),
             keyframes: Vec::new(),
             image: {

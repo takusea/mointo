@@ -13,17 +13,30 @@ pub struct SetClipSizeAction {
 
 impl SetClipSizeAction {
     pub fn new(clip_id: Uuid, width: u32, height: u32) -> Self {
-        Self { clip_id, width, height, previous: None }
+        Self {
+            clip_id,
+            width,
+            height,
+            previous: None,
+        }
     }
 }
 
 impl Action for SetClipSizeAction {
     fn apply(&mut self, project: &mut Project) {
-        if self.width == 0 || self.height == 0 { return; }
+        if self.width == 0 || self.height == 0 {
+            return;
+        }
         if let Some(clip) = project.composition.find_clip(self.clip_id) {
-            if clip.metadata.locked { return; }
-            if self.previous.is_none() { self.previous = Some(clip.image.clone()); }
-            if clip.image.width == self.width && clip.image.height == self.height { return; }
+            if clip.metadata.locked {
+                return;
+            }
+            if self.previous.is_none() {
+                self.previous = Some(clip.image.clone());
+            }
+            if clip.image.width == self.width && clip.image.height == self.height {
+                return;
+            }
             let mut resized = Image::new(self.width, self.height);
             let copy_width = clip.image.width.min(self.width) as usize;
             let copy_height = clip.image.height.min(self.height) as usize;
@@ -41,7 +54,10 @@ impl Action for SetClipSizeAction {
 
 impl UndoableAction for SetClipSizeAction {
     fn undo(&mut self, project: &mut Project) {
-        if let (Some(previous), Some(clip)) = (self.previous.as_ref(), project.composition.find_clip(self.clip_id)) {
+        if let (Some(previous), Some(clip)) = (
+            self.previous.as_ref(),
+            project.composition.find_clip(self.clip_id),
+        ) {
             clip.set_image(previous.clone());
         }
     }

@@ -6,6 +6,7 @@ use crate::app::project::Project;
 fn decode_project(data: &[u8]) -> Result<Project, String> {
     let mut project = rmp_serde::from_slice::<Project>(data).map_err(|error| error.to_string())?;
     project.composition.ensure_layers()?;
+    project.composition.hydrate_asset_views()?;
     Ok(project)
 }
 

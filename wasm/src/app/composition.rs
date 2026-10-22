@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::app::clip::{Clip, ClipId};
+use crate::app::clip::{AssetId, Clip, ClipId};
 use crate::core::image::Image;
 use crate::gpu::GpuRenderer;
 
@@ -48,6 +48,8 @@ impl Layer {
 pub struct Composition {
     pub clips: Vec<Clip>,
     pub layers: Vec<Layer>,
+    /// Shared pixel data, stored once per image asset.
+    pub assets: std::collections::HashMap<AssetId, Image>,
 }
 
 impl Composition {
@@ -55,11 +57,66 @@ impl Composition {
         Self {
             clips: Vec::new(),
             layers: (0..DEFAULT_LAYER_COUNT).map(Layer::new).collect(),
+            assets: std::collections::HashMap::new(),
         }
     }
 
     pub fn add_clip(&mut self, clip: Clip) {
+        self.assets
+            .entry(clip.asset_id)
+            .or_insert_with(|| clip.image.clone());
         self.clips.push(clip);
+    }
+
+    /// Publish a clip's modified pixel buffer to the asset registry and every
+    /// clip referencing it. Called at the core operation boundary so normal
+    /// drawing, tools, undo, redo and resize all keep links coherent.
+    pub fn publish_clip_asset(&mut self, clip_id: ClipId) {
+        let Some(clip) = self.get_clip(clip_id) else {
+            return;
+        };
+        let asset_id = clip.asset_id;
+        let image = clip.image.clone();
+        self.assets.insert(asset_id, image.clone());
+        for linked in self.clips.iter_mut().filter(|c| c.asset_id == asset_id) {
+            if linked.metadata.id != clip_id {
+                linked.set_image(image.clone());
+            }
+        }
+    }
+
+    pub fn reconcile_assets(&mut self) {
+        let ids: Vec<_> = self.clips.iter().map(|clip| clip.metadata.id).collect();
+        for id in ids {
+            let Some(clip) = self.get_clip(id) else {
+                continue;
+            };
+            let asset_id = clip.asset_id;
+            let image = clip.image.clone();
+            let differs = self.assets.get(&asset_id).is_none_or(|asset| {
+                asset.data != image.data
+                    || asset.width != image.width
+                    || asset.height != image.height
+            });
+            if differs {
+                self.publish_clip_asset(id);
+            }
+        }
+    }
+
+    pub fn hydrate_asset_views(&mut self) -> Result<(), String> {
+        for clip in &mut self.clips {
+            let image = self
+                .assets
+                .get(&clip.asset_id)
+                .ok_or_else(|| {
+                    format!("Clip {} references a missing image asset", clip.metadata.id)
+                })?
+                .clone();
+            clip.image = image;
+            clip.image_revision = 0;
+        }
+        Ok(())
     }
 
     pub fn delete_clip(&mut self, clip_id: ClipId) -> Option<Clip> {
@@ -68,7 +125,12 @@ impl Composition {
             .iter()
             .position(|clip| clip.metadata.id == clip_id)
         {
-            Some(self.clips.remove(pos))
+            let removed = self.clips.remove(pos);
+            let asset_id = removed.asset_id;
+            if !self.clips.iter().any(|clip| clip.asset_id == asset_id) {
+                self.assets.remove(&asset_id);
+            }
+            Some(removed)
         } else {
             None
         }
@@ -130,6 +192,12 @@ impl Composition {
             }
         }
         for clip in &self.clips {
+            if !self.assets.contains_key(&clip.asset_id) {
+                return Err(format!(
+                    "Clip {} references a missing image asset",
+                    clip.metadata.id
+                ));
+            }
             if !self
                 .layers
                 .iter()
@@ -346,6 +414,7 @@ mod tests {
                 blend_mode: crate::app::clip::BlendMode::Normal,
                 name: "Clip".to_string(),
             },
+            asset_id: Uuid::new_v4(),
             transform: Default::default(),
             keyframes: Vec::new(),
             image: crate::core::image::Image::new(1, 1),

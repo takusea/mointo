@@ -1,4 +1,5 @@
 pub mod add_clip_action;
+pub mod change_clip_asset_action;
 pub mod change_clip_duration_action;
 pub mod delete_clip_action;
 pub mod draw_stroke_action;

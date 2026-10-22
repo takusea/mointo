@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub type ClipId = Uuid;
+pub type AssetId = Uuid;
 
 fn default_opacity() -> f32 {
     1.0
@@ -77,9 +78,15 @@ pub struct ClipMetadata {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Clip {
     pub metadata: ClipMetadata,
+    /// Identifies the reusable image asset used by this clip. Clips with the same
+    /// asset id share pixel edits while keeping timing and transform independent.
+    pub asset_id: AssetId,
     pub transform: Transform,
     #[serde(serialize_with = "serialize_committed_keyframes")]
     pub keyframes: Vec<ClipKeyframe>,
+    /// Runtime view of the referenced asset. Pixel buffers are serialized only
+    /// once, in Composition::assets.
+    #[serde(skip)]
     pub image: Image,
     #[serde(skip)]
     pub image_revision: u64,
@@ -95,8 +102,13 @@ pub struct ClipKeyframe {
 }
 
 fn serialize_committed_keyframes<S>(keys: &[ClipKeyframe], serializer: S) -> Result<S::Ok, S::Error>
-where S: serde::Serializer {
-    keys.iter().filter(|key| !key.preview).collect::<Vec<_>>().serialize(serializer)
+where
+    S: serde::Serializer,
+{
+    keys.iter()
+        .filter(|key| !key.preview)
+        .collect::<Vec<_>>()
+        .serialize(serializer)
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -240,6 +252,7 @@ mod tests {
                 opacity: 1.0,
                 blend_mode: BlendMode::Normal,
             },
+            asset_id: Uuid::new_v4(),
             transform: Transform::default(),
             keyframes: Vec::new(),
             image: Image::new(1, 1),

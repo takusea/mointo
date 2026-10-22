@@ -72,6 +72,8 @@ export const ClipProvider = ({ children }: Props) => {
 				selectAll: selectionState.selectAll,
 				duplicateSelectedClip: () =>
 					commands.duplicateClip(selectionState.selectedClipId),
+				linkDuplicateSelectedClip: () =>
+					commands.duplicateLinkedClip(selectionState.selectedClipId),
 				...commands,
 				changeTransform: clipTransform.changeTransform,
 			}}

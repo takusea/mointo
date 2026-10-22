@@ -35,6 +35,9 @@ const Timeline = () => {
 	useHotkeys(shortcuts.duplicateClip, () => {
 		void clipContext.duplicateSelectedClip();
 	});
+	useHotkeys(shortcuts.duplicateLinkedClip, () => {
+		void clipContext.linkDuplicateSelectedClip();
+	});
 
 	const [layerHeight, setTrackHeight] = useState<number>(32);
 	const [frameWidth, setFrameWidth] = useState<number>(16);

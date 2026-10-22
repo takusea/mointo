@@ -1,5 +1,6 @@
 use super::MointoCore;
 use crate::action::add_clip_action::AddClipAction;
+use crate::action::change_clip_asset_action::ChangeClipAssetAction;
 use crate::action::change_clip_duration_action::ChangeClipDurationAction;
 use crate::action::delete_clip_action::DeleteClipAction;
 use crate::action::draw_stroke_action::DrawStrokeAction;
@@ -21,6 +22,7 @@ use wasm_bindgen::JsValue;
 #[derive(serde::Serialize)]
 struct ClipMetadataView<'a> {
     id: ClipId,
+    asset_id: crate::app::clip::AssetId,
     name: &'a str,
     start: u32,
     duration: u32,
@@ -37,6 +39,58 @@ struct ClipMetadataView<'a> {
 
 #[wasm_bindgen]
 impl MointoCore {
+    pub fn link_clips(&mut self, source_id: String, target_id: String) -> Result<(), JsValue> {
+        let source = Uuid::parse_str(&source_id).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let target = Uuid::parse_str(&target_id).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let linked_asset_id = {
+            let project = self
+                .project
+                .as_ref()
+                .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+            let source_clip = project
+                .composition
+                .get_clip(source)
+                .ok_or_else(|| JsValue::from_str("Source clip does not exist"))?;
+            let target_clip = project
+                .composition
+                .get_clip(target)
+                .ok_or_else(|| JsValue::from_str("Target clip does not exist"))?;
+            if source_clip.asset_id == target_clip.asset_id {
+                return Ok(());
+            }
+            source_clip.asset_id
+        };
+        let project = self
+            .project
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        self.action_manager.do_action(
+            Box::new(ChangeClipAssetAction::link(target, linked_asset_id)),
+            project,
+        );
+        Ok(())
+    }
+
+    pub fn unlink_clip(&mut self, clip_id: String) -> Result<(), JsValue> {
+        let id = Uuid::parse_str(&clip_id).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let project = self
+            .project
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        if project.composition.get_clip(id).is_none() {
+            return Err(JsValue::from_str("Clip does not exist"));
+        }
+        self.action_manager
+            .do_action(Box::new(ChangeClipAssetAction::unlink(id)), project);
+        Ok(())
+    }
+
+    pub fn sync_clip_assets(&mut self) {
+        if let Some(project) = self.project.as_mut() {
+            project.composition.reconcile_assets();
+        }
+    }
+
     pub fn get_clips(&mut self) -> JsValue {
         let project = match &mut self.project {
             Some(p) => p,
@@ -53,6 +107,7 @@ impl MointoCore {
                 let metadata = &clip.metadata;
                 ClipMetadataView {
                     id: metadata.id,
+                    asset_id: clip.asset_id,
                     name: &metadata.name,
                     start: metadata.start,
                     duration: metadata.duration,
@@ -357,7 +412,12 @@ impl MointoCore {
         };
 
         if let Some(clip) = project.composition.find_clip(clip_id) {
-            let transform = clip.keyframes.iter().find(|key| key.preview).map(|key| clip.values_at(key.frame).0).unwrap_or_else(|| clip.transform.clone());
+            let transform = clip
+                .keyframes
+                .iter()
+                .find(|key| key.preview)
+                .map(|key| clip.values_at(key.frame).0)
+                .unwrap_or_else(|| clip.transform.clone());
             return JsValue::from_serde(&transform).unwrap();
         }
         JsValue::undefined()
@@ -398,7 +458,9 @@ impl MointoCore {
     }
 
     pub fn get_clip_preview_opacity(&mut self, clip_id_str: String) -> Option<f32> {
-        let Ok(id) = Uuid::parse_str(&clip_id_str) else { return None; };
+        let Ok(id) = Uuid::parse_str(&clip_id_str) else {
+            return None;
+        };
         let clip = self.project.as_ref()?.composition.get_clip(id)?;
         let frame = clip.keyframes.iter().find(|key| key.preview)?.frame;
         Some(clip.values_at(frame).1)
@@ -453,7 +515,9 @@ impl MointoCore {
                 .iter_mut()
                 .find(|key| key.frame == frame && key.property == property)
             {
-                if !key.preview { key.value = value; }
+                if !key.preview {
+                    key.value = value;
+                }
                 key.preview = false;
             } else {
                 clip.keyframes.push(ClipKeyframe {
@@ -467,30 +531,67 @@ impl MointoCore {
         }
     }
 
-    pub fn set_clip_preview_keyframe(&mut self, clip_id_str: String, frame: u32, property: String, value: JsValue) {
-        let Ok(id) = Uuid::parse_str(&clip_id_str) else { return; };
-        let Ok(value) = value.into_serde::<ClipKeyframeValue>() else { return; };
+    pub fn set_clip_preview_keyframe(
+        &mut self,
+        clip_id_str: String,
+        frame: u32,
+        property: String,
+        value: JsValue,
+    ) {
+        let Ok(id) = Uuid::parse_str(&clip_id_str) else {
+            return;
+        };
+        let Ok(value) = value.into_serde::<ClipKeyframeValue>() else {
+            return;
+        };
         let is_pair = matches!(property.as_str(), "position" | "scale" | "anchor");
         let value = match value {
-            ClipKeyframeValue::Pair((x, y)) if is_pair && x.is_finite() && y.is_finite() => ClipKeyframeValue::Pair((x, y)),
-            ClipKeyframeValue::Scalar(value) if !is_pair && value.is_finite() => ClipKeyframeValue::Scalar(if property == "opacity" { value.clamp(0.0, 1.0) } else { value }),
+            ClipKeyframeValue::Pair((x, y)) if is_pair && x.is_finite() && y.is_finite() => {
+                ClipKeyframeValue::Pair((x, y))
+            }
+            ClipKeyframeValue::Scalar(value) if !is_pair && value.is_finite() => {
+                ClipKeyframeValue::Scalar(if property == "opacity" {
+                    value.clamp(0.0, 1.0)
+                } else {
+                    value
+                })
+            }
             _ => return,
         };
-        if !["position", "rotation", "scale", "anchor", "opacity"].contains(&property.as_str()) { return; }
-        if let Some(clip) = self.project.as_mut().and_then(|project| project.composition.find_clip(id)) {
-            if clip.metadata.locked { return; }
-            if let Some(key) = clip.keyframes.iter_mut().find(|key| key.frame == frame && key.property == property) {
+        if !["position", "rotation", "scale", "anchor", "opacity"].contains(&property.as_str()) {
+            return;
+        }
+        if let Some(clip) = self
+            .project
+            .as_mut()
+            .and_then(|project| project.composition.find_clip(id))
+        {
+            if clip.metadata.locked {
+                return;
+            }
+            if let Some(key) = clip
+                .keyframes
+                .iter_mut()
+                .find(|key| key.frame == frame && key.property == property)
+            {
                 key.value = value;
                 key.preview = true;
             } else {
-                clip.keyframes.push(ClipKeyframe { frame, property, value, preview: true });
+                clip.keyframes.push(ClipKeyframe {
+                    frame,
+                    property,
+                    value,
+                    preview: true,
+                });
             }
         }
     }
 
     pub fn clear_clip_preview_keyframes(&mut self) {
         if let Some(project) = self.project.as_mut() {
-            for clip in &mut project.composition.clips { clip.keyframes.retain(|key| !key.preview); }
+            for clip in &mut project.composition.clips {
+                clip.keyframes.retain(|key| !key.preview);
+            }
         }
     }
 
@@ -507,9 +608,7 @@ impl MointoCore {
                 let key_value = clip
                     .keyframes
                     .iter()
-                    .find(|key| {
-                        key.frame == frame && key.property == property && !key.preview
-                    })
+                    .find(|key| key.frame == frame && key.property == property && !key.preview)
                     .map(|key| key.value.clone());
                 let is_last_property_key = clip
                     .keyframes
@@ -547,12 +646,39 @@ impl MointoCore {
         }
     }
 
-    pub fn move_clip_keyframe(&mut self, clip_id_str: String, from_frame: u32, to_frame: u32, property: String) {
-        let Ok(id) = Uuid::parse_str(&clip_id_str) else { return; };
-        if let Some(clip) = self.project.as_mut().and_then(|project| project.composition.find_clip(id)) {
-            if clip.metadata.locked || to_frame < clip.metadata.start || to_frame >= clip.metadata.start + clip.metadata.duration { return; }
-            if clip.keyframes.iter().any(|key| key.frame == to_frame && key.property == property) { return; }
-            if let Some(key) = clip.keyframes.iter_mut().find(|key| key.frame == from_frame && key.property == property && !key.preview) {
+    pub fn move_clip_keyframe(
+        &mut self,
+        clip_id_str: String,
+        from_frame: u32,
+        to_frame: u32,
+        property: String,
+    ) {
+        let Ok(id) = Uuid::parse_str(&clip_id_str) else {
+            return;
+        };
+        if let Some(clip) = self
+            .project
+            .as_mut()
+            .and_then(|project| project.composition.find_clip(id))
+        {
+            if clip.metadata.locked
+                || to_frame < clip.metadata.start
+                || to_frame >= clip.metadata.start + clip.metadata.duration
+            {
+                return;
+            }
+            if clip
+                .keyframes
+                .iter()
+                .any(|key| key.frame == to_frame && key.property == property)
+            {
+                return;
+            }
+            if let Some(key) = clip
+                .keyframes
+                .iter_mut()
+                .find(|key| key.frame == from_frame && key.property == property && !key.preview)
+            {
                 key.frame = to_frame;
                 clip.keyframes.sort_by_key(|key| key.frame);
             }

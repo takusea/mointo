@@ -55,7 +55,7 @@ export const useClipCommands = ({
 		return newClip.id;
 	};
 
-	const duplicateClip = async (id: string | undefined) => {
+	const duplicateClip = async (id: string | undefined, linkImage = false) => {
 		const clip = clips.find((candidate) => candidate.id === id);
 		if (clip == null || clip.locked || isLayerLocked(clip.layer_id)) return;
 
@@ -69,7 +69,7 @@ export const useClipCommands = ({
 				(candidate) =>
 					start < candidate.start + candidate.duration &&
 					candidate.start < start + clip.duration,
-				)
+			)
 		) {
 			start = Math.max(
 				start + 1,
@@ -101,13 +101,20 @@ export const useClipCommands = ({
 				opacity: clip.opacity,
 				blend_mode: clip.blend_mode,
 			});
-			const pixels = await core.getClipPixels(clip.id);
-			if (pixels != null) await core.replaceClipPixels(duplicate.id, pixels);
+			if (linkImage) {
+				await core.linkClips(clip.id, duplicate.id);
+			} else {
+				const pixels = await core.getClipPixels(clip.id);
+				if (pixels != null) await core.replaceClipPixels(duplicate.id, pixels);
+			}
 			onClipSelected(duplicate.id, duplicate.layer_id, true);
 		} finally {
 			await core.endActionGroup();
 		}
 	};
+
+	const duplicateLinkedClip = (id: string | undefined) =>
+		duplicateClip(id, true);
 
 	const deleteClip = async (id: string) => {
 		const clip = clips.find((candidate) => candidate.id === id);
@@ -215,5 +222,6 @@ export const useClipCommands = ({
 		changeClipProperties,
 		ensureClipAt,
 		duplicateClip,
+		duplicateLinkedClip,
 	};
 };

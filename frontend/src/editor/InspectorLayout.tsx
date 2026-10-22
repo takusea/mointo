@@ -229,6 +229,8 @@ const InspectorLayout = () => {
 				>
 					<div className="pointer-events-auto flex flex-col gap-2">
 						<ClipInspector
+							clips={clipContext.clips}
+							onUnlink={() => void core.unlinkClip(selectedClip.id)}
 							clip={
 								evaluated
 									? { ...selectedClip, opacity: evaluated.opacity }

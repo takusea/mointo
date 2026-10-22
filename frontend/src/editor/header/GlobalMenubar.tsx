@@ -161,6 +161,11 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.duplicateClip)}
 					onSelect={clipContext.duplicateSelectedClip}
 				/>
+				<MenubarItem
+					label={t("menubar.duplicateLinkedClip")}
+					shortcut={formatShortcut(shortcuts.duplicateLinkedClip)}
+					onSelect={clipContext.linkDuplicateSelectedClip}
+				/>
 			</MenubarMenu>
 			<MenubarMenu label={t("menubar.view")}>
 				<MenubarItem

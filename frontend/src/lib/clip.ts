@@ -2,6 +2,7 @@ import type { LayerId } from "./layer";
 
 export type ClipMetadata = {
 	id: string;
+	asset_id: string;
 	name: string;
 	width: number;
 	height: number;

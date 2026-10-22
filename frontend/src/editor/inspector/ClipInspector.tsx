@@ -12,6 +12,7 @@ import {
 	IconLock,
 	IconLockOpen,
 	IconRotate,
+	IconUnlink,
 } from "@tabler/icons-react";
 import Card from "~/components/Card";
 import IconButton from "~/components/IconButton";
@@ -26,6 +27,8 @@ import type { Transform } from "~/lib/transform";
 
 type Props = {
 	clip: ClipMetadata;
+	clips: ClipMetadata[];
+	onUnlink: () => void;
 	isLayerLocked: boolean;
 	transform: Transform;
 	onStartChange: (start: number) => void;
@@ -52,6 +55,8 @@ type Props = {
 
 const ClipInspector = ({
 	clip,
+	clips,
+	onUnlink,
 	isLayerLocked,
 	transform,
 	onStartChange,
@@ -104,6 +109,16 @@ const ClipInspector = ({
 						aria-pressed={isLocked}
 						onClick={() => onPropertiesChange({ locked: !isLocked })}
 					/>
+					{clips.some(
+						(candidate) =>
+							candidate.id !== clip.id && candidate.asset_id === clip.asset_id,
+					) && (
+						<IconButton
+							icon={IconUnlink}
+							label={t("inspector.unlinkClip")}
+							onClick={onUnlink}
+						/>
+					)}
 				</div>
 				<span className="font-medium">{t("inspector.name")}</span>
 				<TextField

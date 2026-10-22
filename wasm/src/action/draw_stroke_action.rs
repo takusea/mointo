@@ -109,6 +109,7 @@ mod tests {
                 opacity: 1.0,
                 blend_mode: BlendMode::Normal,
             },
+            asset_id: Uuid::new_v4(),
             transform: Default::default(),
             keyframes: Vec::new(),
             image,

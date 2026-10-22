@@ -17,6 +17,7 @@ export const ShortcutsProvider = ({ children }: Props) => {
 		storageKeys.shortcuts,
 		defaultShortcuts,
 	);
+	const resolvedShortcuts = { ...defaultShortcuts, ...shortcuts };
 
 	const setShortcut = (id: ShortcutId, shortcut: string) => {
 		setShortcuts((current) => ({ ...current, [id]: shortcut }));
@@ -25,7 +26,9 @@ export const ShortcutsProvider = ({ children }: Props) => {
 	const resetShortcuts = () => setShortcuts(defaultShortcuts);
 
 	return (
-		<ShortcutsContext value={{ shortcuts, setShortcut, resetShortcuts }}>
+		<ShortcutsContext
+			value={{ shortcuts: resolvedShortcuts, setShortcut, resetShortcuts }}
+		>
 			{children}
 		</ShortcutsContext>
 	);
