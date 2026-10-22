@@ -337,25 +337,40 @@ impl Composition {
             .map(|clip| (clip, self.layer_index(clip.metadata.layer_id).unwrap()))
             .collect();
         current.sort_by_key(|(_, layer_index)| *layer_index);
-        let previous: Vec<_> = if frame_index > 0 {
-            self.clips
-                .iter()
-                .filter(|clip| {
-                    clip.contains_frame(frame_index - 1) && clip.metadata.layer_id == layer_id
-                })
-                .filter(visible)
-                .collect()
-        } else {
-            Vec::new()
-        };
-        let next: Vec<_> = self
-            .clips
-            .iter()
-            .filter(|clip| {
-                clip.contains_frame(frame_index + 1) && clip.metadata.layer_id == layer_id
-            })
-            .filter(visible)
-            .collect();
+        let current_clip = self.clips.iter().find(|clip| {
+            clip.metadata.layer_id == layer_id && clip.contains_frame(frame_index)
+        });
+        let anchor_start = current_clip.map_or(frame_index, |clip| clip.metadata.start);
+        let anchor_end = current_clip.map_or(frame_index.saturating_add(1), |clip| {
+            clip.metadata.start.saturating_add(clip.metadata.duration)
+        });
+        let previous_clip = self.clips.iter()
+            .filter(|clip| clip.metadata.layer_id == layer_id)
+            .filter(|clip| clip.metadata.start.saturating_add(clip.metadata.duration) == anchor_start)
+            .max_by_key(|clip| clip.metadata.start.saturating_add(clip.metadata.duration));
+        let next_clip = self.clips.iter()
+            .filter(|clip| clip.metadata.layer_id == layer_id)
+            .filter(|clip| clip.metadata.start == anchor_end)
+            .min_by_key(|clip| clip.metadata.start);
+        let mut previous = previous_clip.filter(|clip| {
+            !clip.metadata.hidden && !self.is_layer_hidden(self.layer_index(layer_id).unwrap())
+        }).cloned().into_iter().collect::<Vec<_>>();
+        if let Some(clip) = previous.first_mut() {
+            let sample_frame = clip.metadata.start.saturating_add(clip.metadata.duration).saturating_sub(1);
+            let (transform, opacity) = clip.values_at(sample_frame);
+            clip.transform = transform;
+            clip.metadata.opacity = opacity;
+        }
+        let mut next = next_clip.filter(|clip| {
+            !clip.metadata.hidden && !self.is_layer_hidden(self.layer_index(layer_id).unwrap())
+        }).cloned().into_iter().collect::<Vec<_>>();
+        if let Some(clip) = next.first_mut() {
+            let (transform, opacity) = clip.values_at(clip.metadata.start);
+            clip.transform = transform;
+            clip.metadata.opacity = opacity;
+        }
+        let previous: Vec<_> = previous.iter().collect();
+        let next: Vec<_> = next.iter().collect();
         renderer
             .render_frame_with_onion_to_canvas(
                 &current,
