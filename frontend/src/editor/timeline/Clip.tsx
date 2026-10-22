@@ -28,6 +28,7 @@ type Drag = {
 	pointerId: number;
 	startX: number;
 	startY: number;
+	grabOffsetY: number;
 	startFrame: number;
 	duration: number;
 	layerIndex: number;
@@ -89,6 +90,8 @@ const Clip = ({
 			pointerId: event.pointerId,
 			startX: event.clientX,
 			startY: event.clientY,
+			grabOffsetY:
+				event.clientY - event.currentTarget.getBoundingClientRect().top,
 			startFrame,
 			duration,
 			layerIndex,
@@ -114,7 +117,9 @@ const Clip = ({
 			Math.max(
 				0,
 				drag.layerIndex +
-					Math.floor((event.clientY - drag.startY) / layerHeight),
+					Math.floor(
+						(drag.grabOffsetY + event.clientY - drag.startY) / layerHeight,
+					),
 			),
 		);
 	};
