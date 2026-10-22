@@ -22,6 +22,11 @@ export const useCanvasNavigation = (
 	const zoomAnchor = useRef<Point | null>(null);
 
 	const handleContainerPointerDown = (event: React.PointerEvent) => {
+		if (
+			document.documentElement.dataset.drawing === "true" &&
+			event.pointerType !== "touch"
+		)
+			return;
 		if (event.button === 0 && event.ctrlKey) {
 			zoomAnchor.current = { x: event.clientX, y: event.clientY };
 		}
@@ -51,6 +56,10 @@ export const useCanvasNavigation = (
 
 	const handleContainerPointerCancel = handleContainerPointerUp;
 	const handleWheel = (event: React.WheelEvent) => {
+		if (document.documentElement.dataset.drawing === "true") {
+			event.preventDefault();
+			return;
+		}
 		const step = event.deltaY < 0 ? 1 : -1;
 		if (event.shiftKey) {
 			canvasView.rotate(step);
@@ -68,6 +77,11 @@ export const useCanvasNavigation = (
 	};
 
 	const handleContainerPointerMove = (event: React.PointerEvent) => {
+		if (
+			document.documentElement.dataset.drawing === "true" &&
+			event.pointerType !== "touch"
+		)
+			return;
 		if (
 			event.pointerType === "touch" &&
 			pointers.current.has(event.pointerId)

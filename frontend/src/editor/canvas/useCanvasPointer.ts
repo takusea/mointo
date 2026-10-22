@@ -292,6 +292,7 @@ export const useCanvasPointer = (
 				}
 				return;
 			}
+			if (canvasDraw.drawState.isDrawing) return;
 		}
 		if (canvasRef.current == null) return;
 		const isPenEraser =
@@ -511,9 +512,7 @@ export const useCanvasPointer = (
 		if (
 			!canvasDraw.drawState.isDrawing ||
 			(!(event.buttons & 1) &&
-				!(event.pointerType === "pen" && (event.buttons & 32) !== 0)) ||
-			event.shiftKey ||
-			event.ctrlKey
+				!(event.pointerType === "pen" && (event.buttons & 32) !== 0))
 		) {
 			return;
 		}

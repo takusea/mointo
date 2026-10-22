@@ -11,6 +11,12 @@ const preventWheelDefault = (event: WheelEvent) => {
 	}
 };
 const preventKeydownDefault = (event: KeyboardEvent) => {
+	if (document.documentElement.dataset.drawing === "true") {
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		return;
+	}
+
 	if (event.key === "Escape") {
 		if (document.activeElement instanceof HTMLElement) {
 			document.activeElement.blur();
@@ -37,10 +43,20 @@ const preventKeydownDefault = (event: KeyboardEvent) => {
 
 	event.preventDefault();
 };
+const preventDrawingPointerInterruption = (event: PointerEvent) => {
+	if (
+		document.documentElement.dataset.drawing !== "true" ||
+		event.pointerType === "touch"
+	)
+		return;
+	event.preventDefault();
+	event.stopImmediatePropagation();
+};
 
 document.addEventListener("contextmenu", preventDefault);
 document.addEventListener("wheel", preventWheelDefault, { passive: false });
-document.addEventListener("keydown", preventKeydownDefault);
+document.addEventListener("keydown", preventKeydownDefault, true);
+document.addEventListener("pointerdown", preventDrawingPointerInterruption, true);
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

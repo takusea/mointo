@@ -41,6 +41,7 @@ export const useCanvasDraw = (currentFrame: number) => {
 		clipId: string,
 		tool = toolContext.tool,
 	) => {
+		document.documentElement.dataset.drawing = "true";
 		drawingClipIdRef.current = clipId;
 		drawingToolRef.current = tool;
 		inputPointCountRef.current = 0;
@@ -87,6 +88,7 @@ export const useCanvasDraw = (currentFrame: number) => {
 		inputPointCountRef.current = 0;
 		stabilizedPointRef.current = null;
 		updateDrawState({ isDrawing: false });
+		delete document.documentElement.dataset.drawing;
 	};
 
 	const draw = (state: DrawState) => {
