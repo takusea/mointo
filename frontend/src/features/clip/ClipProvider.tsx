@@ -46,6 +46,7 @@ export const ClipProvider = ({ children }: Props) => {
 		currentClip,
 		selection: selectionState.selection,
 		selectedLayerId: layerContext.selectedLayerId,
+		layers: layerContext.layers,
 		currentFrame: playbackContext.currentFrame,
 		projectSettings: projectContext.settings,
 		isLayerLocked: layerContext.isLayerLocked,
