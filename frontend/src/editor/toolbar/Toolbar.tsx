@@ -1,7 +1,6 @@
 import {
 	IconArrowBackUp,
 	IconArrowForwardUp,
-	IconArrowsMove,
 	IconBucketDroplet,
 	IconClipboard,
 	IconColorPicker,
@@ -23,6 +22,7 @@ import {
 	IconRestore,
 	IconRotate,
 	IconScissors,
+	IconTransformPoint,
 	IconZoom,
 	IconZoomReset,
 } from "@tabler/icons-react";
@@ -130,7 +130,7 @@ const Toolbar = () => {
 	useHotkeys(shortcuts.lastFrame, () =>
 		playbackContext.setCurrentFrame(playbackContext.endFrame),
 	);
-	useHotkeys(shortcuts.moveTool, () => toolContext.setTool("move"));
+	useHotkeys(shortcuts.transformTool, () => toolContext.setTool("move"));
 	useHotkeys(shortcuts.eyedropperTool, () => toolContext.setTool("eyedropper"));
 	useHotkeys(shortcuts.penTool, () => toolContext.setTool("pen"));
 	useHotkeys(shortcuts.eraserTool, () => toolContext.setTool("eraser"));
@@ -184,9 +184,9 @@ const Toolbar = () => {
 						onClick={() => toolContext.setTool("select")}
 					/>
 					<IconButton
-						label={t("toolbar.move")}
-						shortcut={formatShortcut(shortcuts.moveTool)}
-						icon={IconArrowsMove}
+						label={t("toolbar.transform")}
+						shortcut={formatShortcut(shortcuts.transformTool)}
+						icon={IconTransformPoint}
 						variant={toolContext.tool === "move" ? "primary" : "default"}
 						onClick={() => toolContext.setTool("move")}
 					/>
