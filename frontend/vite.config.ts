@@ -29,6 +29,14 @@ export default defineConfig({
 				display: "standalone",
 				start_url: "/",
 				display_override: ["window-controls-overlay"],
+				file_handlers: [
+					{
+						action: "/",
+						accept: {
+							"application/vnd.moiproj": [".moiproj"],
+						},
+					},
+				],
 				icons: [
 					{
 						src: "pwa-64x64.png",

@@ -7,16 +7,20 @@ import GlobalHeader from "~/editor/header/GlobalHeader";
 import Timeline from "~/editor/timeline/Timeline";
 import { useI18n } from "~/features/i18n/useI18n";
 import { useProject } from "~/features/project/useProject";
+import { useProjectFileLaunch } from "~/features/project/useProjectFileLaunch";
 import DrawCanvas from "./canvas/Canvas";
 import InspectorLayout from "./InspectorLayout";
 
 const SPLITTER_HEIGHT = 8;
 const MIN_CANVAS_HEIGHT = 160;
 const MIN_TIMELINE_HEIGHT = 96;
+
 const Editor = () => {
 	const { t } = useI18n();
 	const project = useProject();
 	const dialogs = useDialogs();
+
+	useProjectFileLaunch(project.importFile);
 
 	const [timelineHeight, setTimelineHeight] = useState<number>(160);
 	const maxTimelineHeight = Math.max(

@@ -36,29 +36,22 @@ export const useProject = () => {
 
 	useDocumentTitle(projectTitle ? `${projectTitle} - mointo` : "mointo");
 
-	const open = () => {
+	const importFile = async (file: File) => {
 		if (!confirmDiscard()) return;
+		const data = await file.arrayBuffer();
+		await core.importProject(new Uint8Array(data));
+		const projectName = file.name.replace(/\.[^.]+$/, "");
+		await core.setProjectTitle(projectName || file.name);
+		setSavedRevision(core.getSnapshot().revision);
+	};
+
+	const open = () => {
 		const input = document.createElement("input");
 		input.type = "file";
 		input.accept = ".moiproj";
 		input.addEventListener("change", () => {
 			const file = input.files?.[0];
-			if (!file) {
-				throw new Error("file is null");
-			}
-			const reader = new FileReader();
-			reader.addEventListener("load", (event) => {
-				const result = event.target?.result;
-				if (!(result instanceof ArrayBuffer)) {
-					throw new Error("FileReader result is not an ArrayBuffer");
-				}
-				void core.importProject(new Uint8Array(result)).then(async () => {
-					const projectName = file.name.replace(/\.[^.]+$/, "");
-					await core.setProjectTitle(projectName || file.name);
-					setSavedRevision(core.getSnapshot().revision);
-				});
-			});
-			reader.readAsArrayBuffer(file);
+			if (file) void importFile(file);
 		});
 		input.click();
 		input.remove();
@@ -87,6 +80,7 @@ export const useProject = () => {
 		setSettings,
 		setTitle,
 		open,
+		importFile,
 		save,
 		hasUnsavedChanges,
 		confirmDiscard,
