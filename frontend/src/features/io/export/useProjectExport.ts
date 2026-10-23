@@ -32,8 +32,8 @@ export const useProjectExport = () => {
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement("a");
 			const title =
-				settings.title
-					.replace(/[<>:"/\\|?*]/g, "_")
+				project.title
+					?.replace(/[<>:"/\\|?*]/g, "_")
 					.replace(/\p{Cc}/gu, "_")
 					.trim() || "project";
 			link.href = url;

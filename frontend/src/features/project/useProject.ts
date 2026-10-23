@@ -3,11 +3,11 @@ import { useDocumentTitle } from "usehooks-ts";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useI18n } from "~/features/i18n/useI18n";
-import type { ProjectSettings } from "./type";
+import type { CompositionSettings } from "./type";
 
 export const useProject = () => {
 	const core = useCore();
-	const { projectSettings, revision } = useCoreSnapshot();
+	const { compositionSettings, projectTitle, revision } = useCoreSnapshot();
 	const { t } = useI18n();
 	const [savedRevision, setSavedRevision] = useState(revision);
 	const hasUnsavedChanges = revision !== savedRevision;
@@ -26,16 +26,15 @@ export const useProject = () => {
 		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
 	}, [hasUnsavedChanges]);
 
-	const create = (settings: ProjectSettings) => {
-		return core.createProject(settings);
+	const create = (title: string, settings: CompositionSettings) => {
+		return core.createProject(title, settings);
 	};
-	const setSettings = (newSettings: ProjectSettings) => {
-		return core.setProjectSettings(newSettings);
+	const setSettings = (newSettings: CompositionSettings) => {
+		return core.setCompositionSettings(newSettings);
 	};
+	const setTitle = (title: string) => core.setProjectTitle(title);
 
-	useDocumentTitle(
-		projectSettings ? `${projectSettings.title} - mointo` : "mointo",
-	);
+	useDocumentTitle(projectTitle ? `${projectTitle} - mointo` : "mointo");
 
 	const open = () => {
 		if (!confirmDiscard()) return;
@@ -71,7 +70,7 @@ export const useProject = () => {
 		const link = document.createElement("a");
 		link.href = URL.createObjectURL(blob);
 		const title =
-			projectSettings?.title.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
+			projectTitle?.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
 		link.download = `${title}.moiproj`;
 		link.click();
 		link.remove();
@@ -81,8 +80,10 @@ export const useProject = () => {
 
 	return {
 		create,
-		settings: projectSettings,
+		settings: compositionSettings,
+		title: projectTitle,
 		setSettings,
+		setTitle,
 		open,
 		save,
 		hasUnsavedChanges,

@@ -3,7 +3,7 @@ import { useCore } from "~/core/useCore";
 import type { ClipMetadata } from "~/lib/clip";
 import type { LayerId, LayerState } from "~/lib/layer";
 
-type ProjectSettings = {
+type CompositionSettings = {
 	width: number;
 	height: number;
 } | null;
@@ -24,7 +24,7 @@ type Options = {
 	selectedLayerId: LayerId | null;
 	layers: LayerState[];
 	currentFrame: number;
-	projectSettings: ProjectSettings | undefined;
+	compositionSettings: CompositionSettings | undefined;
 	isLayerLocked: (layerId: LayerId) => boolean;
 	onClipSelected: (
 		id: string,
@@ -39,7 +39,7 @@ export const useClipboard = ({
 	selectedLayerId,
 	layers,
 	currentFrame,
-	projectSettings,
+	compositionSettings,
 	isLayerLocked,
 	onClipSelected,
 }: Options) => {
@@ -48,7 +48,7 @@ export const useClipboard = ({
 
 	const getClipboardImage = async () => {
 		const clip = currentClip;
-		const settings = projectSettings;
+		const settings = compositionSettings;
 		if (clip == null || settings == null) return undefined;
 
 		const pixels = await core.getClipPixels(clip.id);
@@ -116,7 +116,7 @@ export const useClipboard = ({
 		if (pixels == null) {
 			throw new Error(`Clip pixel data is unavailable for clip ${clip.id}.`);
 		}
-		const settings = projectSettings;
+		const settings = compositionSettings;
 		if (settings == null) return;
 		for (let row = 0; row < image.height; row++) {
 			const start = ((image.y + row) * settings.width + image.x) * 4;
@@ -126,7 +126,7 @@ export const useClipboard = ({
 	};
 
 	const paste = async () => {
-		const settings = projectSettings;
+		const settings = compositionSettings;
 		if (clipboard == null || settings == null || selectedLayerId == null)
 			return;
 		const selectedLayerIndex = layers.findIndex(

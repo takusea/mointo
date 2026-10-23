@@ -1,5 +1,5 @@
 import type { MessageKey } from "~/features/i18n/I18nContext";
-import type { ProjectSettings } from "~/features/project/type";
+import type { CompositionSettings } from "~/features/project/type";
 
 export type ProjectExportFormat = "gif" | "apng" | "png-sequence";
 
@@ -13,7 +13,7 @@ export type ProjectExporter = {
 	extension: string;
 	labelKey: MessageKey;
 	encode: (
-		settings: ProjectSettings,
+		settings: CompositionSettings,
 		frames: AsyncIterable<ProjectFrame>,
 	) => Promise<Blob>;
 };
@@ -23,7 +23,7 @@ export type RenderProjectFrame = (
 ) => Promise<Uint8ClampedArray | undefined>;
 
 export async function* renderProjectFrames(
-	settings: ProjectSettings,
+	settings: CompositionSettings,
 	renderFrame: RenderProjectFrame,
 	onProgress: (completed: number, total: number) => void,
 ): AsyncGenerator<ProjectFrame> {
@@ -55,7 +55,7 @@ export async function* renderProjectFrames(
 }
 
 export const exportProject = (
-	settings: ProjectSettings,
+	settings: CompositionSettings,
 	renderFrame: RenderProjectFrame,
 	exporter: ProjectExporter,
 	onProgress: (completed: number, total: number) => void,

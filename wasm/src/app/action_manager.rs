@@ -175,7 +175,7 @@ mod tests {
     use super::ActionManager;
     use crate::app::action::{Action, UndoableAction};
     use crate::app::project::Project;
-    use crate::app::project_settings::ProjectSettings;
+    use crate::app::composition_settings::CompositionSettings;
 
     struct SetTitleAction {
         title: String,
@@ -185,16 +185,16 @@ mod tests {
     impl Action for SetTitleAction {
         fn apply(&mut self, project: &mut Project) {
             if self.previous.is_none() {
-                self.previous = Some(project.settings.title.clone());
+                self.previous = Some(project.title.clone());
             }
-            project.settings.title = self.title.clone();
+            project.title = self.title.clone();
         }
     }
 
     impl UndoableAction for SetTitleAction {
         fn undo(&mut self, project: &mut Project) {
             if let Some(previous) = self.previous.as_ref() {
-                project.settings.title = previous.clone();
+                project.title = previous.clone();
             }
         }
     }
@@ -202,8 +202,7 @@ mod tests {
     #[test]
     fn grouped_actions_undo_and_redo_as_one() {
         let mut manager = ActionManager::new();
-        let mut project = Project::new(ProjectSettings {
-            title: "Original".to_string(),
+        let mut project = Project::new("Original".to_string(), CompositionSettings {
             width: 1,
             height: 1,
             frame_rate: 1,
@@ -231,9 +230,9 @@ mod tests {
         manager.end_action_group();
         assert!(manager.can_undo());
         manager.undo(&mut project);
-        assert_eq!(project.settings.title, "Original");
+        assert_eq!(project.title, "Original");
 
         manager.redo(&mut project);
-        assert_eq!(project.settings.title, "Final edit");
+        assert_eq!(project.title, "Final edit");
     }
 }

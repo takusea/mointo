@@ -9,7 +9,7 @@ type SelectionRectangle = {
 	height: number;
 };
 
-type ProjectSettings = {
+type CompositionSettings = {
 	width: number;
 	height: number;
 } | null;
@@ -20,7 +20,7 @@ type Options = {
 	currentLayerId: LayerId | null;
 	currentFrame: number;
 	selectLayer: (layerId: LayerId) => void;
-	projectSettings: ProjectSettings | undefined;
+	compositionSettings: CompositionSettings | undefined;
 };
 
 export const useClipSelection = ({
@@ -29,7 +29,7 @@ export const useClipSelection = ({
 	currentLayerId,
 	currentFrame,
 	selectLayer,
-	projectSettings,
+	compositionSettings,
 }: Options) => {
 	const [selectedClipId, setSelectedClipId] = useState<string>();
 	const [selection, setSelection] = useState<SelectionRectangle>();
@@ -61,12 +61,12 @@ export const useClipSelection = ({
 	};
 
 	const selectAll = () => {
-		if (projectSettings == null) return;
+		if (compositionSettings == null) return;
 		setSelection({
 			x: 0,
 			y: 0,
-			width: projectSettings.width,
-			height: projectSettings.height,
+			width: compositionSettings.width,
+			height: compositionSettings.height,
 		});
 	};
 

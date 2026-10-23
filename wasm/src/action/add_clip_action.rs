@@ -44,7 +44,7 @@ impl Action for AddClipAction {
         let clip_id = *self.clip_id.get_or_insert_with(Uuid::new_v4);
         let name = self
             .name
-            .get_or_insert_with(|| format!("Clip {}", project.composition.clips.len() + 1))
+            .get_or_insert_with(|| format!("Clip {}", project.composition_mut().clips.len() + 1))
             .clone();
         let clip = Clip {
             metadata: ClipMetadata {
@@ -65,12 +65,12 @@ impl Action for AddClipAction {
             image: {
                 let (width, height) = self
                     .image_size
-                    .unwrap_or((project.settings.width, project.settings.height));
+                    .unwrap_or((project.composition().settings.width, project.composition().settings.height));
                 Image::new(width, height)
             },
             image_revision: 0,
         };
-        project.composition.add_clip(clip);
+        project.composition_mut().add_clip(clip);
     }
 }
 
@@ -80,13 +80,12 @@ mod tests {
     use crate::action::move_clip_action::MoveClipAction;
     use crate::app::action_manager::ActionManager;
     use crate::app::project::Project;
-    use crate::app::project_settings::ProjectSettings;
+    use crate::app::composition_settings::CompositionSettings;
 
     #[test]
     fn redo_preserves_clip_id_for_later_action_redo() {
         let mut manager = ActionManager::new();
-        let mut project = Project::new(ProjectSettings {
-            title: "Test".to_string(),
+        let mut project = Project::new("Test".to_string(), CompositionSettings {
             width: 1,
             height: 1,
             frame_rate: 1,
@@ -94,13 +93,13 @@ mod tests {
             end_frame: 1,
         });
 
-        let original_layer_id = project.composition.get_layers()[0].id;
-        let move_target_layer_id = project.composition.get_layers()[1].id;
+        let original_layer_id = project.composition_mut().get_layers()[0].id;
+        let move_target_layer_id = project.composition_mut().get_layers()[1].id;
         manager.do_action(
             Box::new(AddClipAction::new(0, original_layer_id)),
             &mut project,
         );
-        let clip_id = project.composition.clips[0].metadata.id;
+        let clip_id = project.composition_mut().clips[0].metadata.id;
         manager.do_action(
             Box::new(MoveClipAction::new(clip_id, 5, move_target_layer_id)),
             &mut project,
@@ -108,35 +107,35 @@ mod tests {
 
         manager.undo(&mut project);
         assert_eq!(
-            project.composition.clips[0].metadata.layer_id,
+            project.composition_mut().clips[0].metadata.layer_id,
             original_layer_id
         );
         manager.undo(&mut project);
-        assert!(project.composition.clips.is_empty());
+        assert!(project.composition_mut().clips.is_empty());
 
-        project.composition.insert_layer(0);
+        project.composition_mut().insert_layer(0);
         manager.redo(&mut project);
-        assert_eq!(project.composition.clips[0].metadata.id, clip_id);
+        assert_eq!(project.composition_mut().clips[0].metadata.id, clip_id);
         assert_eq!(
-            project.composition.clips[0].metadata.layer_id,
+            project.composition_mut().clips[0].metadata.layer_id,
             original_layer_id
         );
-        assert_eq!(project.composition.clips[0].metadata.start, 0);
+        assert_eq!(project.composition_mut().clips[0].metadata.start, 0);
 
         manager.redo(&mut project);
-        assert_eq!(project.composition.clips[0].metadata.id, clip_id);
+        assert_eq!(project.composition_mut().clips[0].metadata.id, clip_id);
         assert_eq!(
-            project.composition.clips[0].metadata.layer_id,
+            project.composition_mut().clips[0].metadata.layer_id,
             move_target_layer_id
         );
-        assert_eq!(project.composition.clips[0].metadata.start, 5);
+        assert_eq!(project.composition_mut().clips[0].metadata.start, 5);
     }
 }
 
 impl UndoableAction for AddClipAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(clip_id) = self.clip_id {
-            project.composition.delete_clip(clip_id);
+            project.composition_mut().delete_clip(clip_id);
         }
     }
 }

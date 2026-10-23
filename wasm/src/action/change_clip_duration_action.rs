@@ -21,7 +21,7 @@ impl ChangeClipDurationAction {
 
 impl Action for ChangeClipDurationAction {
     fn apply(&mut self, project: &mut Project) {
-        if let Some(clip) = project.composition.find_clip(self.clip_id) {
+        if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
             if clip.metadata.locked {
                 return;
             }
@@ -36,7 +36,7 @@ impl Action for ChangeClipDurationAction {
 impl UndoableAction for ChangeClipDurationAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(previous) = self.previous {
-            if let Some(clip) = project.composition.find_clip(self.clip_id) {
+            if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
                 clip.metadata.duration = previous;
             }
         }

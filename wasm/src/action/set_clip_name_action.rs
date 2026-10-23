@@ -21,7 +21,7 @@ impl SetClipNameAction {
 
 impl Action for SetClipNameAction {
     fn apply(&mut self, project: &mut Project) {
-        if let Some(clip) = project.composition.find_clip(self.clip_id) {
+        if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
             if self.previous.is_none() {
                 self.previous = Some(clip.metadata.name.clone());
             }
@@ -33,7 +33,7 @@ impl Action for SetClipNameAction {
 impl UndoableAction for SetClipNameAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(previous) = &self.previous {
-            if let Some(clip) = project.composition.find_clip(self.clip_id) {
+            if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
                 clip.metadata.name = previous.clone();
             }
         }

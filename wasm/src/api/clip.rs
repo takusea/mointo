@@ -48,11 +48,11 @@ impl MointoCore {
                 .as_ref()
                 .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
             let source_clip = project
-                .composition
+                .composition()
                 .get_clip(source)
                 .ok_or_else(|| JsValue::from_str("Source clip does not exist"))?;
             let target_clip = project
-                .composition
+                .composition()
                 .get_clip(target)
                 .ok_or_else(|| JsValue::from_str("Target clip does not exist"))?;
             if source_clip.asset_id == target_clip.asset_id {
@@ -77,7 +77,7 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition.get_clip(id).is_none() {
+        if project.composition_mut().get_clip(id).is_none() {
             return Err(JsValue::from_str("Clip does not exist"));
         }
         self.action_manager
@@ -87,7 +87,7 @@ impl MointoCore {
 
     pub fn sync_clip_assets(&mut self) {
         if let Some(project) = self.project.as_mut() {
-            project.composition.reconcile_assets();
+            project.composition_mut().reconcile_assets();
         }
     }
 
@@ -100,7 +100,7 @@ impl MointoCore {
         };
 
         let clip_metadatas: Vec<ClipMetadataView<'_>> = project
-            .composition
+            .composition()
             .get_clips()
             .iter()
             .map(|clip| {
@@ -112,7 +112,7 @@ impl MointoCore {
                     start: metadata.start,
                     duration: metadata.duration,
                     layer_index: project
-                        .composition
+                        .composition()
                         .layer_index(metadata.layer_id)
                         .expect("Clip references an unknown layer"),
                     layer_id: metadata.layer_id,
@@ -135,7 +135,7 @@ impl MointoCore {
             None => return JsValue::undefined(),
         };
 
-        JsValue::from_serde(project.composition.get_layers()).unwrap()
+        JsValue::from_serde(project.composition().get_layers()).unwrap()
     }
 
     pub fn add_clip(&mut self, start_frame: u32, layer_id_str: String) -> Result<(), JsValue> {
@@ -146,7 +146,7 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition.layer_index(layer_id).is_none() {
+        if project.composition_mut().layer_index(layer_id).is_none() {
             return Err(JsValue::from_str("Layer does not exist"));
         }
         self.action_manager
@@ -171,7 +171,7 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition.layer_index(layer_id).is_none() {
+        if project.composition_mut().layer_index(layer_id).is_none() {
             return Err(JsValue::from_str("Layer does not exist"));
         }
         self.action_manager.do_action(
@@ -206,7 +206,7 @@ impl MointoCore {
         let clip_id = Uuid::parse_str(&clip_id_str).ok()?;
         let project = self.project.as_ref()?;
         let clip = project
-            .composition
+            .composition()
             .clips
             .iter()
             .find(|clip| clip.metadata.id == clip_id)?;
@@ -257,7 +257,7 @@ impl MointoCore {
         self.action_manager
             .record_pixel_changes_to_latest(clip_id, changes);
         let clip = project
-            .composition
+            .composition_mut()
             .clips
             .iter_mut()
             .find(|clip| clip.metadata.id == clip_id)
@@ -311,7 +311,7 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition.layer_index(layer_id).is_none() {
+        if project.composition_mut().layer_index(layer_id).is_none() {
             return Err(JsValue::from_str("Layer does not exist"));
         }
         let action = Box::new(MoveClipAction::new(clip_id, start_frame, layer_id));
@@ -411,7 +411,7 @@ impl MointoCore {
             }
         };
 
-        if let Some(clip) = project.composition.find_clip(clip_id) {
+        if let Some(clip) = project.composition_mut().find_clip(clip_id) {
             let transform = clip
                 .keyframes
                 .iter()
@@ -452,7 +452,7 @@ impl MointoCore {
         };
         self.project
             .as_ref()
-            .and_then(|p| p.composition.get_clip(id))
+            .and_then(|p| p.composition().get_clip(id))
             .map(|clip| JsValue::from_serde(&clip.keyframes).unwrap_or(JsValue::undefined()))
             .unwrap_or(JsValue::undefined())
     }
@@ -461,7 +461,7 @@ impl MointoCore {
         let Ok(id) = Uuid::parse_str(&clip_id_str) else {
             return None;
         };
-        let clip = self.project.as_ref()?.composition.get_clip(id)?;
+        let clip = self.project.as_ref()?.composition().get_clip(id)?;
         let frame = clip.keyframes.iter().find(|key| key.preview)?.frame;
         Some(clip.values_at(frame).1)
     }
@@ -505,7 +505,7 @@ impl MointoCore {
         if let Some(clip) = self
             .project
             .as_mut()
-            .and_then(|p| p.composition.find_clip(id))
+            .and_then(|p| p.composition_mut().find_clip(id))
         {
             if clip.metadata.locked {
                 return;
@@ -564,7 +564,7 @@ impl MointoCore {
         if let Some(clip) = self
             .project
             .as_mut()
-            .and_then(|project| project.composition.find_clip(id))
+            .and_then(|project| project.composition_mut().find_clip(id))
         {
             if clip.metadata.locked {
                 return;
@@ -589,7 +589,7 @@ impl MointoCore {
 
     pub fn clear_clip_preview_keyframes(&mut self) {
         if let Some(project) = self.project.as_mut() {
-            for clip in &mut project.composition.clips {
+            for clip in &mut project.composition_mut().clips {
                 clip.keyframes.retain(|key| !key.preview);
             }
         }
@@ -602,7 +602,7 @@ impl MointoCore {
         if let Some(clip) = self
             .project
             .as_mut()
-            .and_then(|p| p.composition.find_clip(id))
+            .and_then(|p| p.composition_mut().find_clip(id))
         {
             if !clip.metadata.locked {
                 let key_value = clip
@@ -659,7 +659,7 @@ impl MointoCore {
         if let Some(clip) = self
             .project
             .as_mut()
-            .and_then(|project| project.composition.find_clip(id))
+            .and_then(|project| project.composition_mut().find_clip(id))
         {
             if clip.metadata.locked
                 || to_frame < clip.metadata.start

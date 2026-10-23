@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Dialog from "~/components/Dialog";
+import Separator from "~/components/Separator";
+import TextField from "~/components/TextField";
 import { useI18n } from "~/features/i18n/useI18n";
-import ProjectSettingsForm from "./ProjectSettingsForm";
+import CompositionSettingsForm from "./CompositionSettingsForm";
 import {
 	DEFAULT_END_FRAME,
 	DEFAULT_FRAME_RATE,
@@ -20,8 +22,8 @@ const CreateNewProjectDialog = (props: Props) => {
 	const { t } = useI18n();
 	const project = useProject();
 
-	const [projectSettings, setProjectSettings] = useState({
-		title: t("nav.untitled"),
+	const [title, setTitle] = useState(t("nav.untitled"));
+	const [compositionSettings, setCompositionSettings] = useState({
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 		frameRate: DEFAULT_FRAME_RATE,
@@ -35,11 +37,16 @@ const CreateNewProjectDialog = (props: Props) => {
 			title={t("project.create")}
 			cancelText={t("common.cancel")}
 			submitText={t("project.createAction")}
-			onSubmit={() => project.create(projectSettings)}
+			onSubmit={() => project.create(title, compositionSettings)}
 		>
-			<ProjectSettingsForm
-				projectSettings={projectSettings}
-				onProjectSettingsChanged={setProjectSettings}
+			<div className="mb-2 flex flex-col gap-2">
+				<span className="font-medium">{t("project.name")}</span>
+				<TextField id="project-title" value={title} onValueChange={setTitle} />
+				<Separator />
+			</div>
+			<CompositionSettingsForm
+				compositionSettings={compositionSettings}
+				onCompositionSettingsChanged={setCompositionSettings}
 			/>
 		</Dialog>
 	);

@@ -27,7 +27,7 @@ impl Action for SetClipSizeAction {
         if self.width == 0 || self.height == 0 {
             return;
         }
-        if let Some(clip) = project.composition.find_clip(self.clip_id) {
+        if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
             if clip.metadata.locked {
                 return;
             }
@@ -56,7 +56,7 @@ impl UndoableAction for SetClipSizeAction {
     fn undo(&mut self, project: &mut Project) {
         if let (Some(previous), Some(clip)) = (
             self.previous.as_ref(),
-            project.composition.find_clip(self.clip_id),
+            project.composition_mut().find_clip(self.clip_id),
         ) {
             clip.set_image(previous.clone());
         }

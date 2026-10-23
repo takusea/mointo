@@ -22,7 +22,7 @@ impl SetClipPropertiesAction {
 
 impl Action for SetClipPropertiesAction {
     fn apply(&mut self, project: &mut Project) {
-        if let Some(clip) = project.composition.find_clip(self.clip_id) {
+        if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
             if clip.metadata.locked {
                 if !self.properties.locked {
                     self.previous = Some(clip.properties());
@@ -44,7 +44,7 @@ impl Action for SetClipPropertiesAction {
 impl UndoableAction for SetClipPropertiesAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(previous) = self.previous {
-            if let Some(clip) = project.composition.find_clip(self.clip_id) {
+            if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
                 clip.set_properties(previous);
             }
         }

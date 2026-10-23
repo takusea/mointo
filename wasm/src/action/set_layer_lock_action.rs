@@ -21,14 +21,14 @@ impl SetLayerLockAction {
 impl Action for SetLayerLockAction {
     fn apply(&mut self, project: &mut Project) {
         let was_locked = project
-            .composition
+            .composition()
             .is_layer_locked_by_id(self.layer_id)
             .expect("Layer action references an unknown layer");
         if self.previous.is_none() {
             self.previous = Some(was_locked);
         }
         project
-            .composition
+            .composition_mut()
             .set_layer_locked_by_id(self.layer_id, self.locked);
     }
 }
@@ -37,7 +37,7 @@ impl UndoableAction for SetLayerLockAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(previous) = self.previous {
             project
-                .composition
+                .composition_mut()
                 .set_layer_locked_by_id(self.layer_id, previous);
         }
     }

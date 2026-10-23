@@ -20,7 +20,7 @@ impl DrawStrokeAction {
     }
 
     fn apply_changes(&self, project: &mut Project, use_after: bool) {
-        let Some(clip) = project.composition.find_clip(self.clip_id) else {
+        let Some(clip) = project.composition_mut().find_clip(self.clip_id) else {
             return;
         };
         let mut changed = false;
@@ -81,7 +81,7 @@ mod tests {
         clip::{BlendMode, Clip, ClipMetadata},
         composition::Composition,
         project::Project,
-        project_settings::ProjectSettings,
+        composition_settings::CompositionSettings,
     };
     use crate::core::image::{Image, PixelChange};
     use uuid::Uuid;
@@ -116,17 +116,14 @@ mod tests {
             image_revision: 0,
         };
         composition.add_clip(clip);
-        let mut project = Project {
-            composition,
-            settings: ProjectSettings {
-                title: "Test".to_string(),
+        composition.settings = CompositionSettings {
                 width: 1,
                 height: 1,
                 frame_rate: 1,
                 start_frame: 0,
                 end_frame: 1,
-            },
-        };
+            };
+        let mut project = Project { title: "Test".to_string(), compositions: vec![composition] };
         let mut action_manager = ActionManager::new();
         action_manager.do_action(Box::new(DrawStrokeAction::new(clip_id)), &mut project);
         action_manager.begin_pixel_recording();

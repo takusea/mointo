@@ -299,7 +299,7 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition.layer_index(layer_id).is_none() {
+        if project.composition_mut().layer_index(layer_id).is_none() {
             return Err(JsValue::from_str("Layer does not exist"));
         }
         self.action_manager.do_action(
@@ -317,7 +317,7 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition.layer_index(layer_id).is_none() {
+        if project.composition_mut().layer_index(layer_id).is_none() {
             return Err(JsValue::from_str("Layer does not exist"));
         }
         self.action_manager

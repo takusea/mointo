@@ -25,7 +25,7 @@ impl MoveClipAction {
 impl Action for MoveClipAction {
     fn apply(&mut self, project: &mut Project) {
         if project
-            .composition
+            .composition()
             .get_clips()
             .iter()
             .any(|clip| clip.metadata.id == self.clip_id && clip.metadata.locked)
@@ -34,14 +34,14 @@ impl Action for MoveClipAction {
         }
         if self.previous.is_none() {
             self.previous = project
-                .composition
+                .composition()
                 .get_clips()
                 .iter()
                 .find(|clip| clip.metadata.id == self.clip_id)
                 .map(|clip| (clip.metadata.start, clip.metadata.layer_id));
         }
         project
-            .composition
+            .composition_mut()
             .move_clip_to_layer(self.clip_id, self.start_frame, self.layer_id);
     }
 }
@@ -50,7 +50,7 @@ impl UndoableAction for MoveClipAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some((start_frame, layer_id)) = self.previous {
             project
-                .composition
+                .composition_mut()
                 .move_clip_to_layer(self.clip_id, start_frame, layer_id);
         }
     }

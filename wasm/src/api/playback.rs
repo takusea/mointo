@@ -17,7 +17,7 @@ impl MointoCore {
             return false;
         };
         let (width, height) = match self.project.as_ref() {
-            Some(project) => (project.settings.width, project.settings.height),
+            Some(project) => (project.composition().settings.width, project.composition().settings.height),
             None => return false,
         };
         if self
@@ -42,7 +42,7 @@ impl MointoCore {
             return false;
         };
         match project
-            .composition
+            .composition()
             .render_frame_gpu_to_canvas_with_onion(renderer, frame_index, layer_id, width, height)
             .await
         {
@@ -58,7 +58,7 @@ impl MointoCore {
 
     pub async fn render_frame(&mut self, frame_index: u32) -> Option<Uint8ClampedArray> {
         let (width, height) = match self.project.as_ref() {
-            Some(project) => (project.settings.width, project.settings.height),
+            Some(project) => (project.composition().settings.width, project.composition().settings.height),
             None => return None,
         };
         if self.gpu_renderer.is_none() {
@@ -79,7 +79,7 @@ impl MointoCore {
         let project = self.project.as_ref()?;
 
         let image = match project
-            .composition
+            .composition()
             .render_frame_gpu(renderer, frame_index, width, height)
             .await
         {
@@ -99,7 +99,7 @@ impl MointoCore {
         canvas: HtmlCanvasElement,
     ) -> bool {
         let (width, height) = match self.project.as_ref() {
-            Some(project) => (project.settings.width, project.settings.height),
+            Some(project) => (project.composition().settings.width, project.composition().settings.height),
             None => return false,
         };
         if self
@@ -124,7 +124,7 @@ impl MointoCore {
             return false;
         };
         match project
-            .composition
+            .composition()
             .render_frame_gpu_to_canvas(renderer, frame_index, width, height)
             .await
         {

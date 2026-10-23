@@ -7,59 +7,48 @@ import {
 } from "@tabler/icons-react";
 import NumberField from "~/components/NumberField";
 import Separator from "~/components/Separator";
-import TextField from "~/components/TextField";
 import { useI18n } from "~/features/i18n/useI18n";
-import { MAX_FRAME_INDEX, type ProjectSettings } from "./type";
+import { type CompositionSettings, MAX_FRAME_INDEX } from "./type";
 
 type Props = {
-	projectSettings: ProjectSettings;
-	onProjectSettingsChanged: (projectSettings: ProjectSettings) => void;
+	compositionSettings: CompositionSettings;
+	onCompositionSettingsChanged: (
+		compositionSettings: CompositionSettings,
+	) => void;
 };
 
-const ProjectSettingsForm = ({
-	projectSettings,
-	onProjectSettingsChanged,
+const CompositionSettingsForm = ({
+	compositionSettings,
+	onCompositionSettingsChanged,
 }: Props) => {
 	const { t } = useI18n();
 
 	return (
 		<div className="flex flex-col gap-2">
-			<span className="font-medium">{t("project.name")}</span>
-			<TextField
-				id="title"
-				value={projectSettings.title}
-				onValueChange={(title) =>
-					onProjectSettingsChanged({
-						...projectSettings,
-						title,
-					})
-				}
-			/>
-			<Separator />
 			<span className="font-medium">{t("project.size")}</span>
 			<div className="grid grid-cols-2 gap-2">
 				<NumberField
 					id="width"
 					aria-label={t("project.width")}
-					value={projectSettings.width}
+					value={compositionSettings.width}
 					min={0}
 					max={10000}
 					leftElement={<IconArrowAutofitWidth />}
 					rightElement="px"
 					onValueChange={(width) =>
-						onProjectSettingsChanged({ ...projectSettings, width })
+						onCompositionSettingsChanged({ ...compositionSettings, width })
 					}
 				/>
 				<NumberField
 					id="height"
 					aria-label={t("project.height")}
-					value={projectSettings.height}
+					value={compositionSettings.height}
 					min={0}
 					max={10000}
 					leftElement={<IconArrowAutofitHeight />}
 					rightElement="px"
 					onValueChange={(height) =>
-						onProjectSettingsChanged({ ...projectSettings, height })
+						onCompositionSettingsChanged({ ...compositionSettings, height })
 					}
 				/>
 			</div>
@@ -69,14 +58,14 @@ const ProjectSettingsForm = ({
 				<NumberField
 					id="startFrame"
 					aria-label={t("project.startFrame")}
-					value={projectSettings.startFrame}
+					value={compositionSettings.startFrame}
 					min={0}
-					max={projectSettings.endFrame}
+					max={compositionSettings.endFrame}
 					leftElement={<IconLayoutAlignLeft />}
 					rightElement="f"
 					onValueChange={(startFrame) =>
-						onProjectSettingsChanged({
-							...projectSettings,
+						onCompositionSettingsChanged({
+							...compositionSettings,
 							startFrame,
 						})
 					}
@@ -84,14 +73,14 @@ const ProjectSettingsForm = ({
 				<NumberField
 					id="endFrame"
 					aria-label={t("project.endFrame")}
-					value={projectSettings.endFrame}
-					min={projectSettings.startFrame}
+					value={compositionSettings.endFrame}
+					min={compositionSettings.startFrame}
 					max={MAX_FRAME_INDEX}
 					leftElement={<IconLayoutAlignRight />}
 					rightElement="f"
 					onValueChange={(endFrame) =>
-						onProjectSettingsChanged({
-							...projectSettings,
+						onCompositionSettingsChanged({
+							...compositionSettings,
 							endFrame,
 						})
 					}
@@ -101,14 +90,14 @@ const ProjectSettingsForm = ({
 			<NumberField
 				id="frameRate"
 				aria-label={t("project.frameRate")}
-				value={projectSettings.frameRate}
+				value={compositionSettings.frameRate}
 				min={0}
 				max={1000}
 				leftElement={<IconRunSprint />}
 				rightElement="fps"
 				onValueChange={(frameRate) =>
-					onProjectSettingsChanged({
-						...projectSettings,
+					onCompositionSettingsChanged({
+						...compositionSettings,
 						frameRate,
 					})
 				}
@@ -117,4 +106,4 @@ const ProjectSettingsForm = ({
 	);
 };
 
-export default ProjectSettingsForm;
+export default CompositionSettingsForm;

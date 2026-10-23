@@ -3,7 +3,7 @@ import AppearanceSettingsDialog from "~/features/appearance/AppearanceSettingDia
 import LanguageSettingDialog from "~/features/i18n/LanguageSettingDialog";
 import ProjectExportDialog from "~/features/io/export/ProjectExportDialog";
 import CreateNewProjectDialog from "~/features/project/CreateNewProjectDialog";
-import EditProjectSettingsDialog from "~/features/project/EditProjectSettingsDialog";
+import EditCompositionSettingsDialog from "~/features/project/EditCompositionSettingsDialog";
 import ShortcutSettingsDialog from "~/features/shortcuts/ShortcutSettingsDialog";
 import InputSettingsDialog from "~/features/tool/InputSettingsDialog";
 import AboutDialog from "./AboutDialog";
@@ -35,10 +35,10 @@ export const DialogsProvider = ({ children }: Props) => {
 					onOpenChange={handleOpenChange("createProject")}
 				/>
 			)}
-			{activeDialog === "editProjectSettings" && (
-				<EditProjectSettingsDialog
+			{activeDialog === "editCompositionSettings" && (
+				<EditCompositionSettingsDialog
 					open
-					onOpenChange={handleOpenChange("editProjectSettings")}
+					onOpenChange={handleOpenChange("editCompositionSettings")}
 				/>
 			)}
 			<ProjectExportDialog

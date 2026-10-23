@@ -1,4 +1,4 @@
-import type { ProjectSettings } from "~/features/project/type";
+import type { CompositionSettings } from "~/features/project/type";
 import type { ClipMetadata, ClipProperties } from "~/lib/clip";
 import type { LayerId, LayerState } from "~/lib/layer";
 import type { Transform } from "~/lib/transform";
@@ -35,7 +35,8 @@ export type CoreSnapshot = {
 	>;
 	clipPreviewOpacities: Record<string, number>;
 	layers: LayerState[];
-	projectSettings: ProjectSettings | undefined;
+	compositionSettings: CompositionSettings | undefined;
+	projectTitle: string | undefined;
 	canUndo: boolean;
 	canRedo: boolean;
 	revision: number;
@@ -57,7 +58,8 @@ export class CoreService {
 		clipPreviewKeyframes: {},
 		clipPreviewOpacities: {},
 		layers: [],
-		projectSettings: undefined,
+		compositionSettings: undefined,
+		projectTitle: undefined,
 		canUndo: false,
 		canRedo: false,
 		revision: 0,
@@ -82,7 +84,7 @@ export class CoreService {
 	};
 
 	private notify() {
-		const settings = this.readProjectSettings();
+		const settings = this.readCompositionSettings();
 		const clips = (this.core.get_clips() as ClipMetadata[] | undefined) ?? [];
 		const layers = (this.core.get_layers() as LayerState[] | undefined) ?? [];
 		this.revision += 1;
@@ -133,7 +135,8 @@ export class CoreService {
 				}),
 			),
 			layers,
-			projectSettings: settings,
+			compositionSettings: settings,
+			projectTitle: this.core.get_project_title() ?? undefined,
 			canUndo: this.core.can_undo(),
 			canRedo: this.core.can_redo(),
 			revision: this.revision,
@@ -157,10 +160,9 @@ export class CoreService {
 		return result;
 	}
 
-	private readProjectSettings(): ProjectSettings | undefined {
+	private readCompositionSettings(): CompositionSettings | undefined {
 		if (this.core.width() == null) return;
-		const settings = this.core.get_project_settings() as {
-			title: string;
+		const settings = this.core.get_composition_settings() as {
 			width: number;
 			height: number;
 			frame_rate: number;
@@ -168,7 +170,6 @@ export class CoreService {
 			end_frame: number;
 		};
 		return {
-			title: settings.title,
 			width: settings.width,
 			height: settings.height,
 			frameRate: settings.frame_rate,
@@ -177,11 +178,11 @@ export class CoreService {
 		};
 	}
 
-	createProject(settings: ProjectSettings) {
+	createProject(title: string, settings: CompositionSettings) {
 		return this.enqueue(
 			(core) =>
 				core.create_project({
-					title: settings.title,
+					title,
 					width: settings.width,
 					height: settings.height,
 					frame_rate: settings.frameRate,
@@ -192,11 +193,10 @@ export class CoreService {
 		);
 	}
 
-	setProjectSettings(settings: ProjectSettings) {
+	setCompositionSettings(settings: CompositionSettings) {
 		return this.enqueue(
 			(core) =>
-				core.set_project_settings({
-					title: settings.title,
+				core.set_composition_settings({
 					width: settings.width,
 					height: settings.height,
 					frame_rate: settings.frameRate,
@@ -205,17 +205,20 @@ export class CoreService {
 				}),
 			true,
 		);
+	}
+
+	setProjectTitle(title: string) {
+		return this.enqueue((core) => core.set_project_title(title), true);
 	}
 
 	importProject(data: Uint8Array) {
 		return this.enqueue((core) => core.import_project(data), true);
 	}
 
-	getProjectSettings() {
+	getCompositionSettings() {
 		return this.enqueue((core) => {
 			if (core.width() == null) return;
-			const settings = core.get_project_settings() as {
-				title: string;
+			const settings = core.get_composition_settings() as {
 				width: number;
 				height: number;
 				frame_rate: number;
@@ -223,7 +226,6 @@ export class CoreService {
 				end_frame: number;
 			};
 			return {
-				title: settings.title,
 				width: settings.width,
 				height: settings.height,
 				frameRate: settings.frame_rate,

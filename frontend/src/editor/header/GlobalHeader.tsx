@@ -65,10 +65,10 @@ const GlobalHeader = () => {
 								<Tooltip label={t("nav.projectSettings")} side="bottom">
 									<Button
 										label={
-											project.settings.title +
+											(project.title ?? "") +
 											(project.hasUnsavedChanges && " *")
 										}
-										onClick={() => dialogs.open("editProjectSettings")}
+										onClick={() => dialogs.open("editCompositionSettings")}
 									/>
 								</Tooltip>
 							)}

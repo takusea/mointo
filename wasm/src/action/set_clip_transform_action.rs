@@ -22,7 +22,7 @@ impl SetClipTransformAction {
 
 impl Action for SetClipTransformAction {
     fn apply(&mut self, project: &mut Project) {
-        if let Some(clip) = project.composition.find_clip(self.clip_id) {
+        if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
             if clip.metadata.locked {
                 return;
             }
@@ -37,7 +37,7 @@ impl Action for SetClipTransformAction {
 impl UndoableAction for SetClipTransformAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(previous) = self.previous.as_ref() {
-            if let Some(clip) = project.composition.find_clip(self.clip_id) {
+            if let Some(clip) = project.composition_mut().find_clip(self.clip_id) {
                 clip.transform = previous.clone();
             }
         }

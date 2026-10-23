@@ -22,21 +22,21 @@ impl Action for DeleteClipAction {
     fn apply(&mut self, project: &mut Project) {
         self.deleted_clip = None;
         if project
-            .composition
+            .composition()
             .get_clips()
             .iter()
             .any(|clip| clip.metadata.id == self.clip_id && clip.metadata.locked)
         {
             return;
         }
-        self.deleted_clip = project.composition.delete_clip(self.clip_id);
+        self.deleted_clip = project.composition_mut().delete_clip(self.clip_id);
     }
 }
 
 impl UndoableAction for DeleteClipAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(ref clip) = self.deleted_clip {
-            project.composition.add_clip(clip.clone());
+            project.composition_mut().add_clip(clip.clone());
         }
     }
 }
@@ -47,13 +47,12 @@ mod tests {
     use crate::action::add_clip_action::AddClipAction;
     use crate::app::action_manager::ActionManager;
     use crate::app::project::Project;
-    use crate::app::project_settings::ProjectSettings;
+    use crate::app::composition_settings::CompositionSettings;
 
     #[test]
     fn undo_and_redo_delete_clip_repeatedly_without_duplicates() {
         let mut manager = ActionManager::new();
-        let mut project = Project::new(ProjectSettings {
-            title: "Test".to_string(),
+        let mut project = Project::new("Test".to_string(), CompositionSettings {
             width: 1,
             height: 1,
             frame_rate: 1,
@@ -61,24 +60,24 @@ mod tests {
             end_frame: 1,
         });
 
-        let layer_id = project.composition.get_layers()[0].id;
+        let layer_id = project.composition_mut().get_layers()[0].id;
         manager.do_action(Box::new(AddClipAction::new(0, layer_id)), &mut project);
-        let clip_id = project.composition.clips[0].metadata.id;
+        let clip_id = project.composition_mut().clips[0].metadata.id;
         manager.do_action(Box::new(DeleteClipAction::new(clip_id)), &mut project);
-        assert!(project.composition.clips.is_empty());
+        assert!(project.composition_mut().clips.is_empty());
 
         manager.undo(&mut project);
-        assert_eq!(project.composition.clips.len(), 1);
-        assert_eq!(project.composition.clips[0].metadata.id, clip_id);
+        assert_eq!(project.composition_mut().clips.len(), 1);
+        assert_eq!(project.composition_mut().clips[0].metadata.id, clip_id);
 
         manager.redo(&mut project);
-        assert!(project.composition.clips.is_empty());
+        assert!(project.composition_mut().clips.is_empty());
 
         manager.undo(&mut project);
-        assert_eq!(project.composition.clips.len(), 1);
-        assert_eq!(project.composition.clips[0].metadata.id, clip_id);
+        assert_eq!(project.composition_mut().clips.len(), 1);
+        assert_eq!(project.composition_mut().clips[0].metadata.id, clip_id);
 
         manager.redo(&mut project);
-        assert!(project.composition.clips.is_empty());
+        assert!(project.composition_mut().clips.is_empty());
     }
 }

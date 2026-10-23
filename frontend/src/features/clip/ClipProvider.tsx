@@ -35,7 +35,7 @@ export const ClipProvider = ({ children }: Props) => {
 		currentLayerId: layerContext.selectedLayerId,
 		currentFrame: playbackContext.currentFrame,
 		selectLayer: layerContext.selectLayer,
-		projectSettings: projectContext.settings,
+		compositionSettings: projectContext.settings,
 	});
 	const commands = useClipCommands({
 		clips,
@@ -48,7 +48,7 @@ export const ClipProvider = ({ children }: Props) => {
 		selectedLayerId: layerContext.selectedLayerId,
 		layers: layerContext.layers,
 		currentFrame: playbackContext.currentFrame,
-		projectSettings: projectContext.settings,
+		compositionSettings: projectContext.settings,
 		isLayerLocked: layerContext.isLayerLocked,
 		onClipSelected: selectionState.markClipSelected,
 	});

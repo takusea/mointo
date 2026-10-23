@@ -116,7 +116,7 @@ const GlobalMenubar = () => {
 				<MenubarSeparator />
 				<MenubarItem
 					label={t("menubar.projectSettings")}
-					onSelect={() => dialogs.open("editProjectSettings")}
+					onSelect={() => dialogs.open("editCompositionSettings")}
 				/>
 				<MenubarSeparator />
 				<MenubarItem label={t("menubar.close")} />

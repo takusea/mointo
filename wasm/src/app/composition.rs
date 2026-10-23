@@ -4,6 +4,7 @@ use uuid::Uuid;
 use crate::app::clip::{AssetId, Clip, ClipId};
 use crate::core::image::Image;
 use crate::gpu::GpuRenderer;
+use crate::app::composition_settings::CompositionSettings;
 
 const DEFAULT_LAYER_COUNT: usize = 100;
 
@@ -46,6 +47,9 @@ impl Layer {
 
 #[derive(Serialize, Deserialize)]
 pub struct Composition {
+    #[serde(default = "default_composition_name")]
+    pub name: String,
+    pub settings: CompositionSettings,
     pub clips: Vec<Clip>,
     pub layers: Vec<Layer>,
     /// Shared pixel data, stored once per image asset.
@@ -55,6 +59,8 @@ pub struct Composition {
 impl Composition {
     pub fn new() -> Self {
         Self {
+            name: default_composition_name(),
+            settings: CompositionSettings::default(),
             clips: Vec::new(),
             layers: (0..DEFAULT_LAYER_COUNT).map(Layer::new).collect(),
             assets: std::collections::HashMap::new(),
@@ -383,6 +389,8 @@ impl Composition {
             .await
     }
 }
+
+fn default_composition_name() -> String { "main".to_string() }
 
 #[cfg(test)]
 mod tests {

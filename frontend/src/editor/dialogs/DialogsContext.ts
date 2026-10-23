@@ -2,7 +2,7 @@ import { createContext } from "react";
 
 export type AppDialog =
 	| "createProject"
-	| "editProjectSettings"
+	| "editCompositionSettings"
 	| "exportProject"
 	| "appearanceSettings"
 	| "inputSettings"

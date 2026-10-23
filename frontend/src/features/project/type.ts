@@ -1,5 +1,4 @@
-export type ProjectSettings = {
-	title: string;
+export type CompositionSettings = {
 	width: number;
 	height: number;
 	frameRate: number;
