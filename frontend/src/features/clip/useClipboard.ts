@@ -184,7 +184,9 @@ export const useClipboard = ({
 					for (let channel = 0; channel < 3; channel++) {
 						pixels[targetIndex + channel] = Math.round(
 							(clipboard.pixels[sourceIndex + channel] * sourceAlpha +
-								pixels[targetIndex + channel] * targetAlpha * (1 - sourceAlpha)) /
+								pixels[targetIndex + channel] *
+									targetAlpha *
+									(1 - sourceAlpha)) /
 								outputAlpha,
 						);
 					}

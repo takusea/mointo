@@ -56,7 +56,11 @@ const preventDrawingPointerInterruption = (event: PointerEvent) => {
 document.addEventListener("contextmenu", preventDefault);
 document.addEventListener("wheel", preventWheelDefault, { passive: false });
 document.addEventListener("keydown", preventKeydownDefault, true);
-document.addEventListener("pointerdown", preventDrawingPointerInterruption, true);
+document.addEventListener(
+	"pointerdown",
+	preventDrawingPointerInterruption,
+	true,
+);
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
