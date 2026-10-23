@@ -99,6 +99,7 @@ mod tests {
         let clip = Clip {
             metadata: ClipMetadata {
                 id: clip_id,
+                asset_id: Uuid::new_v4(),
                 name: "Test".to_string(),
                 start: 0,
                 layer_id,
@@ -109,7 +110,6 @@ mod tests {
                 opacity: 1.0,
                 blend_mode: BlendMode::Normal,
             },
-            asset_id: Uuid::new_v4(),
             transform: Default::default(),
             keyframes: Vec::new(),
             image,

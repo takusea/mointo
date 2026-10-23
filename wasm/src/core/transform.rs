@@ -3,8 +3,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Transform {
+    #[serde(default)]
     pub position: (f32, f32),
+    #[serde(default)]
     pub rotation: f32,
+    #[serde(default = "default_scale")]
     pub scale: (f32, f32),
     #[serde(default = "default_anchor")]
     pub anchor: (f32, f32),
@@ -12,6 +15,10 @@ pub struct Transform {
 
 fn default_anchor() -> (f32, f32) {
     (0.5, 0.5)
+}
+
+fn default_scale() -> (f32, f32) {
+    (1.0, 1.0)
 }
 
 impl Default for Transform {

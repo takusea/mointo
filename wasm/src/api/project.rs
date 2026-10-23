@@ -1,7 +1,7 @@
 use super::MointoCore;
 use crate::app::clip::{BlendMode, Clip, ClipMetadata};
-use crate::app::project::Project;
 use crate::app::composition_settings::CompositionSettings;
+use crate::app::project::Project;
 use crate::core::{image::Image, transform::Transform};
 use gloo::utils::format::JsValueSerdeExt;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -23,13 +23,22 @@ impl MointoCore {
         let data: NewProjectData = settings
             .into_serde()
             .map_err(|error| JsValue::from_str(&error.to_string()))?;
-        let settings = CompositionSettings { width: data.width, height: data.height, frame_rate: data.frame_rate, start_frame: data.start_frame, end_frame: data.end_frame };
+        let settings = CompositionSettings {
+            width: data.width,
+            height: data.height,
+            frame_rate: data.frame_rate,
+            start_frame: data.start_frame,
+            end_frame: data.end_frame,
+        };
         let mut project = Project::new(data.title, settings);
         let paper_layer_id = project.composition_mut().get_layers()[0].id;
         project
             .composition_mut()
             .set_layer_locked_by_id(paper_layer_id, true);
-        let mut image = Image::new(project.composition().settings.width, project.composition().settings.height);
+        let mut image = Image::new(
+            project.composition().settings.width,
+            project.composition().settings.height,
+        );
         for pixel in image.data.chunks_exact_mut(4) {
             pixel.copy_from_slice(&[255, 255, 255, 255]);
         }
@@ -43,6 +52,7 @@ impl MointoCore {
         project.composition_mut().add_clip(Clip {
             metadata: ClipMetadata {
                 id: uuid::Uuid::new_v4(),
+                asset_id: uuid::Uuid::new_v4(),
                 name: "Background".to_string(),
                 start: start_frame,
                 layer_id: paper_layer_id,
@@ -53,7 +63,6 @@ impl MointoCore {
                 opacity: 1.0,
                 blend_mode: BlendMode::Normal,
             },
-            asset_id: uuid::Uuid::new_v4(),
             transform: Transform::default(),
             keyframes: Vec::new(),
             image,
@@ -76,7 +85,10 @@ impl MointoCore {
     }
 
     pub fn set_project_title(&mut self, title: String) -> Result<(), JsValue> {
-        let project = self.project.as_mut().ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        let project = self
+            .project
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
         project.title = title;
         Ok(())
     }

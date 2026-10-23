@@ -5,20 +5,20 @@ pub struct CompositionSettings {
     pub width: u32,
     pub height: u32,
     pub frame_rate: u32,
-    #[serde(default)]
     pub start_frame: u32,
-    #[serde(default = "default_end_frame")]
     pub end_frame: u32,
 }
 
 impl Default for CompositionSettings {
     fn default() -> Self {
-        Self { width: 640, height: 360, frame_rate: 24, start_frame: 0, end_frame: 255 }
+        Self {
+            width: 640,
+            height: 360,
+            frame_rate: 24,
+            start_frame: 0,
+            end_frame: 255,
+        }
     }
-}
-
-fn default_end_frame() -> u32 {
-    255
 }
 
 #[cfg(test)]

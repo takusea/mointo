@@ -30,9 +30,13 @@ impl std::str::FromStr for LayerId {
 pub struct Layer {
     pub id: LayerId,
     pub name: String,
+    #[serde(default = "default_layer_visible")]
     pub visible: bool,
+    #[serde(default)]
     pub locked: bool,
 }
+
+fn default_layer_visible() -> bool { true }
 
 impl Layer {
     pub(crate) fn new(index: usize) -> Self {
@@ -69,7 +73,7 @@ impl Composition {
 
     pub fn add_clip(&mut self, clip: Clip) {
         self.assets
-            .entry(clip.asset_id)
+            .entry(clip.metadata.asset_id)
             .or_insert_with(|| clip.image.clone());
         self.clips.push(clip);
     }
@@ -81,10 +85,10 @@ impl Composition {
         let Some(clip) = self.get_clip(clip_id) else {
             return;
         };
-        let asset_id = clip.asset_id;
+        let asset_id = clip.metadata.asset_id;
         let image = clip.image.clone();
         self.assets.insert(asset_id, image.clone());
-        for linked in self.clips.iter_mut().filter(|c| c.asset_id == asset_id) {
+        for linked in self.clips.iter_mut().filter(|c| c.metadata.asset_id == asset_id) {
             if linked.metadata.id != clip_id {
                 linked.set_image(image.clone());
             }
@@ -97,7 +101,7 @@ impl Composition {
             let Some(clip) = self.get_clip(id) else {
                 continue;
             };
-            let asset_id = clip.asset_id;
+            let asset_id = clip.metadata.asset_id;
             let image = clip.image.clone();
             let differs = self.assets.get(&asset_id).is_none_or(|asset| {
                 asset.data != image.data
@@ -114,7 +118,7 @@ impl Composition {
         for clip in &mut self.clips {
             let image = self
                 .assets
-                .get(&clip.asset_id)
+                .get(&clip.metadata.asset_id)
                 .ok_or_else(|| {
                     format!("Clip {} references a missing image asset", clip.metadata.id)
                 })?
@@ -132,8 +136,8 @@ impl Composition {
             .position(|clip| clip.metadata.id == clip_id)
         {
             let removed = self.clips.remove(pos);
-            let asset_id = removed.asset_id;
-            if !self.clips.iter().any(|clip| clip.asset_id == asset_id) {
+            let asset_id = removed.metadata.asset_id;
+            if !self.clips.iter().any(|clip| clip.metadata.asset_id == asset_id) {
                 self.assets.remove(&asset_id);
             }
             Some(removed)
@@ -198,7 +202,7 @@ impl Composition {
             }
         }
         for clip in &self.clips {
-            if !self.assets.contains_key(&clip.asset_id) {
+            if !self.assets.contains_key(&clip.metadata.asset_id) {
                 return Err(format!(
                     "Clip {} references a missing image asset",
                     clip.metadata.id
@@ -427,6 +431,7 @@ mod tests {
         let clip = crate::app::clip::Clip {
             metadata: crate::app::clip::ClipMetadata {
                 id: Uuid::new_v4(),
+                asset_id: Uuid::new_v4(),
                 start: 0,
                 layer_id,
                 duration: 1,
@@ -437,7 +442,6 @@ mod tests {
                 blend_mode: crate::app::clip::BlendMode::Normal,
                 name: "Clip".to_string(),
             },
-            asset_id: Uuid::new_v4(),
             transform: Default::default(),
             keyframes: Vec::new(),
             image: crate::core::image::Image::new(1, 1),

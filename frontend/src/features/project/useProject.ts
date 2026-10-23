@@ -52,7 +52,9 @@ export const useProject = () => {
 				if (!(result instanceof ArrayBuffer)) {
 					throw new Error("FileReader result is not an ArrayBuffer");
 				}
-				void core.importProject(new Uint8Array(result)).then(() => {
+				void core.importProject(new Uint8Array(result)).then(async () => {
+					const projectName = file.name.replace(/\.[^.]+$/, "");
+					await core.setProjectTitle(projectName || file.name);
 					setSavedRevision(core.getSnapshot().revision);
 				});
 			});

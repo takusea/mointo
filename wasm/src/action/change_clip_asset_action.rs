@@ -35,7 +35,7 @@ impl ChangeClipAssetAction {
             .composition()
             .clips
             .iter()
-            .any(|clip| clip.asset_id == asset_id)
+            .any(|clip| clip.metadata.asset_id == asset_id)
         {
             project.composition_mut().assets.remove(&asset_id);
         }
@@ -48,14 +48,19 @@ impl Action for ChangeClipAssetAction {
             return;
         };
         if self.previous.is_none() {
-            self.previous = Some((current.asset_id, current.image.clone()));
+            self.previous = Some((current.metadata.asset_id, current.image.clone()));
         }
         let next_asset_id = match self.linked_asset_id {
             Some(asset_id) => asset_id,
             None => *self.unlinked_asset_id.get_or_insert_with(Uuid::new_v4),
         };
         let image = if self.linked_asset_id.is_some() {
-            let Some(image) = project.composition_mut().assets.get(&next_asset_id).cloned() else {
+            let Some(image) = project
+                .composition_mut()
+                .assets
+                .get(&next_asset_id)
+                .cloned()
+            else {
                 return;
             };
             image
@@ -66,9 +71,12 @@ impl Action for ChangeClipAssetAction {
         let Some(clip) = project.composition_mut().find_clip(self.clip_id) else {
             return;
         };
-        clip.asset_id = next_asset_id;
+        clip.metadata.asset_id = next_asset_id;
         clip.set_image(image.clone());
-        project.composition_mut().assets.insert(next_asset_id, image);
+        project
+            .composition_mut()
+            .assets
+            .insert(next_asset_id, image);
         Self::discard_orphan(project, previous_asset_id);
     }
 }
@@ -81,8 +89,8 @@ impl UndoableAction for ChangeClipAssetAction {
         let Some(clip) = project.composition_mut().find_clip(self.clip_id) else {
             return;
         };
-        let current_asset_id = clip.asset_id;
-        clip.asset_id = *previous_asset_id;
+        let current_asset_id = clip.metadata.asset_id;
+        clip.metadata.asset_id = *previous_asset_id;
         clip.set_image(previous_image.clone());
         project
             .composition_mut()

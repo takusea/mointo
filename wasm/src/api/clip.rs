@@ -55,10 +55,10 @@ impl MointoCore {
                 .composition()
                 .get_clip(target)
                 .ok_or_else(|| JsValue::from_str("Target clip does not exist"))?;
-            if source_clip.asset_id == target_clip.asset_id {
+            if source_clip.metadata.asset_id == target_clip.metadata.asset_id {
                 return Ok(());
             }
-            source_clip.asset_id
+            source_clip.metadata.asset_id
         };
         let project = self
             .project
@@ -107,7 +107,7 @@ impl MointoCore {
                 let metadata = &clip.metadata;
                 ClipMetadataView {
                     id: metadata.id,
-                    asset_id: clip.asset_id,
+                    asset_id: metadata.asset_id,
                     name: &metadata.name,
                     start: metadata.start,
                     duration: metadata.duration,

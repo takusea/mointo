@@ -49,6 +49,7 @@ impl Action for AddClipAction {
         let clip = Clip {
             metadata: ClipMetadata {
                 id: clip_id,
+                asset_id: Uuid::new_v4(),
                 name,
                 start: self.start_frame,
                 layer_id: self.layer_id,
@@ -59,13 +60,13 @@ impl Action for AddClipAction {
                 opacity: 1.0,
                 blend_mode: crate::app::clip::BlendMode::default(),
             },
-            asset_id: Uuid::new_v4(),
             transform: Transform::default(),
             keyframes: Vec::new(),
             image: {
-                let (width, height) = self
-                    .image_size
-                    .unwrap_or((project.composition().settings.width, project.composition().settings.height));
+                let (width, height) = self.image_size.unwrap_or((
+                    project.composition().settings.width,
+                    project.composition().settings.height,
+                ));
                 Image::new(width, height)
             },
             image_revision: 0,
@@ -79,19 +80,22 @@ mod tests {
     use super::AddClipAction;
     use crate::action::move_clip_action::MoveClipAction;
     use crate::app::action_manager::ActionManager;
-    use crate::app::project::Project;
     use crate::app::composition_settings::CompositionSettings;
+    use crate::app::project::Project;
 
     #[test]
     fn redo_preserves_clip_id_for_later_action_redo() {
         let mut manager = ActionManager::new();
-        let mut project = Project::new("Test".to_string(), CompositionSettings {
-            width: 1,
-            height: 1,
-            frame_rate: 1,
-            start_frame: 0,
-            end_frame: 1,
-        });
+        let mut project = Project::new(
+            "Test".to_string(),
+            CompositionSettings {
+                width: 1,
+                height: 1,
+                frame_rate: 1,
+                start_frame: 0,
+                end_frame: 1,
+            },
+        );
 
         let original_layer_id = project.composition_mut().get_layers()[0].id;
         let move_target_layer_id = project.composition_mut().get_layers()[1].id;

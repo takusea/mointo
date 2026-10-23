@@ -58,6 +58,7 @@ impl Default for ClipProperties {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ClipMetadata {
     pub id: ClipId,
+    pub asset_id: AssetId,
     pub start: u32,
     pub layer_id: LayerId,
     pub duration: u32,
@@ -78,9 +79,6 @@ pub struct ClipMetadata {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Clip {
     pub metadata: ClipMetadata,
-    /// Identifies the reusable image asset used by this clip. Clips with the same
-    /// asset id share pixel edits while keeping timing and transform independent.
-    pub asset_id: AssetId,
     pub transform: Transform,
     #[serde(serialize_with = "serialize_committed_keyframes")]
     pub keyframes: Vec<ClipKeyframe>,
@@ -242,6 +240,7 @@ mod tests {
         let mut clip = Clip {
             metadata: ClipMetadata {
                 id: Uuid::new_v4(),
+                asset_id: Uuid::new_v4(),
                 name: "Test clip".to_string(),
                 start: 3,
                 layer_id: LayerId::new(),
@@ -252,7 +251,6 @@ mod tests {
                 opacity: 1.0,
                 blend_mode: BlendMode::Normal,
             },
-            asset_id: Uuid::new_v4(),
             transform: Transform::default(),
             keyframes: Vec::new(),
             image: Image::new(1, 1),
