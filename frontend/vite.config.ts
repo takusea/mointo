@@ -28,6 +28,7 @@ export default defineConfig({
 				description: "Animation Paint App",
 				display: "standalone",
 				start_url: "/",
+				display_override: ["window-controls-overlay"],
 				icons: [
 					{
 						src: "pwa-64x64.png",

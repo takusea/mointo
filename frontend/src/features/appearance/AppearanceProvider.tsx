@@ -29,6 +29,9 @@ export const AppearanceProvider = ({ children }: { children: JSX.Element }) => {
 
 	useEffect(() => {
 		document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
+		document
+			.querySelector('meta[name="theme-color"]')
+			?.setAttribute("content", isDarkMode ? "#09090b" : "#fafafa");
 	}, [isDarkMode]);
 
 	return (

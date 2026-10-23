@@ -33,53 +33,64 @@ const GlobalHeader = () => {
 	});
 
 	return (
-		<header className="relative z-10 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-1 border-border border-b bg-background px-2 backdrop-blur-xl">
-			{!isDesktop && (
-				<div
-					className={`grid grid-cols-[auto_1fr] ${isMenubarOpen ? "col-span-3" : ""}`}
-				>
-					<IconButton
-						label={t("menubar.open")}
-						icon={isMenubarOpen ? IconX : IconMenu2}
-						onClick={() => toggleMenubarOpen()}
-					/>
-					{isMenubarOpen && (
-						<div className="overflow-scroll" ref={menubarRef}>
-							<GlobalMenubar />
-						</div>
-					)}
-				</div>
-			)}
-			{isDesktop && <GlobalMenubar />}
-			{(!isMenubarOpen || isDesktop) && (
-				<>
-					<div className="flex justify-center">
-						{project.settings && (
-							<Tooltip label={t("nav.projectSettings")} side="bottom">
-								<Button
-									label={
-										project.settings.title + (project.hasUnsavedChanges && " *")
-									}
-									onClick={() => dialogs.open("editProjectSettings")}
-								/>
-							</Tooltip>
+		<header className="relative z-10 border-border border-b bg-background pt-[env(safe-area-inset-top,0)] backdrop-blur-xl [-webkit-app-region:drag]">
+			<div className="ml-[env(titlebar-area-x,0)] grid h-full w-[env(titlebar-area-width,100%)] grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
+				{!isDesktop && (
+					<div
+						className={`grid grid-cols-[auto_1fr] ${isMenubarOpen ? "col-span-3" : ""}`}
+					>
+						<IconButton
+							label={t("menubar.open")}
+							icon={isMenubarOpen ? IconX : IconMenu2}
+							onClick={() => toggleMenubarOpen()}
+						/>
+						{isMenubarOpen && (
+							<div className="overflow-scroll" ref={menubarRef}>
+								<GlobalMenubar />
+							</div>
 						)}
 					</div>
-					<div className="flex min-w-max justify-end">
-						<ExportButton
-							label={
-								exportProgress
-									? t("nav.exportProgress", exportProgress)
-									: t("nav.export")
-							}
-							icon={IconFileExport}
-							variant="primary"
-							disabled={project.settings == null || exportProgress != null}
-							onClick={() => dialogs.open("exportProject")}
-						/>
+				)}
+				{isDesktop && (
+					<div className="flex">
+						<div className="[-webkit-app-region:no-drag]">
+							<GlobalMenubar />
+						</div>
 					</div>
-				</>
-			)}
+				)}
+				{(!isMenubarOpen || isDesktop) && (
+					<>
+						<div className="flex justify-center [-webkit-app-region:no-drag]">
+							{project.settings && (
+								<Tooltip label={t("nav.projectSettings")} side="bottom">
+									<Button
+										label={
+											project.settings.title +
+											(project.hasUnsavedChanges && " *")
+										}
+										onClick={() => dialogs.open("editProjectSettings")}
+									/>
+								</Tooltip>
+							)}
+						</div>
+						<div className="flex min-w-max justify-end">
+							<div className="contents [-webkit-app-region:no-drag]">
+								<ExportButton
+									label={
+										exportProgress
+											? t("nav.exportProgress", exportProgress)
+											: t("nav.export")
+									}
+									icon={IconFileExport}
+									variant="primary"
+									disabled={project.settings == null || exportProgress != null}
+									onClick={() => dialogs.open("exportProject")}
+								/>
+							</div>
+						</div>
+					</>
+				)}
+			</div>
 		</header>
 	);
 };

@@ -25,7 +25,7 @@ const Editor = () => {
 	);
 
 	return (
-		<div className="grid h-svh w-svw grid-rows-[48px_minmax(0,1fr)] overflow-hidden">
+		<div className="grid h-svh w-svw grid-rows-[48px_minmax(0,1fr)] overflow-hidden pb-[env(safe-area-inset-bottom,0)]">
 			<GlobalHeader />
 			<main
 				className="relative grid min-h-0 min-w-0 p-2"
