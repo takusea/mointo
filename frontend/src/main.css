@@ -39,7 +39,6 @@
 }
 
 :root {
-	--hue: attr(data-accent-color type(<number>));
 	--color-primary: light-dark(
 		oklch(60% 0.15 var(--hue)),
 		oklch(80% 0.15 var(--hue))

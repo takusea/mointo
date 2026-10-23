@@ -16,7 +16,7 @@ export const AppearanceProvider = ({ children }: { children: JSX.Element }) => {
 	);
 
 	useEffect(() => {
-		document.documentElement.dataset.accentColor = accentColor.toString();
+		document.documentElement.style.setProperty("--hue", accentColor.toString());
 	}, [accentColor]);
 
 	useEffect(() => {
