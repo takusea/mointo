@@ -208,7 +208,7 @@ export class CoreService {
 	}
 
 	importProject(data: Uint8Array) {
-		return this.enqueue((core) => core.import(data), true);
+		return this.enqueue((core) => core.import_project(data), true);
 	}
 
 	getProjectSettings() {
@@ -234,7 +234,7 @@ export class CoreService {
 	}
 
 	exportProject() {
-		return this.enqueue((core) => core.export());
+		return this.enqueue((core) => core.export_project());
 	}
 
 	getClips() {

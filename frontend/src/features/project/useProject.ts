@@ -66,13 +66,16 @@ export const useProject = () => {
 	const save = async () => {
 		const data = await core.exportProject();
 		const blob = new Blob([data.buffer as ArrayBuffer], {
-			type: "application/msgpack",
+			type: "application/zip",
 		});
 		const link = document.createElement("a");
 		link.href = URL.createObjectURL(blob);
-		link.download = "export.moiproj";
+		const title =
+			projectSettings?.title.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
+		link.download = `${title}.moiproj`;
 		link.click();
 		link.remove();
+		window.setTimeout(() => URL.revokeObjectURL(link.href), 0);
 		setSavedRevision(core.getSnapshot().revision);
 	};
 
