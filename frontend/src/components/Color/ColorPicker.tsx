@@ -49,7 +49,7 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 	return (
 		<div className="relative mx-auto flex w-full max-w-64 flex-col gap-1">
 			<div
-				className="mask-[radial-gradient(transparent,transparent_60%,white_61%,white)] absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))]"
+				className="absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))] mask-[radial-gradient(transparent,transparent_60%,white_61%,white)]"
 				onPointerMove={handleHueMove}
 			>
 				<div

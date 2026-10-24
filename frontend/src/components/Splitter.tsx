@@ -26,11 +26,7 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 			aria-valuemax={max}
 			aria-valuenow={value}
 			tabIndex={0}
-			className={`group z-10 touch-none p-px ${
-				isHorizontal
-					? "h-full cursor-row-resize"
-					: "size-full cursor-col-resize"
-			}`}
+			className="group z-10 touch-none p-px data-[orientation=horizontal]:h-full data-[orientation=horizontal]:cursor-row-resize data-[orientation=vertical]:size-full data-[orientation=vertical]:cursor-col-resize"
 			onPointerDown={(event) => {
 				if (event.button !== 0) return;
 				pointerPosition.current = isHorizontal ? event.clientY : event.clientX;
@@ -67,13 +63,7 @@ const Splitter = ({ orientation, label, value, min, max, onResize }: Props) => {
 				}
 			}}
 		>
-			<div
-				className={`rounded-full group-hover:not-disabled:bg-primary ${
-					isHorizontal
-						? "h-full cursor-row-resize"
-						: "size-full cursor-col-resize"
-				}`}
-			/>
+			<div className="size-full rounded-full group-hover:not-disabled:bg-primary" />
 		</Separator>
 	);
 };

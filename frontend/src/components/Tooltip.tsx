@@ -12,7 +12,7 @@ const Tooltip = ({ label, shortcut, side, children, ...props }: Props) => {
 			<TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
 			<TooltipPrimitive.Portal>
 				<TooltipPrimitive.Content
-					className="z-50 select-none rounded-md border border-border bg-background p-2 leading-none shadow-md backdrop-blur-xl"
+					className="z-50 rounded-md border border-border bg-background p-2 leading-none shadow-md backdrop-blur-xl select-none"
 					side={side}
 				>
 					<span className="flex items-center gap-2">

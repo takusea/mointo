@@ -36,6 +36,7 @@
 		var(--color-zinc-500) 40%,
 		transparent 60%
 	);
+	--color-warning: light-dark(var(--color-red-600), var(--color-red-400));
 }
 
 :root {

@@ -210,7 +210,10 @@ const Clip = ({
 	return (
 		<div
 			key={id}
-			className={`absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border font-medium ${isSelected ? "border-primary bg-primary/25" : "border-border bg-surface"} ${isHidden ? "opacity-40" : ""} ${isLocked ? "cursor-not-allowed" : ""}`}
+			data-selected={isSelected}
+			data-hidden={isHidden}
+			data-locked={isLocked}
+			className="group absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-border bg-surface font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[selected=true]:border-primary data-[selected=true]:bg-primary/25"
 			style={{
 				left: `${startFrame * frameWidth}px`,
 				top: `${layerIndex * layerHeight}px`,
@@ -221,7 +224,7 @@ const Clip = ({
 			onPointerCancel={handlePointerUp}
 			onLostPointerCapture={handlePointerUp}
 		>
-			<div className="pointer-events-none absolute flex h-full items-center text-nowrap px-1">
+			<div className="pointer-events-none absolute flex h-full items-center px-1 text-nowrap">
 				{name}
 			</div>
 			{[...keysByFrame.entries()].flatMap(([frame, keys]) =>
@@ -239,7 +242,7 @@ const Clip = ({
 							key={`${frame}:${key.property}`}
 							title={`${key.property} · ${frame}`}
 							aria-label={`${key.property} keyframe at ${frame}`}
-							className={`absolute z-20 flex size-4 -translate-x-1/2 -translate-y-1/2 items-center justify-center ${isLocked ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}`}
+							className="absolute z-20 flex size-4 -translate-x-1/2 -translate-y-1/2 cursor-grab items-center justify-center group-data-[locked=true]:cursor-not-allowed active:cursor-grabbing"
 							style={{
 								left: `${(displayedFrame - startFrame + 0.5) * frameWidth}px`,
 								top: `calc(50% + ${offset}px)`,
@@ -252,9 +255,7 @@ const Clip = ({
 							onPointerCancel={finishKeyframeDrag}
 							onLostPointerCapture={finishKeyframeDrag}
 						>
-							<span
-								className={`size-2 rotate-45 border border-border ${isSelected ? "bg-primary" : "bg-border"}`}
-							/>
+							<span className="size-2 rotate-45 border border-border bg-border group-data-[selected=true]:bg-primary" />
 						</button>
 					);
 				}),
@@ -265,7 +266,7 @@ const Clip = ({
 				onPointerMove={isLocked ? undefined : handlePointerMove}
 			/>
 			<div
-				className={`${isSelected ? "bg-primary" : "bg-border"} ${isLocked ? "" : "cursor-w-resize"}`}
+				className="bg-border group-data-[locked=false]:cursor-w-resize group-data-[selected=true]:bg-primary"
 				data-resize="true"
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handleRightPointerMove}

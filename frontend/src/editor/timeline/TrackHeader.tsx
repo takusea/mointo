@@ -132,7 +132,7 @@ const TrackHeader = ({
 
 	return (
 		<div
-			className="h-full border-border border-b"
+			className="h-full border-b border-border"
 			style={{
 				translate: `-${scrollX}px 0`,
 				width: `${totalFrames * frameWidth}px`,
@@ -159,7 +159,7 @@ const TrackHeader = ({
 				type="button"
 				aria-label={t("timeline.startFrame", { frame: startFrame })}
 				title={t("timeline.startFrame", { frame: startFrame })}
-				className="absolute top-0 z-10 h-full cursor-ew-resize touch-none border-primary border-l-2"
+				className="absolute top-0 z-10 h-full cursor-ew-resize touch-none border-l-2 border-primary"
 				style={{
 					left: `${startFrame * frameWidth}px`,
 				}}
@@ -172,7 +172,7 @@ const TrackHeader = ({
 				type="button"
 				aria-label={t("timeline.endFrame", { frame: endFrame })}
 				title={t("timeline.endFrame", { frame: endFrame })}
-				className="absolute top-0 z-10 h-full -translate-x-full cursor-ew-resize touch-none border-primary border-r-2 outline-offset-1"
+				className="absolute top-0 z-10 h-full -translate-x-full cursor-ew-resize touch-none border-r-2 border-primary outline-offset-1"
 				style={{
 					left: `${(endFrame + 1) * frameWidth}px`,
 				}}
@@ -182,7 +182,7 @@ const TrackHeader = ({
 				onFocus={(event) => handleRangeFocus(event, endFrame + 1)}
 			></button>
 			<div
-				className="pointer-events-none absolute flex h-full items-center border-primary border-b-2 px-1 outline-offset-1"
+				className="pointer-events-none absolute flex h-full items-center border-b-2 border-primary px-1 outline-offset-1"
 				style={{
 					translate: `${currentFrame * frameWidth}px 0`,
 					width: `${frameWidth}px`,

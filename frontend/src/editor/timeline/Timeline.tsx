@@ -177,7 +177,7 @@ const Timeline = () => {
 	return (
 		<Card>
 			<div className="absolute inset-0 grid h-full min-h-0 min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[32px_minmax(0,1fr)] overflow-hidden">
-				<div className="flex size-full items-center justify-between border-border border-r border-b px-2">
+				<div className="flex size-full items-center justify-between border-r border-b border-border px-2">
 					<span>{playbackContext.startFrame}</span>
 					<span>-</span>
 					<span>{playbackContext.currentFrame}</span>

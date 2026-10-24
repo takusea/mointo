@@ -219,7 +219,8 @@ const DrawCanvas = () => {
 				toolContext.tool !== "fill" && (
 					<div
 						aria-hidden="true"
-						className={`pointer-events-none absolute rounded-full border border-white mix-blend-difference ${toolContext.tool === "eraser" ? "border-dashed" : ""}`}
+						data-tool={toolContext.tool}
+						className="pointer-events-none absolute rounded-full border border-white mix-blend-difference data-[tool=eraser]:border-dashed"
 						style={{
 							left: cursorPosition.x,
 							top: cursorPosition.y,

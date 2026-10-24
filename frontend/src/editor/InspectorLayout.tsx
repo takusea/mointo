@@ -166,7 +166,8 @@ const InspectorLayout = () => {
 			)}
 			{showToolInspector && (
 				<div
-					className={`pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl ${isDesktop ? "col-start-1" : "w-[min(85vw,320px)] justify-self-start"}`}
+					data-full-width={!isDesktop}
+					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-1 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-start"
 					ref={toolInspectorRef}
 				>
 					<div className="pointer-events-auto flex flex-col gap-2">
@@ -224,7 +225,8 @@ const InspectorLayout = () => {
 			)}
 			{showClipInspector && selectedClip && clipContext.transform && (
 				<div
-					className={`pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl ${isDesktop ? "col-start-5" : "col-start-1 w-[min(85vw,320px)] justify-self-end"}`}
+					data-full-width={!isDesktop}
+					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-5 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-end"
 					ref={clipInspectorRef}
 				>
 					<div className="pointer-events-auto flex flex-col gap-2">

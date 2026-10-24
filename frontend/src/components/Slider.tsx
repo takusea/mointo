@@ -6,7 +6,7 @@ const Slider = (props: Props) => {
 	return (
 		<SliderPrimitive.Root
 			{...props}
-			className="relative flex h-8 cursor-pointer touch-none select-none items-center data-disabled:cursor-not-allowed data-disabled:opacity-50"
+			className="relative flex h-8 cursor-pointer touch-none items-center select-none data-disabled:cursor-not-allowed data-disabled:opacity-50"
 		>
 			<SliderPrimitive.Track className="relative h-2 grow overflow-hidden rounded-full">
 				<div className="size-full rounded-full border border-border bg-surface"></div>

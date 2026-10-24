@@ -10,26 +10,6 @@ type Props = Omit<React.ComponentProps<"button">, "className" | "type"> & {
 	size?: Size;
 };
 
-const padding = (size: Size) => {
-	switch (size) {
-		case "small":
-			return "h-6 px-1";
-		case "medium":
-			return "h-8 px-2";
-		case "large":
-			return "h-12 px-3";
-	}
-};
-
-const color = (variant: Variant) => {
-	switch (variant) {
-		case "default":
-			return "hover:not-disabled:bg-clear-hover";
-		case "primary":
-			return "text-foreground-primary bg-primary hover:not-disabled:bg-primary-hover";
-	}
-};
-
 const Button = ({
 	label,
 	icon: Icon,
@@ -41,7 +21,9 @@ const Button = ({
 		<button
 			{...props}
 			type="button"
-			className={`grid cursor-pointer grid-cols-[auto_auto] items-center justify-center text-nowrap rounded-md font-medium disabled:cursor-not-allowed disabled:opacity-50 ${padding(size)} ${color(variant)}`}
+			data-variant={variant}
+			data-size={size}
+			className="grid cursor-pointer grid-cols-[auto_auto] items-center justify-center rounded-md font-medium text-nowrap disabled:cursor-not-allowed disabled:opacity-50 data-[size=large]:h-12 data-[size=large]:px-3 data-[size=medium]:h-8 data-[size=medium]:px-2 data-[variant=default]:hover:not-disabled:bg-clear-hover data-[variant=primary]:bg-primary data-[variant=primary]:text-foreground-primary data-[variant=primary]:hover:not-disabled:bg-primary-hover"
 		>
 			{Icon && (
 				<div className="mr-1">

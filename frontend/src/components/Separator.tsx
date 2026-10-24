@@ -6,7 +6,7 @@ const Separator = (props: Props) => {
 	return (
 		<SeparatorPrimitive.Root
 			{...props}
-			className="my-1 bg-border data-[orientation=horizontal]:h-px data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px"
+			className="my-1 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px"
 		/>
 	);
 };

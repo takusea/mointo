@@ -33,11 +33,12 @@ const GlobalHeader = () => {
 	});
 
 	return (
-		<header className="relative z-10 border-border border-b bg-background pt-[env(safe-area-inset-top,0)] backdrop-blur-xl [-webkit-app-region:drag]">
+		<header className="relative z-10 border-b border-border bg-background pt-[env(safe-area-inset-top,0)] backdrop-blur-xl [-webkit-app-region:drag]">
 			<div className="ml-[env(titlebar-area-x,0)] grid h-full w-[env(titlebar-area-width,100%)] grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
 				{!isDesktop && (
 					<div
-						className={`grid grid-cols-[auto_1fr] ${isMenubarOpen ? "col-span-3" : ""}`}
+						data-open={isMenubarOpen}
+						className={`grid grid-cols-[auto_1fr] data-[open=true]:col-span-3`}
 					>
 						<IconButton
 							label={t("menubar.open")}

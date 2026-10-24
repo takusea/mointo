@@ -13,26 +13,6 @@ type Props = Omit<React.ComponentProps<"button">, "className" | "type"> & {
 	size?: Size;
 };
 
-const padding = (size: Size) => {
-	switch (size) {
-		case "small":
-			return "";
-		case "medium":
-			return "p-1";
-		case "large":
-			return "p-2";
-	}
-};
-
-const color = (variant: Variant) => {
-	switch (variant) {
-		case "default":
-			return "hover:not-disabled:bg-clear-hover";
-		case "primary":
-			return "text-foreground-primary bg-primary hover:not-disabled:bg-primary";
-	}
-};
-
 const IconButton = ({
 	label,
 	icon: Icon,
@@ -47,7 +27,9 @@ const IconButton = ({
 			<button
 				{...props}
 				type="button"
-				className={`flex cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50 ${padding(size)} ${color(variant)}`}
+				data-variant={variant}
+				data-size={size}
+				className={`flex cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50 data-[size=large]:p-2 data-[size=medium]:p-1 data-[variant=default]:hover:not-disabled:bg-clear-hover data-[variant=primary]:bg-primary data-[variant=primary]:text-foreground-primary data-[variant=primary]:hover:not-disabled:bg-primary`}
 				aria-label={label}
 			>
 				<Icon />

@@ -40,8 +40,6 @@ const NumberField = ({
 		return Math.max(min, Math.min(Math.round(value / step) * step, max));
 	};
 
-	const cursor = isMoved ? "cursor-ew-resize" : "cursor-text";
-
 	const finishInteraction = () => {
 		dragValue.current = null;
 		if (interactionStarted.current) {
@@ -138,7 +136,9 @@ const NumberField = ({
 
 	return (
 		<div
-			className={`flex h-8 gap-1 rounded-md border border-border bg-surface pr-2 pl-1 -outline-offset-2 focus-within:outline-2 ${props.disabled ? "opacity-50" : cursor}`}
+			data-moved={isMoved}
+			className="flex h-8 gap-1 rounded-md border border-border bg-surface pr-2 pl-1 -outline-offset-2 not-[aria-disabled]:cursor-text focus-within:outline-2 aria-disabled:opacity-50 not-[aria-disabled]:data-[moved=true]:cursor-ew-resize"
+			aria-disabled={props.disabled}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
@@ -148,7 +148,7 @@ const NumberField = ({
 			}}
 		>
 			{leftElement && (
-				<div className="flex h-full items-center text-foreground-muted">
+				<div className="flex h-full cursor-ew-resize items-center text-foreground-muted">
 					{props["aria-label"] ? (
 						<Tooltip label={props["aria-label"]} side="top">
 							<span className="flex h-full items-center">{leftElement}</span>
@@ -169,7 +169,7 @@ const NumberField = ({
 				onBlur={handleBlur}
 			/>
 			{rightElement && (
-				<div className="flex h-full items-center text-foreground-muted">
+				<div className="flex h-full cursor-ew-resize items-center text-foreground-muted">
 					{rightElement}
 				</div>
 			)}

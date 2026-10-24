@@ -144,7 +144,10 @@ const InputSettingsDialog = (props: Props) => {
 									cx={x * CURVE_VIEWBOX}
 									cy={(1 - y) * CURVE_VIEWBOX}
 									r="3"
-									className={`cursor-grab touch-none stroke-foreground ${index === 0 || index === tool.pressureCurve.length - 1 ? "fill-foreground-muted" : "fill-primary"}`}
+									data-interactive={
+										index === 0 || index === tool.pressureCurve.length - 1
+									}
+									className="cursor-grab touch-none fill-foreground-muted stroke-foreground data-interactive:fill-primary"
 									strokeWidth="1"
 									onPointerDown={(pointerEvent) => {
 										pointerEvent.stopPropagation();

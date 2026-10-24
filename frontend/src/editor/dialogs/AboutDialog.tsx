@@ -20,7 +20,7 @@ const AboutDialog = (props: Props) => {
 					className="w-16 [image-rendering:pixelated]"
 				/>
 				<div className="flex flex-col gap-2">
-					<span className="font-bold text-lg">mointo</span>
+					<span className="text-lg font-bold">mointo</span>
 					<span>Ver 0.0.1</span>
 				</div>
 			</div>

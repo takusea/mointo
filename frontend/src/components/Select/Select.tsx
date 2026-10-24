@@ -11,7 +11,7 @@ const Select = ({ children, placeholder, ...props }: Props) => {
 	return (
 		<SelectPrimitive.Root {...props}>
 			<SelectPrimitive.Trigger
-				className="flex h-8 not-disabled:cursor-pointer items-center justify-between gap-1 rounded-md border border-border bg-surface px-2 hover:not-disabled:bg-surface-hover disabled:opacity-50"
+				className="flex h-8 items-center justify-between gap-1 rounded-md border border-border bg-surface px-2 not-disabled:cursor-pointer hover:not-disabled:bg-surface-hover disabled:opacity-50"
 				aria-label={props.label}
 				id={props.id}
 			>
