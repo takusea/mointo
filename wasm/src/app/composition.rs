@@ -193,6 +193,9 @@ impl Composition {
     }
 
     pub fn ensure_layers(&mut self) -> Result<(), String> {
+        while self.layers.len() < DEFAULT_LAYER_COUNT {
+            self.layers.push(Layer::new(self.layers.len()));
+        }
         for (index, layer) in self.layers.iter().enumerate() {
             if self.layers[..index]
                 .iter()
