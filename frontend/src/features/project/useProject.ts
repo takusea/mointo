@@ -60,7 +60,7 @@ export const useProject = () => {
 	const save = async () => {
 		const data = await core.exportProject();
 		const blob = new Blob([data.buffer as ArrayBuffer], {
-			type: "application/zip",
+			type: "application/vnt.moiproj",
 		});
 		const link = document.createElement("a");
 		link.href = URL.createObjectURL(blob);
