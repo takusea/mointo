@@ -17,7 +17,10 @@ impl MointoCore {
             return false;
         };
         let (width, height) = match self.project.as_ref() {
-            Some(project) => (project.composition().settings.width, project.composition().settings.height),
+            Some(project) => (
+                project.composition().settings.width,
+                project.composition().settings.height,
+            ),
             None => return false,
         };
         if self
@@ -58,7 +61,10 @@ impl MointoCore {
 
     pub async fn render_frame(&mut self, frame_index: u32) -> Option<Uint8ClampedArray> {
         let (width, height) = match self.project.as_ref() {
-            Some(project) => (project.composition().settings.width, project.composition().settings.height),
+            Some(project) => (
+                project.composition().settings.width,
+                project.composition().settings.height,
+            ),
             None => return None,
         };
         if self.gpu_renderer.is_none() {
@@ -99,7 +105,10 @@ impl MointoCore {
         canvas: HtmlCanvasElement,
     ) -> bool {
         let (width, height) = match self.project.as_ref() {
-            Some(project) => (project.composition().settings.width, project.composition().settings.height),
+            Some(project) => (
+                project.composition().settings.width,
+                project.composition().settings.height,
+            ),
             None => return false,
         };
         if self

@@ -80,8 +80,8 @@ mod tests {
         action_manager::ActionManager,
         clip::{BlendMode, Clip, ClipMetadata},
         composition::Composition,
-        project::Project,
         composition_settings::CompositionSettings,
+        project::Project,
     };
     use crate::core::image::{Image, PixelChange};
     use uuid::Uuid;
@@ -117,13 +117,16 @@ mod tests {
         };
         composition.add_clip(clip);
         composition.settings = CompositionSettings {
-                width: 1,
-                height: 1,
-                frame_rate: 1,
-                start_frame: 0,
-                end_frame: 1,
-            };
-        let mut project = Project { title: "Test".to_string(), compositions: vec![composition] };
+            width: 1,
+            height: 1,
+            frame_rate: 1,
+            start_frame: 0,
+            end_frame: 1,
+        };
+        let mut project = Project {
+            title: "Test".to_string(),
+            compositions: vec![composition],
+        };
         let mut action_manager = ActionManager::new();
         action_manager.do_action(Box::new(DrawStrokeAction::new(clip_id)), &mut project);
         action_manager.begin_pixel_recording();

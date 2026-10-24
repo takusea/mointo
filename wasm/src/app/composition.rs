@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::app::clip::{AssetId, Clip, ClipId};
+use crate::app::composition_settings::CompositionSettings;
 use crate::core::image::Image;
 use crate::gpu::GpuRenderer;
-use crate::app::composition_settings::CompositionSettings;
 
 const DEFAULT_LAYER_COUNT: usize = 100;
 
@@ -36,7 +36,9 @@ pub struct Layer {
     pub locked: bool,
 }
 
-fn default_layer_visible() -> bool { true }
+fn default_layer_visible() -> bool {
+    true
+}
 
 impl Layer {
     pub(crate) fn new(index: usize) -> Self {
@@ -88,7 +90,11 @@ impl Composition {
         let asset_id = clip.metadata.asset_id;
         let image = clip.image.clone();
         self.assets.insert(asset_id, image.clone());
-        for linked in self.clips.iter_mut().filter(|c| c.metadata.asset_id == asset_id) {
+        for linked in self
+            .clips
+            .iter_mut()
+            .filter(|c| c.metadata.asset_id == asset_id)
+        {
             if linked.metadata.id != clip_id {
                 linked.set_image(image.clone());
             }
@@ -137,7 +143,11 @@ impl Composition {
         {
             let removed = self.clips.remove(pos);
             let asset_id = removed.metadata.asset_id;
-            if !self.clips.iter().any(|clip| clip.metadata.asset_id == asset_id) {
+            if !self
+                .clips
+                .iter()
+                .any(|clip| clip.metadata.asset_id == asset_id)
+            {
                 self.assets.remove(&asset_id);
             }
             Some(removed)
@@ -350,33 +360,52 @@ impl Composition {
             .map(|clip| (clip, self.layer_index(clip.metadata.layer_id).unwrap()))
             .collect();
         current.sort_by_key(|(_, layer_index)| *layer_index);
-        let current_clip = self.clips.iter().find(|clip| {
-            clip.metadata.layer_id == layer_id && clip.contains_frame(frame_index)
-        });
+        let current_clip = self
+            .clips
+            .iter()
+            .find(|clip| clip.metadata.layer_id == layer_id && clip.contains_frame(frame_index));
         let anchor_start = current_clip.map_or(frame_index, |clip| clip.metadata.start);
         let anchor_end = current_clip.map_or(frame_index.saturating_add(1), |clip| {
             clip.metadata.start.saturating_add(clip.metadata.duration)
         });
-        let previous_clip = self.clips.iter()
+        let previous_clip = self
+            .clips
+            .iter()
             .filter(|clip| clip.metadata.layer_id == layer_id)
-            .filter(|clip| clip.metadata.start.saturating_add(clip.metadata.duration) == anchor_start)
+            .filter(|clip| {
+                clip.metadata.start.saturating_add(clip.metadata.duration) == anchor_start
+            })
             .max_by_key(|clip| clip.metadata.start.saturating_add(clip.metadata.duration));
-        let next_clip = self.clips.iter()
+        let next_clip = self
+            .clips
+            .iter()
             .filter(|clip| clip.metadata.layer_id == layer_id)
             .filter(|clip| clip.metadata.start == anchor_end)
             .min_by_key(|clip| clip.metadata.start);
-        let mut previous = previous_clip.filter(|clip| {
-            !clip.metadata.hidden && !self.is_layer_hidden(self.layer_index(layer_id).unwrap())
-        }).cloned().into_iter().collect::<Vec<_>>();
+        let mut previous = previous_clip
+            .filter(|clip| {
+                !clip.metadata.hidden && !self.is_layer_hidden(self.layer_index(layer_id).unwrap())
+            })
+            .cloned()
+            .into_iter()
+            .collect::<Vec<_>>();
         if let Some(clip) = previous.first_mut() {
-            let sample_frame = clip.metadata.start.saturating_add(clip.metadata.duration).saturating_sub(1);
+            let sample_frame = clip
+                .metadata
+                .start
+                .saturating_add(clip.metadata.duration)
+                .saturating_sub(1);
             let (transform, opacity) = clip.values_at(sample_frame);
             clip.transform = transform;
             clip.metadata.opacity = opacity;
         }
-        let mut next = next_clip.filter(|clip| {
-            !clip.metadata.hidden && !self.is_layer_hidden(self.layer_index(layer_id).unwrap())
-        }).cloned().into_iter().collect::<Vec<_>>();
+        let mut next = next_clip
+            .filter(|clip| {
+                !clip.metadata.hidden && !self.is_layer_hidden(self.layer_index(layer_id).unwrap())
+            })
+            .cloned()
+            .into_iter()
+            .collect::<Vec<_>>();
         if let Some(clip) = next.first_mut() {
             let (transform, opacity) = clip.values_at(clip.metadata.start);
             clip.transform = transform;
@@ -397,7 +426,9 @@ impl Composition {
     }
 }
 
-fn default_composition_name() -> String { "main".to_string() }
+fn default_composition_name() -> String {
+    "main".to_string()
+}
 
 #[cfg(test)]
 mod tests {

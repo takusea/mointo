@@ -174,8 +174,8 @@ impl UndoableAction for ActionGroup {
 mod tests {
     use super::ActionManager;
     use crate::app::action::{Action, UndoableAction};
-    use crate::app::project::Project;
     use crate::app::composition_settings::CompositionSettings;
+    use crate::app::project::Project;
 
     struct SetTitleAction {
         title: String,
@@ -202,13 +202,16 @@ mod tests {
     #[test]
     fn grouped_actions_undo_and_redo_as_one() {
         let mut manager = ActionManager::new();
-        let mut project = Project::new("Original".to_string(), CompositionSettings {
-            width: 1,
-            height: 1,
-            frame_rate: 1,
-            start_frame: 0,
-            end_frame: 1,
-        });
+        let mut project = Project::new(
+            "Original".to_string(),
+            CompositionSettings {
+                width: 1,
+                height: 1,
+                frame_rate: 1,
+                start_frame: 0,
+                end_frame: 1,
+            },
+        );
 
         manager.begin_action_group();
         manager.do_action(

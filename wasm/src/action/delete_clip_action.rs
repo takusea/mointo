@@ -46,19 +46,22 @@ mod tests {
     use super::DeleteClipAction;
     use crate::action::add_clip_action::AddClipAction;
     use crate::app::action_manager::ActionManager;
-    use crate::app::project::Project;
     use crate::app::composition_settings::CompositionSettings;
+    use crate::app::project::Project;
 
     #[test]
     fn undo_and_redo_delete_clip_repeatedly_without_duplicates() {
         let mut manager = ActionManager::new();
-        let mut project = Project::new("Test".to_string(), CompositionSettings {
-            width: 1,
-            height: 1,
-            frame_rate: 1,
-            start_frame: 0,
-            end_frame: 1,
-        });
+        let mut project = Project::new(
+            "Test".to_string(),
+            CompositionSettings {
+                width: 1,
+                height: 1,
+                frame_rate: 1,
+                start_frame: 0,
+                end_frame: 1,
+            },
+        );
 
         let layer_id = project.composition_mut().get_layers()[0].id;
         manager.do_action(Box::new(AddClipAction::new(0, layer_id)), &mut project);

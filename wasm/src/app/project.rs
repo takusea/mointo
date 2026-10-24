@@ -21,10 +21,18 @@ impl Project {
         }
     }
 
-    pub fn composition(&self) -> &Composition { &self.compositions[0] }
-    pub fn composition_mut(&mut self) -> &mut Composition { &mut self.compositions[0] }
-    pub fn settings(&self) -> &CompositionSettings { &self.compositions[0].settings }
-    pub fn settings_mut(&mut self) -> &mut CompositionSettings { &mut self.compositions[0].settings }
+    pub fn composition(&self) -> &Composition {
+        &self.compositions[0]
+    }
+    pub fn composition_mut(&mut self) -> &mut Composition {
+        &mut self.compositions[0]
+    }
+    pub fn settings(&self) -> &CompositionSettings {
+        &self.compositions[0].settings
+    }
+    pub fn settings_mut(&mut self) -> &mut CompositionSettings {
+        &mut self.compositions[0].settings
+    }
 
     pub fn get_clip(&self, clip_id: Uuid) -> Option<&Clip> {
         self.composition().get_clip(clip_id)
