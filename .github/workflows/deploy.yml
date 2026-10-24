@@ -16,7 +16,7 @@ jobs:
       CF_SEND_TELEMETRY: "false"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -29,9 +29,9 @@ jobs:
           version: latest
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: frontend/.node-version
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -43,12 +43,9 @@ jobs:
         working-directory: frontend
         run: npm run wasm
 
-      - name: Typecheck
+      - name: Check
         working-directory: frontend
         run: npm run typecheck
-
-      - name: Lint
-        working-directory: frontend
         run: npm run lint:ci
 
       - name: Build
