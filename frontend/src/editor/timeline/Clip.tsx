@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
 	id: string;
@@ -6,6 +6,8 @@ type Props = {
 	name: string;
 	layerHeight: number;
 	frameWidth: number;
+	scrollX: number;
+	scrollY: number;
 	startFrame: number;
 	duration: number;
 	layerIndex: number;
@@ -28,6 +30,10 @@ type Drag = {
 	pointerId: number;
 	startX: number;
 	startY: number;
+	lastX: number;
+	lastY: number;
+	startScrollX: number;
+	startScrollY: number;
 	grabOffsetY: number;
 	startFrame: number;
 	duration: number;
@@ -41,6 +47,8 @@ const Clip = ({
 	name,
 	layerHeight,
 	frameWidth,
+	scrollX,
+	scrollY,
 	startFrame,
 	duration,
 	layerIndex,
@@ -67,6 +75,8 @@ const Clip = ({
 		frame: number;
 		startFrame: number;
 		startX: number;
+		lastX: number;
+		startScrollX: number;
 	} | null>(null);
 
 	const startInteraction = () => {
@@ -90,6 +100,10 @@ const Clip = ({
 			pointerId: event.pointerId,
 			startX: event.clientX,
 			startY: event.clientY,
+			lastX: event.clientX,
+			lastY: event.clientY,
+			startScrollX: scrollX,
+			startScrollY: scrollY,
 			grabOffsetY:
 				event.clientY - event.currentTarget.getBoundingClientRect().top,
 			startFrame,
@@ -107,19 +121,37 @@ const Clip = ({
 		if (drag.kind !== "move") return;
 		event.stopPropagation();
 		startInteraction();
+		drag.lastX = event.clientX;
+		drag.lastY = event.clientY;
+		updateClipDrag(drag, event.clientX, event.clientY);
+	};
 
-		onMove(
+	const updateClipDrag = (drag: Drag, clientX: number, clientY: number) => {
+		const scrollDeltaX = scrollX - drag.startScrollX;
+		const scrollDeltaY = scrollY - drag.startScrollY;
+		if (drag.kind === "move") {
+			onMove(
+				Math.max(
+					0,
+					drag.startFrame +
+						Math.floor((clientX - drag.startX + scrollDeltaX) / frameWidth),
+				),
+				Math.max(
+					0,
+					drag.layerIndex +
+						Math.floor(
+							(drag.grabOffsetY + clientY - drag.startY + scrollDeltaY) /
+								layerHeight,
+						),
+				),
+			);
+			return;
+		}
+		onDurationChange(
 			Math.max(
-				0,
-				drag.startFrame +
-					Math.floor((event.clientX - drag.startX) / frameWidth),
-			),
-			Math.max(
-				0,
-				drag.layerIndex +
-					Math.floor(
-						(drag.grabOffsetY + event.clientY - drag.startY) / layerHeight,
-					),
+				1,
+				drag.duration +
+					Math.floor((clientX - drag.startX + scrollDeltaX) / frameWidth),
 			),
 		);
 	};
@@ -136,12 +168,9 @@ const Clip = ({
 			return;
 		event.stopPropagation();
 		startInteraction();
-		onDurationChange(
-			Math.max(
-				1,
-				drag.duration + Math.floor((event.clientX - drag.startX) / frameWidth),
-			),
-		);
+		drag.lastX = event.clientX;
+		drag.lastY = event.clientY;
+		updateClipDrag(drag, event.clientX, event.clientY);
 	};
 
 	const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -169,6 +198,8 @@ const Clip = ({
 			frame,
 			startFrame: frame,
 			startX: event.clientX,
+			lastX: event.clientX,
+			startScrollX: scrollX,
 		};
 		setKeyframePreview({ property, fromFrame: frame, frame });
 		startInteraction();
@@ -180,12 +211,16 @@ const Clip = ({
 		event.stopPropagation();
 		const drag = keyframeDragRef.current;
 		if (drag == null || drag.pointerId !== event.pointerId) return;
+		drag.lastX = event.clientX;
 		drag.frame = Math.max(
 			startFrame,
 			Math.min(
 				startFrame + duration - 1,
 				drag.startFrame +
-					Math.round((event.clientX - drag.startX) / frameWidth),
+					Math.round(
+						(event.clientX - drag.startX + scrollX - drag.startScrollX) /
+							frameWidth,
+					),
 			),
 		);
 		setKeyframePreview({
@@ -194,6 +229,34 @@ const Clip = ({
 			frame: drag.frame,
 		});
 	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Recompute the active drag only when scroll offsets change.
+	useEffect(() => {
+		const drag = dragRef.current;
+		if (drag != null) updateClipDrag(drag, drag.lastX, drag.lastY);
+
+		const keyframeDrag = keyframeDragRef.current;
+		if (keyframeDrag == null) return;
+		keyframeDrag.frame = Math.max(
+			startFrame,
+			Math.min(
+				startFrame + duration - 1,
+				keyframeDrag.startFrame +
+					Math.round(
+						(keyframeDrag.lastX -
+							keyframeDrag.startX +
+							scrollX -
+							keyframeDrag.startScrollX) /
+							frameWidth,
+					),
+			),
+		);
+		setKeyframePreview({
+			property: keyframeDrag.property,
+			fromFrame: keyframeDrag.startFrame,
+			frame: keyframeDrag.frame,
+		});
+	}, [scrollX, scrollY]);
 
 	const finishKeyframeDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
 		event.stopPropagation();

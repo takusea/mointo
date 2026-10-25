@@ -13,6 +13,8 @@ type TrackBodyProps = {
 	>;
 	layerHeight: number;
 	frameWidth: number;
+	scrollX: number;
+	scrollY: number;
 	maxFrameCount: number;
 	currentFrame: number;
 	startFrame: number;
@@ -42,6 +44,8 @@ const TrackBody = ({
 	clipKeyframes,
 	layerHeight,
 	frameWidth,
+	scrollX,
+	scrollY,
 	maxFrameCount,
 	currentFrame,
 	startFrame,
@@ -100,6 +104,8 @@ const TrackBody = ({
 					name={clip.name}
 					layerHeight={layerHeight}
 					frameWidth={frameWidth}
+					scrollX={scrollX}
+					scrollY={scrollY}
 					startFrame={clip.start}
 					duration={clip.duration}
 					layerIndex={clip.layer_index}

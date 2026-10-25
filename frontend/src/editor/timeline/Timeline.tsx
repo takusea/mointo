@@ -46,6 +46,13 @@ const Timeline = () => {
 		y: number;
 	}>({ x: 0, y: 0 });
 	const timelineViewportRef = useRef<HTMLDivElement | null>(null);
+	const autoScrollPointerRef = useRef<{
+		id: number;
+		x: number;
+		y: number;
+		isFrameRuler: boolean;
+	} | null>(null);
+	const autoScrollFrameRef = useRef<number | null>(null);
 	const [pendingScroll, setPendingScroll] = useState<{
 		x: number;
 		y: number;
@@ -60,6 +67,88 @@ const Timeline = () => {
 		setPendingScroll(null);
 		setScrollPosition({ x: viewport.scrollLeft, y: viewport.scrollTop });
 	}, [pendingScroll]);
+
+	useLayoutEffect(() => {
+		const stopAutoScroll = (event: PointerEvent) => {
+			if (autoScrollPointerRef.current?.id !== event.pointerId) return;
+			autoScrollPointerRef.current = null;
+		};
+		window.addEventListener("pointerup", stopAutoScroll);
+		window.addEventListener("pointercancel", stopAutoScroll);
+		return () => {
+			window.removeEventListener("pointerup", stopAutoScroll);
+			window.removeEventListener("pointercancel", stopAutoScroll);
+			if (autoScrollFrameRef.current != null) {
+				cancelAnimationFrame(autoScrollFrameRef.current);
+			}
+		};
+	}, []);
+
+	function updateAutoScrollPointer(event: React.PointerEvent<HTMLDivElement>) {
+		if (autoScrollPointerRef.current?.id !== event.pointerId) return;
+		if (!(event.buttons & 1)) {
+			autoScrollPointerRef.current = null;
+			return;
+		}
+		autoScrollPointerRef.current = {
+			id: event.pointerId,
+			x: event.clientX,
+			y: event.clientY,
+			isFrameRuler: autoScrollPointerRef.current.isFrameRuler,
+		};
+		if (autoScrollFrameRef.current != null) return;
+
+		let previousTime = 0;
+		const scrollAtPointer = (time: number) => {
+			autoScrollFrameRef.current = null;
+			const pointer = autoScrollPointerRef.current;
+			const viewport = timelineViewportRef.current;
+			if (pointer == null || viewport == null) return;
+			const rect = viewport.getBoundingClientRect();
+			const edgeSize = 48;
+			const elapsed =
+				previousTime === 0 ? 16 : Math.min(time - previousTime, 32);
+			previousTime = time;
+			const edgeSpeed = (distance: number) =>
+				Math.max(0, Math.min(1, distance / edgeSize)) * 18 * (elapsed / 16);
+			let deltaX = 0;
+			if (pointer.x < rect.left + edgeSize) {
+				deltaX = -edgeSpeed(rect.left + edgeSize - pointer.x);
+			} else if (pointer.x > rect.right - edgeSize) {
+				deltaX = edgeSpeed(pointer.x - (rect.right - edgeSize));
+			}
+			let deltaY = 0;
+			// The frame ruler is above the scroll viewport; dragging there should
+			// not scroll the layer list vertically.
+			if (pointer.y >= rect.top && pointer.y <= rect.bottom) {
+				if (pointer.y < rect.top + edgeSize) {
+					deltaY = -edgeSpeed(rect.top + edgeSize - pointer.y);
+				} else if (pointer.y > rect.bottom - edgeSize) {
+					deltaY = edgeSpeed(pointer.y - (rect.bottom - edgeSize));
+				}
+			}
+			if (deltaX !== 0 || deltaY !== 0) {
+				const previousScrollLeft = viewport.scrollLeft;
+				const previousScrollTop = viewport.scrollTop;
+				viewport.scrollLeft += deltaX;
+				viewport.scrollTop += deltaY;
+				if (pointer.isFrameRuler) {
+					playbackContext.setCurrentFrame(
+						Math.floor(
+							(pointer.x - rect.left + viewport.scrollLeft) / frameWidth,
+						),
+					);
+				}
+				if (
+					viewport.scrollLeft !== previousScrollLeft ||
+					viewport.scrollTop !== previousScrollTop
+				) {
+					autoScrollFrameRef.current = requestAnimationFrame(scrollAtPointer);
+				}
+			}
+		};
+		autoScrollFrameRef.current = requestAnimationFrame(scrollAtPointer);
+	}
 
 	function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
 		if (!(event.buttons & 1)) return;
@@ -176,7 +265,22 @@ const Timeline = () => {
 
 	return (
 		<Card>
-			<div className="absolute inset-0 grid h-full min-h-0 min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[32px_minmax(0,1fr)] overflow-hidden">
+			<div
+				className="absolute inset-0 grid h-full min-h-0 min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[32px_minmax(0,1fr)] overflow-hidden"
+				onPointerDownCapture={(event) => {
+					if (event.buttons & 1) {
+						autoScrollPointerRef.current = {
+							id: event.pointerId,
+							x: event.clientX,
+							y: event.clientY,
+							isFrameRuler:
+								event.clientY <
+								(timelineViewportRef.current?.getBoundingClientRect().top ?? 0),
+						};
+					}
+				}}
+				onPointerMoveCapture={updateAutoScrollPointer}
+			>
 				<div className="flex size-full items-center justify-between border-r border-b border-border px-2">
 					<span>{playbackContext.startFrame}</span>
 					<span>-</span>
@@ -220,6 +324,8 @@ const Timeline = () => {
 					clipKeyframes={coreSnapshot.clipKeyframes}
 					layerHeight={layerHeight}
 					frameWidth={frameWidth}
+					scrollX={scrollPosition.x}
+					scrollY={scrollPosition.y}
 					maxFrameCount={playbackContext.maxFrameCount}
 					currentFrame={playbackContext.currentFrame}
 					startFrame={playbackContext.startFrame}
