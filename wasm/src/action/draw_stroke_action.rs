@@ -36,7 +36,20 @@ impl DrawStrokeAction {
             changed = true;
         }
         if changed {
-            clip.mark_image_changed();
+            let mut left = clip.image.width;
+            let mut top = clip.image.height;
+            let mut right = 0;
+            let mut bottom = 0;
+            for change in self.changes.values() {
+                let pixel = change.index / 4;
+                let x = (pixel % clip.image.width as usize) as u32;
+                let y = (pixel / clip.image.width as usize) as u32;
+                left = left.min(x);
+                top = top.min(y);
+                right = right.max(x + 1);
+                bottom = bottom.max(y + 1);
+            }
+            clip.mark_image_region_changed([left, top, right - left, bottom - top]);
         }
     }
 }
@@ -114,6 +127,7 @@ mod tests {
             keyframes: Vec::new(),
             image,
             image_revision: 0,
+            dirty_rect: std::cell::Cell::new(None),
         };
         composition.add_clip(clip);
         composition.settings = CompositionSettings {

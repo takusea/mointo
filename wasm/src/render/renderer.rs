@@ -3,7 +3,6 @@ use super::types::{CachedClipTexture, ClipUniforms, RenderClip};
 use crate::app::clip::{BlendMode, Clip};
 use crate::core::image::Image;
 use std::collections::{HashMap, HashSet};
-use wgpu::util::DeviceExt;
 
 pub struct GpuRenderer {
     device: wgpu::Device,
@@ -15,6 +14,8 @@ pub struct GpuRenderer {
     canvas: Option<web_sys::HtmlCanvasElement>,
     surface_config: Option<wgpu::SurfaceConfiguration>,
     clip_textures: HashMap<uuid::Uuid, CachedClipTexture>,
+    clip_uniforms: HashMap<uuid::Uuid, wgpu::Buffer>,
+    clip_bind_groups: HashMap<uuid::Uuid, [wgpu::BindGroup; 2]>,
     frame_textures: Option<(u32, u32, [wgpu::Texture; 2])>,
 }
 
@@ -93,6 +94,8 @@ impl GpuRenderer {
             canvas,
             surface_config,
             clip_textures: HashMap::new(),
+            clip_uniforms: HashMap::new(),
+            clip_bind_groups: HashMap::new(),
             frame_textures: None,
         })
     }
@@ -237,6 +240,7 @@ impl GpuRenderer {
                 })
             });
             self.frame_textures = Some((width, height, textures));
+            self.clip_bind_groups.clear();
         }
         let output_textures = &self.frame_textures.as_ref().unwrap().2;
         let output_views = output_textures
@@ -262,10 +266,21 @@ impl GpuRenderer {
         let active_clip_ids: HashSet<_> = clips.iter().map(|item| item.clip.metadata.id).collect();
         self.clip_textures
             .retain(|clip_id, _| active_clip_ids.contains(clip_id));
+        self.clip_uniforms
+            .retain(|clip_id, _| active_clip_ids.contains(clip_id));
+        self.clip_bind_groups
+            .retain(|clip_id, _| active_clip_ids.contains(clip_id));
 
         for item in clips {
             let clip = item.clip;
             let image = &clip.image;
+            if self
+                .clip_textures
+                .get(&clip.metadata.id)
+                .is_some_and(|cached| cached.width != image.width || cached.height != image.height)
+            {
+                self.clip_bind_groups.remove(&clip.metadata.id);
+            }
             let cached = self
                 .clip_textures
                 .entry(clip.metadata.id)
@@ -315,13 +330,21 @@ impl GpuRenderer {
             }
 
             if cached.revision != clip.image_revision {
-                let clip_bytes_per_row = image.width * 4;
+                let rect = if cached.revision == u64::MAX {
+                    [0, 0, image.width, image.height]
+                } else {
+                    clip.dirty_rect
+                        .get()
+                        .unwrap_or([0, 0, image.width, image.height])
+                };
+                let [x, y, rect_width, rect_height] = rect;
+                let clip_bytes_per_row = rect_width * 4;
                 let padded_clip_bytes_per_row = clip_bytes_per_row
                     .div_ceil(wgpu::COPY_BYTES_PER_ROW_ALIGNMENT)
                     * wgpu::COPY_BYTES_PER_ROW_ALIGNMENT;
-                let mut upload_data = vec![0; (padded_clip_bytes_per_row * image.height) as usize];
-                for row in 0..image.height as usize {
-                    let source_start = row * clip_bytes_per_row as usize;
+                let mut upload_data = vec![0; (padded_clip_bytes_per_row * rect_height) as usize];
+                for row in 0..rect_height as usize {
+                    let source_start = ((y as usize + row) * image.width as usize + x as usize) * 4;
                     let target_start = row * padded_clip_bytes_per_row as usize;
                     upload_data[target_start..target_start + clip_bytes_per_row as usize]
                         .copy_from_slice(
@@ -329,20 +352,67 @@ impl GpuRenderer {
                         );
                 }
                 self.queue.write_texture(
-                    cached.texture.as_image_copy(),
+                    wgpu::TexelCopyTextureInfo {
+                        texture: &cached.texture,
+                        mip_level: 0,
+                        origin: wgpu::Origin3d { x, y, z: 0 },
+                        aspect: wgpu::TextureAspect::All,
+                    },
                     &upload_data,
                     wgpu::TexelCopyBufferLayout {
                         offset: 0,
                         bytes_per_row: Some(padded_clip_bytes_per_row),
-                        rows_per_image: Some(image.height),
+                        rows_per_image: Some(rect_height),
                     },
                     wgpu::Extent3d {
-                        width: image.width,
-                        height: image.height,
+                        width: rect_width,
+                        height: rect_height,
                         depth_or_array_layers: 1,
                     },
                 );
                 cached.revision = clip.image_revision;
+                clip.dirty_rect.set(None);
+            }
+
+            let clip_id = clip.metadata.id;
+            self.clip_uniforms.entry(clip_id).or_insert_with(|| {
+                self.device.create_buffer(&wgpu::BufferDescriptor {
+                    label: Some("clip-uniforms"),
+                    size: std::mem::size_of::<ClipUniforms>() as u64,
+                    usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                    mapped_at_creation: false,
+                })
+            });
+            if !self.clip_bind_groups.contains_key(&clip_id) {
+                let texture_view = cached.texture.create_view(&Default::default());
+                let uniform_buffer = &self.clip_uniforms[&clip_id];
+                let groups = std::array::from_fn(|source_index| {
+                    self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+                        label: Some("clip-bind-group"),
+                        layout: &self.bind_group_layout,
+                        entries: &[
+                            wgpu::BindGroupEntry {
+                                binding: 0,
+                                resource: wgpu::BindingResource::TextureView(&texture_view),
+                            },
+                            wgpu::BindGroupEntry {
+                                binding: 1,
+                                resource: wgpu::BindingResource::Sampler(&self.sampler),
+                            },
+                            wgpu::BindGroupEntry {
+                                binding: 2,
+                                resource: uniform_buffer.as_entire_binding(),
+                            },
+                            wgpu::BindGroupEntry {
+                                binding: 3,
+                                resource: wgpu::BindingResource::TextureView(
+                                    &output_views[source_index],
+                                ),
+                            },
+                        ],
+                    })
+                });
+                self.clip_bind_groups.insert(clip_id, groups);
             }
         }
 
@@ -373,10 +443,6 @@ impl GpuRenderer {
         for (clip_index, item) in clips.iter().enumerate() {
             let clip = item.clip;
             let image = &clip.image;
-            let cached = self
-                .clip_textures
-                .get(&clip.metadata.id)
-                .ok_or_else(|| "Clip texture cache entry is missing".to_string())?;
             let inverse = clip
                 .transform
                 .to_inverse_matrix3((image.width as f32 / 2.0, image.height as f32 / 2.0))
@@ -408,42 +474,14 @@ impl GpuRenderer {
                 _padding: [0.0; 2],
                 tint_color: item.tint,
             };
-            let uniform_buffer =
-                self.device
-                    .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                        label: Some("clip-uniforms"),
-                        contents: bytemuck::bytes_of(&uniforms),
-                        usage: wgpu::BufferUsages::UNIFORM,
-                    });
+            self.queue.write_buffer(
+                &self.clip_uniforms[&clip.metadata.id],
+                0,
+                bytemuck::bytes_of(&uniforms),
+            );
             let source_index = clip_index % 2;
             let target_index = (clip_index + 1) % 2;
             let final_canvas_pass = to_canvas && clip_index + 1 == clips.len();
-            let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                label: Some("clip-bind-group"),
-                layout: &self.bind_group_layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::TextureView(
-                            &cached
-                                .texture
-                                .create_view(&wgpu::TextureViewDescriptor::default()),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 1,
-                        resource: wgpu::BindingResource::Sampler(&self.sampler),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 2,
-                        resource: uniform_buffer.as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 3,
-                        resource: wgpu::BindingResource::TextureView(&output_views[source_index]),
-                    },
-                ],
-            });
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("frame-pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -465,7 +503,11 @@ impl GpuRenderer {
                 multiview_mask: None,
             });
             pass.set_pipeline(&self.pipeline);
-            pass.set_bind_group(0, &bind_group, &[]);
+            pass.set_bind_group(
+                0,
+                &self.clip_bind_groups[&clip.metadata.id][source_index],
+                &[],
+            );
             pass.draw(0..3, 0..1);
         }
         if to_canvas && clips.is_empty() {

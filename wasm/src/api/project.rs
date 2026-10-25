@@ -67,6 +67,7 @@ impl MointoCore {
             keyframes: Vec::new(),
             image,
             image_revision: 0,
+            dirty_rect: std::cell::Cell::new(None),
         });
         self.project = Some(project);
         Ok(())

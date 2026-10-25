@@ -1,6 +1,7 @@
 use crate::app::layer::LayerId;
 use crate::core::{image::Image, transform::Transform};
 use serde::{Deserialize, Serialize};
+use std::cell::Cell;
 use uuid::Uuid;
 
 pub type ClipId = Uuid;
@@ -88,6 +89,8 @@ pub struct Clip {
     pub image: Image,
     #[serde(skip)]
     pub image_revision: u64,
+    #[serde(skip)]
+    pub dirty_rect: Cell<Option<[u32; 4]>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -220,11 +223,29 @@ impl Clip {
 
     pub fn set_image(&mut self, image: Image) {
         self.image = image;
-        self.image_revision = self.image_revision.wrapping_add(1);
+        self.mark_image_changed();
     }
 
     pub fn mark_image_changed(&mut self) {
+        self.mark_image_region_changed([0, 0, self.image.width, self.image.height]);
+    }
+
+    pub fn mark_image_region_changed(&mut self, rect: [u32; 4]) {
         self.image_revision = self.image_revision.wrapping_add(1);
+        let [x, y, width, height] = rect;
+        if width == 0 || height == 0 {
+            return;
+        }
+        self.dirty_rect.set(Some(match self.dirty_rect.get() {
+            Some([old_x, old_y, old_width, old_height]) => {
+                let left = x.min(old_x);
+                let top = y.min(old_y);
+                let right = (x + width).max(old_x + old_width);
+                let bottom = (y + height).max(old_y + old_height);
+                [left, top, right - left, bottom - top]
+            }
+            None => rect,
+        }));
     }
 }
 
@@ -254,6 +275,7 @@ mod tests {
             keyframes: Vec::new(),
             image: Image::new(1, 1),
             image_revision: 0,
+            dirty_rect: Cell::new(None),
         };
         clip.set_properties(super::ClipProperties {
             hidden: true,

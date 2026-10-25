@@ -70,6 +70,7 @@ impl Action for AddClipAction {
                 Image::new(width, height)
             },
             image_revision: 0,
+            dirty_rect: std::cell::Cell::new(None),
         };
         project.composition_mut().add_clip(clip);
     }

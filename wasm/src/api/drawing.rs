@@ -206,7 +206,20 @@ impl MointoCore {
             }
         }
         if !changes.is_empty() {
-            clip.mark_image_changed();
+            let mut left = width;
+            let mut top = height;
+            let mut right = 0;
+            let mut bottom = 0;
+            for change in &changes {
+                let pixel = change.index / 4;
+                let x = (pixel % width as usize) as u32;
+                let y = (pixel / width as usize) as u32;
+                left = left.min(x);
+                top = top.min(y);
+                right = right.max(x + 1);
+                bottom = bottom.max(y + 1);
+            }
+            clip.mark_image_region_changed([left, top, right - left, bottom - top]);
         }
         self.action_manager.record_pixel_changes(clip_id, changes);
     }

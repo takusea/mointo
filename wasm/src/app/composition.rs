@@ -433,6 +433,7 @@ mod tests {
             keyframes: Vec::new(),
             image: crate::core::image::Image::new(1, 1),
             image_revision: 0,
+            dirty_rect: std::cell::Cell::new(None),
         };
         composition.add_clip(clip);
 
