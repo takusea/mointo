@@ -24,7 +24,7 @@ export const CanvasOverlay = ({
 	<>
 		<div
 			aria-hidden="true"
-			className="pointer-events-none absolute top-0 left-0 origin-center"
+			className="pointer-events-none absolute top-0 left-0 origin-center mix-blend-exclusion"
 			style={{
 				width,
 				height,
@@ -44,7 +44,7 @@ export const CanvasOverlay = ({
 			)}
 			{transformBounds != null && (
 				<div
-					className="absolute border border-primary"
+					className="absolute border border-white"
 					style={{
 						left: transformBounds.x,
 						top: transformBounds.y,
@@ -54,14 +54,14 @@ export const CanvasOverlay = ({
 						transformOrigin: "center",
 					}}
 				>
-					<div className="absolute -top-1 -left-1 size-2 border border-primary bg-white" />
-					<div className="absolute -top-1 -right-1 size-2 border border-primary bg-white" />
-					<div className="absolute -bottom-1 -left-1 size-2 border border-primary bg-white" />
-					<div className="absolute -right-1 -bottom-1 size-2 border border-primary bg-white" />
-					<div className="absolute top-1/2 -left-1 size-2 -translate-y-1/2 border border-primary bg-white" />
-					<div className="absolute top-1/2 -right-1 size-2 -translate-y-1/2 border border-primary bg-white" />
-					<div className="absolute -top-1 left-1/2 size-2 -translate-x-1/2 border border-primary bg-white" />
-					<div className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 border border-primary bg-white" />
+					<div className="absolute -top-1 -left-1 size-2 border border-white bg-black" />
+					<div className="absolute -top-1 -right-1 size-2 border border-white bg-black" />
+					<div className="absolute -bottom-1 -left-1 size-2 border border-white bg-black" />
+					<div className="absolute -right-1 -bottom-1 size-2 border border-white bg-black" />
+					<div className="absolute top-1/2 -left-1 size-2 -translate-y-1/2 border border-white bg-black" />
+					<div className="absolute top-1/2 -right-1 size-2 -translate-y-1/2 border border-white bg-black" />
+					<div className="absolute -top-1 left-1/2 size-2 -translate-x-1/2 border border-white bg-black" />
+					<div className="absolute -bottom-1 left-1/2 size-2 -translate-x-1/2 border border-white bg-black" />
 				</div>
 			)}
 		</div>
