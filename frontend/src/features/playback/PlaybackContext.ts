@@ -4,12 +4,14 @@ export type PlaybackContextValue = {
 	currentFrame: number;
 	isPlaying: boolean;
 	isLoop: boolean;
+	isScrollFollow: boolean;
 	startFrame: number;
 	endFrame: number;
 	maxFrameCount: number;
 
 	setCurrentFrame: (frame: number) => void;
 	setIsLoop: (loop: boolean) => void;
+	setIsScrollFollow: (enabled: boolean) => void;
 
 	play: () => void;
 	pause: () => void;

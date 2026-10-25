@@ -69,6 +69,28 @@ const Timeline = () => {
 	}, [pendingScroll]);
 
 	useLayoutEffect(() => {
+		if (!playbackContext.isPlaying || !playbackContext.isScrollFollow) return;
+		const viewport = timelineViewportRef.current;
+		if (viewport == null) return;
+
+		const playheadLeft = playbackContext.currentFrame * frameWidth;
+		const nextScrollLeft = Math.max(
+			0,
+			Math.min(
+				playheadLeft + frameWidth / 2 - viewport.clientWidth / 2,
+				viewport.scrollWidth - viewport.clientWidth,
+			),
+		);
+		viewport.scrollLeft = nextScrollLeft;
+		setScrollPosition((position) => ({ ...position, x: nextScrollLeft }));
+	}, [
+		frameWidth,
+		playbackContext.currentFrame,
+		playbackContext.isPlaying,
+		playbackContext.isScrollFollow,
+	]);
+
+	useLayoutEffect(() => {
 		const stopAutoScroll = (event: PointerEvent) => {
 			if (autoScrollPointerRef.current?.id !== event.pointerId) return;
 			autoScrollPointerRef.current = null;

@@ -269,6 +269,13 @@ const GlobalMenubar = () => {
 						playbackContext.setIsLoop(!playbackContext.isLoop)
 					}
 				/>
+				<MenubarCheckboxItem
+					label={t("menubar.scrollFollow")}
+					checked={playbackContext.isScrollFollow}
+					onCheckedChange={() =>
+						playbackContext.setIsScrollFollow(!playbackContext.isScrollFollow)
+					}
+				/>
 				<MenubarSeparator />
 				<MenubarItem
 					label={t("menubar.firstFrame")}

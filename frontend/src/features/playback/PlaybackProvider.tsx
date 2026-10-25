@@ -21,6 +21,7 @@ export const PlaybackProvider = ({ children }: Props) => {
 	const [currentFrame, setCurrentFrame] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isLoop, setIsLoop] = useState(false);
+	const [isScrollFollow, setIsScrollFollow] = useState(true);
 
 	const startFrame = project.settings?.startFrame ?? DEFAULT_START_FRAME;
 	const endFrame = project.settings?.endFrame ?? DEFAULT_END_FRAME;
@@ -85,11 +86,13 @@ export const PlaybackProvider = ({ children }: Props) => {
 				currentFrame,
 				isPlaying,
 				isLoop,
+			isScrollFollow,
 				startFrame,
 				endFrame,
 				maxFrameCount,
 				setCurrentFrame: setCurrentFrameClamped,
 				setIsLoop,
+			setIsScrollFollow,
 				play,
 				pause,
 				stop,

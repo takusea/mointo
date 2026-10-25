@@ -1,5 +1,6 @@
 import {
 	IconArrowBackUp,
+	IconArrowBarRight,
 	IconArrowForwardUp,
 	IconBucketDroplet,
 	IconClipboard,
@@ -253,6 +254,15 @@ const Toolbar = () => {
 						icon={IconRefresh}
 						variant={playbackContext.isLoop ? "primary" : "default"}
 						onClick={() => playbackContext.setIsLoop(!playbackContext.isLoop)}
+					/>
+					<IconButton
+						label={t("toolbar.scrollFollow")}
+						icon={IconArrowBarRight}
+						variant={playbackContext.isScrollFollow ? "primary" : "default"}
+						aria-pressed={playbackContext.isScrollFollow}
+						onClick={() =>
+							playbackContext.setIsScrollFollow(!playbackContext.isScrollFollow)
+						}
 					/>
 					<IconButton
 						label={t("toolbar.onionSkin")}
