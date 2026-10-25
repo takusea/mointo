@@ -1,16 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect } from "react";
 import { useDocumentTitle } from "usehooks-ts";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useI18n } from "~/features/i18n/useI18n";
+import { ProjectContext } from "./ProjectProvider";
 import type { CompositionSettings } from "./type";
 
 export const useProject = () => {
+	const projectContext = use(ProjectContext);
+	if (projectContext == null)
+		throw new Error("ProjectProvider is not provided");
+
 	const core = useCore();
 	const { compositionSettings, projectTitle, revision } = useCoreSnapshot();
 	const { t } = useI18n();
-	const [savedRevision, setSavedRevision] = useState(revision);
-	const hasUnsavedChanges = revision !== savedRevision;
+	const hasUnsavedChanges = revision !== projectContext.savedRevision;
 
 	const confirmDiscard = useCallback(() => {
 		return !hasUnsavedChanges || window.confirm(t("project.unsavedChanges"));
@@ -42,7 +46,7 @@ export const useProject = () => {
 		await core.importProject(new Uint8Array(data));
 		const projectName = file.name.replace(/\.[^.]+$/, "");
 		await core.setProjectTitle(projectName || file.name);
-		setSavedRevision(core.getSnapshot().revision);
+		projectContext.setSavedRevision(core.getSnapshot().revision);
 	};
 
 	const open = () => {
@@ -70,7 +74,7 @@ export const useProject = () => {
 		link.click();
 		link.remove();
 		window.setTimeout(() => URL.revokeObjectURL(link.href), 0);
-		setSavedRevision(core.getSnapshot().revision);
+		projectContext.setSavedRevision(core.getSnapshot().revision);
 	};
 
 	return {

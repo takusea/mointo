@@ -7,6 +7,7 @@ import { ClipProvider } from "~/features/clip/ClipProvider";
 import { I18nProvider } from "~/features/i18n/I18nProvider";
 import { LayerProvider } from "~/features/layer/LayerProvider";
 import { PlaybackProvider } from "~/features/playback/PlaybackProvider";
+import { ProjectProvider } from "~/features/project/ProjectProvider";
 import { ShortcutsProvider } from "~/features/shortcuts/ShortcutsProvider";
 import { ToolProvider } from "~/features/tool/ToolProvider";
 import { CanvasViewProvider } from "./canvas/CanvasViewProvider";
@@ -22,17 +23,19 @@ function Editor({ children }: Props) {
 				<ShortcutsProvider>
 					<AppearanceProvider>
 						<CoreProvider>
-							<PlaybackProvider>
-								<LayerProvider>
-									<ToolProvider>
-										<ClipProvider>
-											<DialogsProvider>
-												<CanvasViewProvider>{children}</CanvasViewProvider>
-											</DialogsProvider>
-										</ClipProvider>
-									</ToolProvider>
-								</LayerProvider>
-							</PlaybackProvider>
+							<ProjectProvider>
+								<PlaybackProvider>
+									<LayerProvider>
+										<ToolProvider>
+											<ClipProvider>
+												<DialogsProvider>
+													<CanvasViewProvider>{children}</CanvasViewProvider>
+												</DialogsProvider>
+											</ClipProvider>
+										</ToolProvider>
+									</LayerProvider>
+								</PlaybackProvider>
+							</ProjectProvider>
 						</CoreProvider>
 					</AppearanceProvider>
 				</ShortcutsProvider>

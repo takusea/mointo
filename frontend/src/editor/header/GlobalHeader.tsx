@@ -67,7 +67,7 @@ const GlobalHeader = () => {
 									<Button
 										label={
 											(project.title ?? "") +
-											(project.hasUnsavedChanges && " *")
+											(project.hasUnsavedChanges ? " *" : "")
 										}
 										onClick={() => dialogs.open("editCompositionSettings")}
 									/>
