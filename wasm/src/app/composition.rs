@@ -1,55 +1,12 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::app::clip::{AssetId, Clip, ClipId};
 use crate::app::composition_settings::CompositionSettings;
+use crate::app::layer::{Layer, LayerId};
 use crate::core::image::Image;
 use crate::gpu::GpuRenderer;
 
 const DEFAULT_LAYER_COUNT: usize = 100;
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[serde(transparent)]
-pub struct LayerId(Uuid);
-
-impl LayerId {
-    pub fn new() -> Self {
-        Self(Uuid::new_v4())
-    }
-}
-
-impl std::str::FromStr for LayerId {
-    type Err = uuid::Error;
-
-    fn from_str(value: &str) -> Result<Self, Self::Err> {
-        Uuid::parse_str(value).map(Self)
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Layer {
-    pub id: LayerId,
-    pub name: String,
-    #[serde(default = "default_layer_visible")]
-    pub visible: bool,
-    #[serde(default)]
-    pub locked: bool,
-}
-
-fn default_layer_visible() -> bool {
-    true
-}
-
-impl Layer {
-    pub(crate) fn new(index: usize) -> Self {
-        Self {
-            id: LayerId::new(),
-            name: format!("Layer {}", index + 1),
-            visible: true,
-            locked: false,
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct Composition {
@@ -58,7 +15,6 @@ pub struct Composition {
     pub settings: CompositionSettings,
     pub clips: Vec<Clip>,
     pub layers: Vec<Layer>,
-    /// Shared pixel data, stored once per image asset.
     pub assets: std::collections::HashMap<AssetId, Image>,
 }
 
@@ -80,9 +36,6 @@ impl Composition {
         self.clips.push(clip);
     }
 
-    /// Publish a clip's modified pixel buffer to the asset registry and every
-    /// clip referencing it. Called at the core operation boundary so normal
-    /// drawing, tools, undo, redo and resize all keep links coherent.
     pub fn publish_clip_asset(&mut self, clip_id: ClipId) {
         let Some(clip) = self.get_clip(clip_id) else {
             return;

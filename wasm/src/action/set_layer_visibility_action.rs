@@ -1,5 +1,5 @@
 use crate::app::action::{Action, UndoableAction};
-use crate::app::composition::LayerId;
+use crate::app::layer::LayerId;
 use crate::app::project::Project;
 
 pub struct SetLayerVisibilityAction {

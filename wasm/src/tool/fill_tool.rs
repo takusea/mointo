@@ -4,8 +4,6 @@ use crate::core::{
     tool::{Tool, ToolProperty, ToolPropertyValue},
 };
 
-// color_distance is the sum of squared differences across four 8-bit channels.
-const MAX_TOLERANCE: u32 = 4 * 255 * 255;
 const MAX_TOLERANCE_DISTANCE: f64 = 2.0 * 255.0;
 
 pub struct FillTool {
@@ -34,7 +32,7 @@ impl Tool for FillTool {
             [slice[0], slice[1], slice[2], slice[3]]
         };
 
-        if color_distance(&target_color, &color) <= 0 {
+        if color_distance(&target_color, &color) == 0 {
             return;
         }
 

@@ -1,18 +1,10 @@
-use crate::app::composition::LayerId;
+use crate::app::layer::LayerId;
 use crate::core::{image::Image, transform::Transform};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub type ClipId = Uuid;
 pub type AssetId = Uuid;
-
-fn default_opacity() -> f32 {
-    1.0
-}
-
-fn default_name() -> String {
-    "Clip".to_string()
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
@@ -41,6 +33,10 @@ pub struct ClipProperties {
     pub opacity: f32,
     #[serde(default)]
     pub blend_mode: BlendMode,
+}
+
+fn default_opacity() -> f32 {
+    1.0
 }
 
 impl Default for ClipProperties {
@@ -76,6 +72,10 @@ pub struct ClipMetadata {
     pub name: String,
 }
 
+fn default_name() -> String {
+    "Clip".to_string()
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Clip {
     pub metadata: ClipMetadata,
@@ -83,7 +83,7 @@ pub struct Clip {
     #[serde(serialize_with = "serialize_committed_keyframes")]
     pub keyframes: Vec<ClipKeyframe>,
     /// Runtime view of the referenced asset. Pixel buffers are serialized only
-    /// once, in Composition::assets.
+    /// once, in layer::assets.
     #[serde(skip)]
     pub image: Image,
     #[serde(skip)]
@@ -231,7 +231,6 @@ impl Clip {
 #[cfg(test)]
 mod tests {
     use super::{BlendMode, Clip, ClipMetadata};
-    use crate::app::composition::LayerId;
     use crate::core::{image::Image, transform::Transform};
     use uuid::Uuid;
 
@@ -243,7 +242,7 @@ mod tests {
                 asset_id: Uuid::new_v4(),
                 name: "Test clip".to_string(),
                 start: 3,
-                layer_id: LayerId::new(),
+                layer_id: Uuid::new_v4(),
                 duration: 4,
                 hidden: false,
                 alpha_locked: false,

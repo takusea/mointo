@@ -2,7 +2,7 @@ use super::MointoCore;
 use crate::action::draw_stroke_action::DrawStrokeAction;
 use crate::action::set_layer_lock_action::SetLayerLockAction;
 use crate::action::set_layer_visibility_action::SetLayerVisibilityAction;
-use crate::app::composition::LayerId;
+use crate::app::layer::LayerId;
 use crate::core::image::Image;
 use crate::core::tool::{ToolId, ToolPropertyValue};
 use gloo::utils::format::JsValueSerdeExt;

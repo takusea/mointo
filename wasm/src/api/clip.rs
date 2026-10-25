@@ -11,7 +11,7 @@ use crate::action::set_clip_size_action::SetClipSizeAction;
 use crate::action::set_clip_transform_action::SetClipTransformAction;
 use crate::app::clip::{BlendMode, ClipId, ClipProperties};
 use crate::app::clip::{ClipKeyframe, ClipKeyframeValue};
-use crate::app::composition::LayerId;
+use crate::app::layer::LayerId;
 use crate::core::transform::Transform;
 use gloo::utils::format::JsValueSerdeExt;
 use js_sys::Uint8ClampedArray;

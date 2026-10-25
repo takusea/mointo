@@ -98,19 +98,15 @@ impl MointoCore {
     }
 
     pub fn width(&self) -> Option<u32> {
-        if let Some(project) = self.project.as_ref() {
-            Some(project.composition().settings.width)
-        } else {
-            None
-        }
+        self.project
+            .as_ref()
+            .map(|project| project.composition().settings.width)
     }
 
     pub fn height(&self) -> Option<u32> {
-        if let Some(project) = self.project.as_ref() {
-            Some(project.composition().settings.height)
-        } else {
-            None
-        }
+        self.project
+            .as_ref()
+            .map(|project| project.composition().settings.height)
     }
 
     pub fn get_composition_settings(&self) -> Result<JsValue, JsValue> {

@@ -4,7 +4,7 @@ use crate::app::action::Action;
 use crate::app::action::UndoableAction;
 use crate::app::clip::Clip;
 use crate::app::clip::ClipMetadata;
-use crate::app::composition::LayerId;
+use crate::app::layer::LayerId;
 use crate::app::project::Project;
 use crate::core::image::Image;
 use crate::core::transform::Transform;
