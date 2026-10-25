@@ -25,7 +25,6 @@
 		var(--color-zinc-50),
 		var(--color-zinc-950)
 	);
-	--color-indicator: var(--color-indicator);
 	--color-clear-hover: color-mix(
 		in oklch,
 		var(--color-zinc-500) 20%,
@@ -44,7 +43,6 @@
 		oklch(60% 0.15 var(--hue)),
 		oklch(80% 0.15 var(--hue))
 	);
-	--color-indicator: light-dark(var(--color-zinc-50), var(--color-zinc-50));
 
 	overscroll-behavior-y: none;
 	color-scheme: light dark;
@@ -52,7 +50,6 @@
 
 :root[data-monochrome] {
 	--color-primary: light-dark(var(--color-zinc-950), var(--color-zinc-50));
-	--color-indicator: light-dark(var(--color-zinc-50), var(--color-zinc-950));
 }
 
 :root[data-theme="light"] {
