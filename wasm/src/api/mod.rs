@@ -46,6 +46,8 @@ impl MointoCore {
             ToolId::Fill,
             Box::new(tool::fill_tool::FillTool {
                 tolerance: 500,
+                expansion: 0,
+                antialiasing: 8,
                 opacity: 100,
             }),
         );

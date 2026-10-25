@@ -100,15 +100,6 @@ impl Tool for EraserTool {
                 unit: Some("px".into()),
             },
             ToolProperty {
-                name: "antialiasing".into(),
-                label: "toolInspector.antialiasing".into(),
-                value: ToolPropertyValue::Number(self.antialiasing as f64),
-                min: 1.0,
-                max: 16.0,
-                step: 1.0,
-                unit: Some("×".into()),
-            },
-            ToolProperty {
                 name: "opacity".into(),
                 label: "toolInspector.opacity".into(),
                 value: ToolPropertyValue::Number(self.opacity as f64),
@@ -116,6 +107,15 @@ impl Tool for EraserTool {
                 max: 100.0,
                 step: 1.0,
                 unit: Some("%".into()),
+            },
+            ToolProperty {
+                name: "antialiasing".into(),
+                label: "toolInspector.antialiasing".into(),
+                value: ToolPropertyValue::Number(self.antialiasing as f64),
+                min: 1.0,
+                max: 16.0,
+                step: 1.0,
+                unit: None,
             },
         ]
     }
