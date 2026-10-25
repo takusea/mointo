@@ -92,7 +92,6 @@ impl Tool for EraserTool {
         vec![
             ToolProperty {
                 name: "size".into(),
-                label: "toolInspector.size".into(),
                 value: ToolPropertyValue::Number(self.size as f64),
                 min: 1.0,
                 max: 100.0,
@@ -101,7 +100,6 @@ impl Tool for EraserTool {
             },
             ToolProperty {
                 name: "opacity".into(),
-                label: "toolInspector.opacity".into(),
                 value: ToolPropertyValue::Number(self.opacity as f64),
                 min: 0.0,
                 max: 100.0,
@@ -110,7 +108,6 @@ impl Tool for EraserTool {
             },
             ToolProperty {
                 name: "antialiasing".into(),
-                label: "toolInspector.antialiasing".into(),
                 value: ToolPropertyValue::Number(self.antialiasing as f64),
                 min: 1.0,
                 max: 16.0,

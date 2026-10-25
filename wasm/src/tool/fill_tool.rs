@@ -188,7 +188,6 @@ impl Tool for FillTool {
         vec![
             ToolProperty {
                 name: "tolerance".into(),
-                label: "toolInspector.tolerance".into(),
                 value: ToolPropertyValue::Number(
                     ((self.tolerance as f64).sqrt() / MAX_TOLERANCE_DISTANCE * 100.0).round(),
                 ),
@@ -199,7 +198,6 @@ impl Tool for FillTool {
             },
             ToolProperty {
                 name: "opacity".into(),
-                label: "toolInspector.opacity".into(),
                 value: ToolPropertyValue::Number(self.opacity as f64),
                 min: 0.0,
                 max: 100.0,
@@ -208,7 +206,6 @@ impl Tool for FillTool {
             },
             ToolProperty {
                 name: "expansion".into(),
-                label: "toolInspector.expansion".into(),
                 value: ToolPropertyValue::Number(self.expansion as f64),
                 min: 0.0,
                 max: 64.0,
@@ -217,7 +214,6 @@ impl Tool for FillTool {
             },
             ToolProperty {
                 name: "antialiasing".into(),
-                label: "toolInspector.antialiasing".into(),
                 value: ToolPropertyValue::Number(self.antialiasing as f64),
                 min: 1.0,
                 max: 16.0,

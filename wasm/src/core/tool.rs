@@ -41,7 +41,6 @@ pub enum ToolPropertyValue {
 #[derive(Clone, Serialize)]
 pub struct ToolProperty {
     pub name: String,
-    pub label: String,
     pub value: ToolPropertyValue,
     pub min: f64,
     pub max: f64,

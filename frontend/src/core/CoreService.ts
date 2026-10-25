@@ -14,7 +14,6 @@ export type ToolPoint = {
 
 export type ToolProperty = {
 	name: string;
-	label: string;
 	value: unknown;
 	min: number;
 	max: number;
