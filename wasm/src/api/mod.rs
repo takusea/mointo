@@ -7,7 +7,7 @@ mod project;
 use crate::app::action_manager::ActionManager;
 use crate::app::project::Project;
 use crate::core::tool::{ToolId, ToolRegistry};
-use crate::gpu::GpuRenderer;
+use crate::render::GpuRenderer;
 use crate::tool;
 use wasm_bindgen::prelude::wasm_bindgen;
 

@@ -4,7 +4,7 @@ use crate::app::clip::{AssetId, Clip, ClipId};
 use crate::app::composition_settings::CompositionSettings;
 use crate::app::layer::{Layer, LayerId};
 use crate::core::image::Image;
-use crate::gpu::GpuRenderer;
+use crate::render::GpuRenderer;
 
 const DEFAULT_LAYER_COUNT: usize = 100;
 

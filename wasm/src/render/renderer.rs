@@ -1,34 +1,9 @@
+use super::canvas::configure_canvas_premultiplied;
+use super::types::{CachedClipTexture, ClipUniforms, RenderClip};
 use crate::app::clip::{BlendMode, Clip};
 use crate::core::image::Image;
-use bytemuck::{Pod, Zeroable};
-use js_sys::{Function, Object, Reflect};
 use std::collections::{HashMap, HashSet};
-use wasm_bindgen::{JsCast, JsValue};
 use wgpu::util::DeviceExt;
-
-#[repr(C)]
-#[derive(Clone, Copy, Pod, Zeroable)]
-struct ClipUniforms {
-    inverse_transform: [[f32; 4]; 3],
-    image_size: [f32; 2],
-    output_size: [f32; 2],
-    opacity: f32,
-    blend_mode: u32,
-    _padding: [f32; 2],
-    tint_color: [f32; 4],
-}
-
-struct RenderClip<'a> {
-    clip: &'a Clip,
-    tint: [f32; 4],
-}
-
-struct CachedClipTexture {
-    texture: wgpu::Texture,
-    width: u32,
-    height: u32,
-    revision: u64,
-}
 
 pub struct GpuRenderer {
     device: wgpu::Device,
@@ -106,92 +81,7 @@ impl GpuRenderer {
             None
         };
 
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("clip-shader"),
-            source: wgpu::ShaderSource::Wgsl(include_str!("gpu.wgsl").into()),
-        });
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("clip-bind-group-layout"),
-            entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: Some(
-                            std::num::NonZeroU64::new(std::mem::size_of::<ClipUniforms>() as u64)
-                                .unwrap(),
-                        ),
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 3,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-            ],
-        });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("render-pipeline-layout"),
-            bind_group_layouts: &[Some(&bind_group_layout)],
-            immediate_size: 0,
-        });
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("render-pipeline"),
-            layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vertex_main"),
-                buffers: &[],
-                compilation_options: wgpu::PipelineCompilationOptions::default(),
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fragment_main"),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-                compilation_options: wgpu::PipelineCompilationOptions::default(),
-            }),
-            primitive: wgpu::PrimitiveState::default(),
-            depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            multiview_mask: None,
-            cache: None,
-        });
-        let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
-            label: Some("clip-sampler"),
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Nearest,
-            ..Default::default()
-        });
+        let (pipeline, bind_group_layout, sampler) = super::pipeline::create_pipeline(&device);
 
         Ok(Self {
             device,
@@ -670,54 +560,4 @@ impl GpuRenderer {
             height,
         })
     }
-}
-
-fn configure_canvas_premultiplied(
-    canvas: &web_sys::HtmlCanvasElement,
-    device: &wgpu::Device,
-    format: wgpu::TextureFormat,
-) -> Result<(), String> {
-    let get_context = Reflect::get(canvas.as_ref(), &JsValue::from_str("getContext"))
-        .map_err(|_| "Could not access canvas.getContext".to_string())?
-        .dyn_into::<Function>()
-        .map_err(|_| "canvas.getContext is not callable".to_string())?;
-    let context = get_context
-        .call1(canvas.as_ref(), &JsValue::from_str("webgpu"))
-        .map_err(|_| "Could not acquire the WebGPU canvas context".to_string())?;
-    if context.is_null() || context.is_undefined() {
-        return Err("WebGPU canvas context is unavailable".to_string());
-    }
-
-    let configuration = Object::new();
-    let webgpu_device = device
-        .as_webgpu()
-        .ok_or_else(|| "Renderer is not using the browser WebGPU backend".to_string())?;
-    let raw_device: &JsValue = webgpu_device.as_ref();
-    Reflect::set(&configuration, &JsValue::from_str("device"), raw_device)
-        .map_err(|_| "Could not set the WebGPU canvas device".to_string())?;
-    let format_name = match format {
-        wgpu::TextureFormat::Rgba8Unorm => "rgba8unorm",
-        wgpu::TextureFormat::Bgra8Unorm => "bgra8unorm",
-        _ => return Err("Unsupported WebGPU canvas texture format".to_string()),
-    };
-    Reflect::set(
-        &configuration,
-        &JsValue::from_str("format"),
-        &JsValue::from_str(format_name),
-    )
-    .map_err(|_| "Could not set the WebGPU canvas format".to_string())?;
-    Reflect::set(
-        &configuration,
-        &JsValue::from_str("alphaMode"),
-        &JsValue::from_str("premultiplied"),
-    )
-    .map_err(|_| "Could not set premultiplied canvas alpha".to_string())?;
-    let configure = Reflect::get(&context, &JsValue::from_str("configure"))
-        .map_err(|_| "Could not access WebGPU context.configure".to_string())?
-        .dyn_into::<Function>()
-        .map_err(|_| "WebGPU context.configure is not callable".to_string())?;
-    configure
-        .call1(&context, configuration.as_ref())
-        .map_err(|_| "Could not configure premultiplied WebGPU canvas alpha".to_string())?;
-    Ok(())
 }

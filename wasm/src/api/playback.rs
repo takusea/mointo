@@ -1,6 +1,6 @@
 use super::MointoCore;
 use crate::app::layer::LayerId;
-use crate::gpu::GpuRenderer;
+use crate::render::GpuRenderer;
 use js_sys::Uint8ClampedArray;
 use wasm_bindgen::prelude::wasm_bindgen;
 use web_sys::HtmlCanvasElement;
