@@ -12,9 +12,9 @@ const MenubarCheckboxItem = ({ label, shortcut, ...props }: Props) => {
 			{...props}
 			className="relative grid h-8 cursor-pointer grid-cols-[24px_auto_auto] items-center gap-1 rounded-md pr-2 pl-1 hover:not-disabled:bg-clear-hover disabled:cursor-not-allowed disabled:opacity-50 data-highlighted:bg-clear-hover"
 		>
-			<div>
+			<div className="grid place-content-center">
 				<Menubar.ItemIndicator>
-					<IconCheck />
+					<IconCheck size={16} />
 				</Menubar.ItemIndicator>
 			</div>
 			{label}

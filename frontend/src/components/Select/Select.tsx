@@ -17,7 +17,7 @@ const Select = ({ children, placeholder, ...props }: Props) => {
 			>
 				<SelectPrimitive.Value placeholder={placeholder} />
 				<SelectPrimitive.Icon className="SelectIcon">
-					<IconChevronDown />
+					<IconChevronDown size={16} />
 				</SelectPrimitive.Icon>
 			</SelectPrimitive.Trigger>
 			<SelectPrimitive.Portal>
