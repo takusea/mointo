@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Dialog from "~/components/Dialog";
 import Separator from "~/components/Separator";
 import TextField from "~/components/TextField";
@@ -23,13 +23,25 @@ const CreateNewProjectDialog = (props: Props) => {
 	const project = useProject();
 
 	const [title, setTitle] = useState(t("nav.untitled"));
-	const [compositionSettings, setCompositionSettings] = useState({
-		width: DEFAULT_WIDTH,
-		height: DEFAULT_HEIGHT,
-		frameRate: DEFAULT_FRAME_RATE,
-		startFrame: DEFAULT_START_FRAME,
-		endFrame: DEFAULT_END_FRAME,
-	});
+
+	const initSettings = useCallback(
+		() =>
+			project.settings ?? {
+				width: DEFAULT_WIDTH,
+				height: DEFAULT_HEIGHT,
+				frameRate: DEFAULT_FRAME_RATE,
+				startFrame: DEFAULT_START_FRAME,
+				endFrame: DEFAULT_END_FRAME,
+			},
+		[project.settings],
+	);
+
+	const [settings, setSettings] = useState(initSettings());
+
+	useEffect(() => {
+		if (!props.open) return;
+		setSettings(initSettings());
+	}, [props.open, initSettings]);
 
 	return (
 		<Dialog
@@ -37,7 +49,7 @@ const CreateNewProjectDialog = (props: Props) => {
 			title={t("project.create")}
 			cancelText={t("common.cancel")}
 			submitText={t("project.createAction")}
-			onSubmit={() => project.create(title, compositionSettings)}
+			onSubmit={() => project.create(title, settings)}
 		>
 			<div className="mb-2 flex flex-col gap-2">
 				<span className="font-medium">{t("project.name")}</span>
@@ -45,8 +57,8 @@ const CreateNewProjectDialog = (props: Props) => {
 				<Separator />
 			</div>
 			<CompositionSettingsForm
-				compositionSettings={compositionSettings}
-				onCompositionSettingsChanged={setCompositionSettings}
+				settings={settings}
+				onSettingsChanged={setSettings}
 			/>
 		</Dialog>
 	);

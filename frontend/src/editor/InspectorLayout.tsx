@@ -1,4 +1,5 @@
 import { IconAdjustmentsHorizontal, IconTools } from "@tabler/icons-react";
+import { AnimatePresence, motion } from "motion/react";
 import { type RefObject, useRef, useState } from "react";
 import { useMediaQuery, useOnClickOutside, useToggle } from "usehooks-ts";
 import Card from "~/components/Card";
@@ -138,53 +139,82 @@ const InspectorLayout = () => {
 				gridTemplateColumns,
 			}}
 		>
+			<AnimatePresence>
+				{!isDesktop && (isClipInspectorOpen || isToolInspectorOpen) && (
+					<motion.div
+						className="pointer-events-auto fixed inset-0 z-10 bg-black/50"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+					></motion.div>
+				)}
+			</AnimatePresence>
 			{!isDesktop && (
 				<>
-					{!isToolInspectorOpen && (
-						<div className="pointer-events-auto absolute bottom-16">
-							<Card size="small">
-								<IconButton
-									label={t("editor.openToolInspector")}
-									icon={IconTools}
-									onClick={() => toggleIsToolInspectorOpen()}
-								/>
-							</Card>
-						</div>
-					)}
-					{selectedClip && clipContext.transform && !isClipInspectorOpen && (
-						<div className="pointer-events-auto absolute right-0 bottom-16">
-							<Card size="small">
-								<IconButton
-									label={t("editor.openClipInspector")}
-									icon={IconAdjustmentsHorizontal}
-									onClick={() => toggleIsClipInspectorOpen()}
-								/>
-							</Card>
-						</div>
-					)}
+					<AnimatePresence>
+						{!isToolInspectorOpen && (
+							<motion.div
+								className="pointer-events-auto absolute bottom-16"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+							>
+								<Card size="small">
+									<IconButton
+										label={t("editor.openToolInspector")}
+										icon={IconTools}
+										onClick={() => toggleIsToolInspectorOpen()}
+									/>
+								</Card>
+							</motion.div>
+						)}
+					</AnimatePresence>
+					<AnimatePresence>
+						{selectedClip && clipContext.transform && !isClipInspectorOpen && (
+							<motion.div
+								className="pointer-events-auto absolute right-0 bottom-16"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+							>
+								<Card size="small">
+									<IconButton
+										label={t("editor.openClipInspector")}
+										icon={IconAdjustmentsHorizontal}
+										onClick={() => toggleIsClipInspectorOpen()}
+									/>
+								</Card>
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</>
 			)}
-			{showToolInspector && (
-				<div
-					data-full-width={!isDesktop}
-					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-1 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-start"
-					ref={toolInspectorRef}
-				>
-					<div className="pointer-events-auto flex flex-col gap-2">
-						<ToolInspector
-							properties={toolContext.properties}
-							onPropertyChange={(key, value) =>
-								toolContext.setProperty(key, value)
-							}
-						/>
-						<ColorInspector
-							currentColor={toolContext.color}
-							colorHistory={toolContext.colorHistory}
-							onCurrentColorChange={toolContext.setColor}
-						/>
-					</div>
-				</div>
-			)}
+			<AnimatePresence>
+				{showToolInspector && (
+					<motion.div
+						data-full-width={!isDesktop}
+						className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-1 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-start"
+						ref={toolInspectorRef}
+						initial={{ opacity: 0, x: "-100%" }}
+						animate={{ opacity: 1, x: 0 }}
+						exit={{ opacity: 0, x: "-100%" }}
+					>
+						<div className="pointer-events-auto flex flex-col gap-2">
+							<ToolInspector
+								properties={toolContext.properties}
+								onPropertyChange={(key, value) =>
+									toolContext.setProperty(key, value)
+								}
+							/>
+							<ColorInspector
+								currentColor={toolContext.color}
+								colorHistory={toolContext.colorHistory}
+								onCurrentColorChange={toolContext.setColor}
+							/>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 			{isDesktop && (
 				<div className="pointer-events-auto col-start-2 row-start-1 h-full">
 					<Splitter
@@ -223,161 +253,168 @@ const InspectorLayout = () => {
 					/>
 				</div>
 			)}
-			{showClipInspector && selectedClip && clipContext.transform && (
-				<div
-					data-full-width={!isDesktop}
-					className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-5 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-end"
-					ref={clipInspectorRef}
-				>
-					<div className="pointer-events-auto flex flex-col gap-2">
-						<ClipInspector
-							clips={clipContext.clips}
-							onUnlink={() => void core.unlinkClip(selectedClip.id)}
-							clip={
-								evaluated
-									? { ...selectedClip, opacity: evaluated.opacity }
-									: selectedClip
-							}
-							isLayerLocked={layerContext.isLayerLocked(selectedClip.layer_id)}
-							transform={evaluated?.transform ?? clipContext.transform}
-							onStartChange={(start) =>
-								clipContext.moveClip(
-									selectedClip.id,
-									start,
+			<AnimatePresence>
+				{showClipInspector && selectedClip && clipContext.transform && (
+					<motion.div
+						data-full-width={!isDesktop}
+						className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-5 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-end"
+						ref={clipInspectorRef}
+						initial={{ opacity: 0, x: "100%" }}
+						animate={{ opacity: 1, x: 0 }}
+						exit={{ opacity: 0, x: "100%" }}
+					>
+						<div className="pointer-events-auto flex flex-col gap-2">
+							<ClipInspector
+								clips={clipContext.clips}
+								onUnlink={() => void core.unlinkClip(selectedClip.id)}
+								clip={
+									evaluated
+										? { ...selectedClip, opacity: evaluated.opacity }
+										: selectedClip
+								}
+								isLayerLocked={layerContext.isLayerLocked(
 									selectedClip.layer_id,
-								)
-							}
-							onDurationChange={(duration) =>
-								clipContext.changeClipDuration(selectedClip.id, duration)
-							}
-							onNameChange={(name) =>
-								clipContext.changeClipName(selectedClip.id, name)
-							}
-							onSizeChange={(width, height) =>
-								clipContext.changeClipSize(selectedClip.id, width, height)
-							}
-							onPropertiesChange={(properties) =>
-								clipContext.changeClipProperties(selectedClip.id, {
-									hidden: selectedClip.hidden,
-									alpha_locked: selectedClip.alpha_locked,
-									locked: selectedClip.locked,
-									opacity: selectedClip.opacity,
-									blend_mode: selectedClip.blend_mode,
-									...properties,
-								})
-							}
-							onTransformChange={(transform) => {
-								const previous =
-									evaluated?.transform ?? clipContext.transform ?? transform;
-								const values: Record<string, number | [number, number]> = {
-									position: transform.position,
-									rotation: transform.rotation,
-									scale: transform.scale,
-									anchor: transform.anchor,
-								};
-								const old: Record<string, number | [number, number]> = {
-									position: previous.position,
-									rotation: previous.rotation,
-									scale: previous.scale,
-									anchor: previous.anchor,
-								};
-								for (const [property, value] of Object.entries(values)) {
-									if (JSON.stringify(value) === JSON.stringify(old[property]))
-										continue;
-									const hasKey = selectedKeys.some(
-										(key) =>
-											key.frame === playback.currentFrame &&
-											key.property === property,
-									);
-									const hasPropertyKeys = selectedKeys.some(
-										(key) => key.property === property,
-									);
-									if (hasKey)
+								)}
+								transform={evaluated?.transform ?? clipContext.transform}
+								onStartChange={(start) =>
+									clipContext.moveClip(
+										selectedClip.id,
+										start,
+										selectedClip.layer_id,
+									)
+								}
+								onDurationChange={(duration) =>
+									clipContext.changeClipDuration(selectedClip.id, duration)
+								}
+								onNameChange={(name) =>
+									clipContext.changeClipName(selectedClip.id, name)
+								}
+								onSizeChange={(width, height) =>
+									clipContext.changeClipSize(selectedClip.id, width, height)
+								}
+								onPropertiesChange={(properties) =>
+									clipContext.changeClipProperties(selectedClip.id, {
+										hidden: selectedClip.hidden,
+										alpha_locked: selectedClip.alpha_locked,
+										locked: selectedClip.locked,
+										opacity: selectedClip.opacity,
+										blend_mode: selectedClip.blend_mode,
+										...properties,
+									})
+								}
+								onTransformChange={(transform) => {
+									const previous =
+										evaluated?.transform ?? clipContext.transform ?? transform;
+									const values: Record<string, number | [number, number]> = {
+										position: transform.position,
+										rotation: transform.rotation,
+										scale: transform.scale,
+										anchor: transform.anchor,
+									};
+									const old: Record<string, number | [number, number]> = {
+										position: previous.position,
+										rotation: previous.rotation,
+										scale: previous.scale,
+										anchor: previous.anchor,
+									};
+									for (const [property, value] of Object.entries(values)) {
+										if (JSON.stringify(value) === JSON.stringify(old[property]))
+											continue;
+										const hasKey = selectedKeys.some(
+											(key) =>
+												key.frame === playback.currentFrame &&
+												key.property === property,
+										);
+										const hasPropertyKeys = selectedKeys.some(
+											(key) => key.property === property,
+										);
+										if (hasKey)
+											void core.setClipKeyframe(
+												selectedClip.id,
+												playback.currentFrame,
+												property,
+												value,
+											);
+										else if (hasPropertyKeys)
+											void core.setClipPreviewKeyframe(
+												selectedClip.id,
+												playback.currentFrame,
+												property,
+												value,
+											);
+										else
+											void clipContext.changeTransform(selectedClip.id, {
+												...(clipContext.transform ?? transform),
+												[property]: value,
+											});
+									}
+								}}
+								onInteractionStart={() => {
+									void core.beginActionGroup();
+								}}
+								onInteractionEnd={() => {
+									void core.endActionGroup();
+								}}
+								currentFrame={playback.currentFrame}
+								keyframes={selectedKeys}
+								onKeyframeToggle={(property, value) => {
+									if (
+										selectedKeys.some(
+											(key) =>
+												key.frame === playback.currentFrame &&
+												key.property === property,
+										)
+									)
+										void core.deleteClipKeyframe(
+											selectedClip.id,
+											playback.currentFrame,
+											property,
+										);
+									else
 										void core.setClipKeyframe(
 											selectedClip.id,
 											playback.currentFrame,
 											property,
 											value,
 										);
-									else if (hasPropertyKeys)
+								}}
+								onOpacityChange={(opacity) => {
+									const frame = playback.currentFrame;
+									const hasKey = selectedKeys.some(
+										(key) => key.frame === frame && key.property === "opacity",
+									);
+									const hasOpacityKeys = selectedKeys.some(
+										(key) => key.property === "opacity",
+									);
+									if (hasKey)
+										void core.setClipKeyframe(
+											selectedClip.id,
+											frame,
+											"opacity",
+											opacity,
+										);
+									else if (hasOpacityKeys)
 										void core.setClipPreviewKeyframe(
 											selectedClip.id,
-											playback.currentFrame,
-											property,
-											value,
+											frame,
+											"opacity",
+											opacity,
 										);
 									else
-										void clipContext.changeTransform(selectedClip.id, {
-											...(clipContext.transform ?? transform),
-											[property]: value,
+										void clipContext.changeClipProperties(selectedClip.id, {
+											hidden: selectedClip.hidden,
+											alpha_locked: selectedClip.alpha_locked,
+											locked: selectedClip.locked,
+											opacity,
+											blend_mode: selectedClip.blend_mode,
 										});
-								}
-							}}
-							onInteractionStart={() => {
-								void core.beginActionGroup();
-							}}
-							onInteractionEnd={() => {
-								void core.endActionGroup();
-							}}
-							currentFrame={playback.currentFrame}
-							keyframes={selectedKeys}
-							onKeyframeToggle={(property, value) => {
-								if (
-									selectedKeys.some(
-										(key) =>
-											key.frame === playback.currentFrame &&
-											key.property === property,
-									)
-								)
-									void core.deleteClipKeyframe(
-										selectedClip.id,
-										playback.currentFrame,
-										property,
-									);
-								else
-									void core.setClipKeyframe(
-										selectedClip.id,
-										playback.currentFrame,
-										property,
-										value,
-									);
-							}}
-							onOpacityChange={(opacity) => {
-								const frame = playback.currentFrame;
-								const hasKey = selectedKeys.some(
-									(key) => key.frame === frame && key.property === "opacity",
-								);
-								const hasOpacityKeys = selectedKeys.some(
-									(key) => key.property === "opacity",
-								);
-								if (hasKey)
-									void core.setClipKeyframe(
-										selectedClip.id,
-										frame,
-										"opacity",
-										opacity,
-									);
-								else if (hasOpacityKeys)
-									void core.setClipPreviewKeyframe(
-										selectedClip.id,
-										frame,
-										"opacity",
-										opacity,
-									);
-								else
-									void clipContext.changeClipProperties(selectedClip.id, {
-										hidden: selectedClip.hidden,
-										alpha_locked: selectedClip.alpha_locked,
-										locked: selectedClip.locked,
-										opacity,
-										blend_mode: selectedClip.blend_mode,
-									});
-							}}
-							onFrameSelect={playback.setCurrentFrame}
-						/>
-					</div>
-				</div>
-			)}
+								}}
+								onFrameSelect={playback.setCurrentFrame}
+							/>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 			<div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 overflow-x-auto rounded-xl">
 				<div className="pointer-events-auto mx-auto w-fit">
 					<Toolbar />

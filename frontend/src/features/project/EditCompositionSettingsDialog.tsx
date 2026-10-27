@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Dialog from "~/components/Dialog";
 import Separator from "~/components/Separator";
 import TextField from "~/components/TextField";
@@ -23,15 +23,24 @@ const EditCompositionSettingsDialog = (props: Props) => {
 	const project = useProject();
 	const [title, setTitle] = useState(project.title ?? t("nav.untitled"));
 
-	const [compositionSettings, setCompositionSettings] = useState(
-		project.settings ?? {
-			width: DEFAULT_WIDTH,
-			height: DEFAULT_HEIGHT,
-			frameRate: DEFAULT_FRAME_RATE,
-			startFrame: DEFAULT_START_FRAME,
-			endFrame: DEFAULT_END_FRAME,
-		},
+	const initSettings = useCallback(
+		() =>
+			project.settings ?? {
+				width: DEFAULT_WIDTH,
+				height: DEFAULT_HEIGHT,
+				frameRate: DEFAULT_FRAME_RATE,
+				startFrame: DEFAULT_START_FRAME,
+				endFrame: DEFAULT_END_FRAME,
+			},
+		[project.settings],
 	);
+
+	const [settings, setSettings] = useState(initSettings());
+
+	useEffect(() => {
+		if (!props.open) return;
+		setSettings(initSettings());
+	}, [props.open, initSettings]);
 
 	return (
 		<Dialog
@@ -41,7 +50,7 @@ const EditCompositionSettingsDialog = (props: Props) => {
 			submitText={t("project.apply")}
 			onSubmit={() => {
 				void project.setTitle(title);
-				return project.setSettings(compositionSettings);
+				return project.setSettings(settings);
 			}}
 		>
 			<div className="mb-2 flex flex-col gap-2">
@@ -50,8 +59,8 @@ const EditCompositionSettingsDialog = (props: Props) => {
 				<Separator />
 			</div>
 			<CompositionSettingsForm
-				compositionSettings={compositionSettings}
-				onCompositionSettingsChanged={setCompositionSettings}
+				settings={settings}
+				onSettingsChanged={setSettings}
 			/>
 		</Dialog>
 	);

@@ -1,3 +1,4 @@
+import { MotionConfig } from "motion/react";
 import { TooltipProvider } from "radix-ui/tooltip";
 import type { JSX } from "react";
 import { CoreProvider } from "~/core/CoreProvider";
@@ -16,32 +17,37 @@ type Props = {
 	children: JSX.Element;
 };
 
-function Editor({ children }: Props) {
+function EditorProviders({ children }: Props) {
 	return (
-		<TooltipProvider delayDuration={200}>
-			<I18nProvider>
-				<ShortcutsProvider>
-					<AppearanceProvider>
-						<CoreProvider>
-							<ProjectProvider>
-								<PlaybackProvider>
-									<LayerProvider>
-										<ToolProvider>
-											<ClipProvider>
-												<DialogsProvider>
-													<CanvasViewProvider>{children}</CanvasViewProvider>
-												</DialogsProvider>
-											</ClipProvider>
-										</ToolProvider>
-									</LayerProvider>
-								</PlaybackProvider>
-							</ProjectProvider>
-						</CoreProvider>
-					</AppearanceProvider>
-				</ShortcutsProvider>
-			</I18nProvider>
-		</TooltipProvider>
+		<MotionConfig
+			transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.2 }}
+			reducedMotion="user"
+		>
+			<TooltipProvider delayDuration={400}>
+				<I18nProvider>
+					<ShortcutsProvider>
+						<AppearanceProvider>
+							<CoreProvider>
+								<ProjectProvider>
+									<PlaybackProvider>
+										<LayerProvider>
+											<ToolProvider>
+												<ClipProvider>
+													<DialogsProvider>
+														<CanvasViewProvider>{children}</CanvasViewProvider>
+													</DialogsProvider>
+												</ClipProvider>
+											</ToolProvider>
+										</LayerProvider>
+									</PlaybackProvider>
+								</ProjectProvider>
+							</CoreProvider>
+						</AppearanceProvider>
+					</ShortcutsProvider>
+				</I18nProvider>
+			</TooltipProvider>
+		</MotionConfig>
 	);
 }
 
-export default Editor;
+export default EditorProviders;

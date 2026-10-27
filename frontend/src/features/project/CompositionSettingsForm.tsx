@@ -11,16 +11,11 @@ import { useI18n } from "~/features/i18n/useI18n";
 import { type CompositionSettings, MAX_FRAME_INDEX } from "./type";
 
 type Props = {
-	compositionSettings: CompositionSettings;
-	onCompositionSettingsChanged: (
-		compositionSettings: CompositionSettings,
-	) => void;
+	settings: CompositionSettings;
+	onSettingsChanged: (settings: CompositionSettings) => void;
 };
 
-const CompositionSettingsForm = ({
-	compositionSettings,
-	onCompositionSettingsChanged,
-}: Props) => {
+const CompositionSettingsForm = ({ settings, onSettingsChanged }: Props) => {
 	const { t } = useI18n();
 
 	return (
@@ -30,26 +25,22 @@ const CompositionSettingsForm = ({
 				<NumberField
 					id="width"
 					aria-label={t("project.width")}
-					value={compositionSettings.width}
+					value={settings.width}
 					min={0}
 					max={10000}
 					leftElement={<IconArrowAutofitWidth />}
 					rightElement="px"
-					onValueChange={(width) =>
-						onCompositionSettingsChanged({ ...compositionSettings, width })
-					}
+					onValueChange={(width) => onSettingsChanged({ ...settings, width })}
 				/>
 				<NumberField
 					id="height"
 					aria-label={t("project.height")}
-					value={compositionSettings.height}
+					value={settings.height}
 					min={0}
 					max={10000}
 					leftElement={<IconArrowAutofitHeight />}
 					rightElement="px"
-					onValueChange={(height) =>
-						onCompositionSettingsChanged({ ...compositionSettings, height })
-					}
+					onValueChange={(height) => onSettingsChanged({ ...settings, height })}
 				/>
 			</div>
 			<Separator />
@@ -58,14 +49,14 @@ const CompositionSettingsForm = ({
 				<NumberField
 					id="startFrame"
 					aria-label={t("project.startFrame")}
-					value={compositionSettings.startFrame}
+					value={settings.startFrame}
 					min={0}
-					max={compositionSettings.endFrame}
+					max={settings.endFrame}
 					leftElement={<IconLayoutAlignLeft />}
 					rightElement="f"
 					onValueChange={(startFrame) =>
-						onCompositionSettingsChanged({
-							...compositionSettings,
+						onSettingsChanged({
+							...settings,
 							startFrame,
 						})
 					}
@@ -73,14 +64,14 @@ const CompositionSettingsForm = ({
 				<NumberField
 					id="endFrame"
 					aria-label={t("project.endFrame")}
-					value={compositionSettings.endFrame}
-					min={compositionSettings.startFrame}
+					value={settings.endFrame}
+					min={settings.startFrame}
 					max={MAX_FRAME_INDEX}
 					leftElement={<IconLayoutAlignRight />}
 					rightElement="f"
 					onValueChange={(endFrame) =>
-						onCompositionSettingsChanged({
-							...compositionSettings,
+						onSettingsChanged({
+							...settings,
 							endFrame,
 						})
 					}
@@ -90,14 +81,14 @@ const CompositionSettingsForm = ({
 			<NumberField
 				id="frameRate"
 				aria-label={t("project.frameRate")}
-				value={compositionSettings.frameRate}
+				value={settings.frameRate}
 				min={0}
 				max={1000}
 				leftElement={<IconRunSprint />}
 				rightElement="fps"
 				onValueChange={(frameRate) =>
-					onCompositionSettingsChanged({
-						...compositionSettings,
+					onSettingsChanged({
+						...settings,
 						frameRate,
 					})
 				}

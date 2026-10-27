@@ -1,3 +1,4 @@
+import { AnimatePresence } from "motion/react";
 import { type JSX, useState } from "react";
 import AppearanceSettingsDialog from "~/features/appearance/AppearanceSettingDialog";
 import LanguageSettingDialog from "~/features/i18n/LanguageSettingDialog";
@@ -29,18 +30,14 @@ export const DialogsProvider = ({ children }: Props) => {
 			}}
 		>
 			{children}
-			{activeDialog === "createProject" && (
-				<CreateNewProjectDialog
-					open
-					onOpenChange={handleOpenChange("createProject")}
-				/>
-			)}
-			{activeDialog === "editCompositionSettings" && (
-				<EditCompositionSettingsDialog
-					open
-					onOpenChange={handleOpenChange("editCompositionSettings")}
-				/>
-			)}
+			<CreateNewProjectDialog
+				open={activeDialog === "createProject"}
+				onOpenChange={handleOpenChange("createProject")}
+			/>
+			<EditCompositionSettingsDialog
+				open={activeDialog === "editCompositionSettings"}
+				onOpenChange={handleOpenChange("editCompositionSettings")}
+			/>
 			<ProjectExportDialog
 				open={activeDialog === "exportProject"}
 				onOpenChange={handleOpenChange("exportProject")}
