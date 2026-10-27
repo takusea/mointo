@@ -1,4 +1,3 @@
-import { AnimatePresence } from "motion/react";
 import { type JSX, useState } from "react";
 import AppearanceSettingsDialog from "~/features/appearance/AppearanceSettingDialog";
 import LanguageSettingDialog from "~/features/i18n/LanguageSettingDialog";

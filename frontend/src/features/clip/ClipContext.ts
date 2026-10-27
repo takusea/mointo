@@ -9,9 +9,7 @@ export type ClipContextValue = {
 	transform: Transform | undefined;
 	selection: SelectionArea | undefined;
 	selectClip: (id: string) => void;
-	setSelection: (
-		selection: SelectionArea | undefined,
-	) => void;
+	setSelection: (selection: SelectionArea | undefined) => void;
 	copy: () => Promise<void>;
 	cut: () => Promise<void>;
 	paste: () => Promise<void>;

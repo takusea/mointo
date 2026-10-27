@@ -605,7 +605,15 @@ export const useCanvasPointer = (
 							...session.displayBounds,
 							...(session.selectionMask == null
 								? {}
-								: { mask: transformSelectionMask(session.selectionMask, canvasRef.current?.width ?? 0, canvasRef.current?.height ?? 0, session.bounds, session.matrix) }),
+								: {
+										mask: transformSelectionMask(
+											session.selectionMask,
+											canvasRef.current?.width ?? 0,
+											canvasRef.current?.height ?? 0,
+											session.bounds,
+											session.matrix,
+										),
+									}),
 						}
 					: undefined,
 			);

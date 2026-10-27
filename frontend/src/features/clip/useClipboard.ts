@@ -89,7 +89,11 @@ export const useClipboard = ({
 			if (selection?.mask != null) {
 				for (let column = 0; column < width; column++) {
 					if (selection.mask[(y + row) * settings.width + x + column]) continue;
-					copiedPixels.fill(0, (row * width + column) * 4, (row * width + column + 1) * 4);
+					copiedPixels.fill(
+						0,
+						(row * width + column) * 4,
+						(row * width + column + 1) * 4,
+					);
 				}
 			}
 		}
@@ -126,7 +130,11 @@ export const useClipboard = ({
 		for (let row = 0; row < image.height; row++) {
 			const start = ((image.y + row) * settings.width + image.x) * 4;
 			for (let column = 0; column < image.width; column++) {
-				if (selection?.mask != null && !selection.mask[(image.y + row) * settings.width + image.x + column]) continue;
+				if (
+					selection?.mask != null &&
+					!selection.mask[(image.y + row) * settings.width + image.x + column]
+				)
+					continue;
 				pixels.fill(0, start + column * 4, start + column * 4 + 4);
 			}
 		}
