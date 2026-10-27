@@ -38,7 +38,7 @@ const GlobalHeader = () => {
 				{!isDesktop && (
 					<div
 						data-open={isMenubarOpen}
-						className={`grid grid-cols-[auto_1fr] data-[open=true]:col-span-3`}
+						className="grid grid-cols-[auto_1fr] data-[open=true]:col-span-3"
 					>
 						<IconButton
 							label={t("menubar.open")}

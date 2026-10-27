@@ -324,7 +324,7 @@ const Clip = ({
 				}),
 			)}
 			<div
-				className={isLocked ? "" : "cursor-move"}
+				className="group-data-[locked=false]:cursor-move"
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handlePointerMove}
 			/>
