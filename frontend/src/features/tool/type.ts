@@ -4,4 +4,6 @@ export type ToolKind =
 	| "eraser"
 	| "fill"
 	| "select"
+	| "lasso"
+	| "wand"
 	| "eyedropper";

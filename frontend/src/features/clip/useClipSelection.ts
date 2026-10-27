@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ClipMetadata } from "~/lib/clip";
 import type { LayerId } from "~/lib/layer";
-
-type SelectionRectangle = {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-};
+import type { SelectionArea } from "./ClipContext";
 
 type CompositionSettings = {
 	width: number;
@@ -32,7 +26,7 @@ export const useClipSelection = ({
 	compositionSettings,
 }: Options) => {
 	const [selectedClipId, setSelectedClipId] = useState<string>();
-	const [selection, setSelection] = useState<SelectionRectangle>();
+	const [selection, setSelection] = useState<SelectionArea>();
 	const selectionContext = useRef({
 		layerId: currentLayerId,
 		frame: currentFrame,

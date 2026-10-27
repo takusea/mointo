@@ -7,14 +7,10 @@ export type ClipContextValue = {
 	clips: ClipMetadata[];
 	selectedClipId: string | undefined;
 	transform: Transform | undefined;
-	selection:
-		| { x: number; y: number; width: number; height: number }
-		| undefined;
+	selection: SelectionArea | undefined;
 	selectClip: (id: string) => void;
 	setSelection: (
-		selection:
-			| { x: number; y: number; width: number; height: number }
-			| undefined,
+		selection: SelectionArea | undefined,
 	) => void;
 	copy: () => Promise<void>;
 	cut: () => Promise<void>;
@@ -37,6 +33,15 @@ export type ClipContextValue = {
 		frame: number,
 		layerId: LayerId | null,
 	) => Promise<string | undefined>;
+};
+
+export type SelectionArea = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	mask?: Uint8Array;
+	points?: { x: number; y: number }[];
 };
 
 export const ClipContext = createContext<ClipContextValue | null>(null);

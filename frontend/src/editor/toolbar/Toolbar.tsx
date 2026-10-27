@@ -3,6 +3,7 @@ import {
 	IconArrowBarRight,
 	IconArrowForwardUp,
 	IconBucketDroplet,
+	IconChevronUp,
 	IconClipboard,
 	IconColorPicker,
 	IconCopy,
@@ -11,6 +12,7 @@ import {
 	IconFlipVertical,
 	IconLasso,
 	IconLayersDifference,
+	IconMarquee,
 	IconPencil,
 	IconPlayerPause,
 	IconPlayerPlay,
@@ -24,12 +26,17 @@ import {
 	IconRotate,
 	IconScissors,
 	IconTransformPoint,
+	IconWand,
 	IconZoom,
 	IconZoomReset,
 } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import Card from "~/components/Card";
+import DropdownMenuRadioItem from "~/components/DropdownMenu/DropDownRadioItem";
+import DropdownMenu from "~/components/DropdownMenu/DropdownMenu";
+import DropdownMenuItem from "~/components/DropdownMenu/DropdownMenuItem";
+import DropdownMenuRadioGroup from "~/components/DropdownMenu/DropdownRadioGroup";
 import IconButton from "~/components/IconButton";
 import NumberField from "~/components/NumberField";
 import { formatShortcut } from "~/constants/shortcuts";
@@ -50,6 +57,13 @@ const Toolbar = () => {
 	const undoStack = useUndo();
 	const { shortcuts } = useShortcuts();
 	const toolbar = useRef<HTMLDivElement>(null);
+	const [lastSelectionTool, setLastSelectionTool] = useState<
+		"select" | "lasso" | "wand"
+	>("select");
+	const selectSelectionTool = (tool: "select" | "lasso" | "wand") => {
+		setLastSelectionTool(tool);
+		toolContext.setTool(tool);
+	};
 
 	useEffect(() => {
 		const controls = toolbar.current?.querySelectorAll<HTMLElement>(
@@ -136,7 +150,9 @@ const Toolbar = () => {
 	useHotkeys(shortcuts.penTool, () => toolContext.setTool("pen"));
 	useHotkeys(shortcuts.eraserTool, () => toolContext.setTool("eraser"));
 	useHotkeys(shortcuts.fillTool, () => toolContext.setTool("fill"));
-	useHotkeys(shortcuts.selectTool, () => toolContext.setTool("select"));
+	useHotkeys(shortcuts.selectTool, () =>
+		selectSelectionTool(lastSelectionTool),
+	);
 
 	return (
 		<div
@@ -177,13 +193,64 @@ const Toolbar = () => {
 						variant={toolContext.tool === "eyedropper" ? "primary" : "default"}
 						onClick={() => toolContext.setTool("eyedropper")}
 					/>
-					<IconButton
-						label={t("toolbar.select")}
-						shortcut={formatShortcut(shortcuts.selectTool)}
-						icon={IconLasso}
-						variant={toolContext.tool === "select" ? "primary" : "default"}
-						onClick={() => toolContext.setTool("select")}
-					/>
+					<div className="flex">
+						<IconButton
+							label={
+								lastSelectionTool === "lasso"
+									? t("toolbar.lasso")
+									: lastSelectionTool === "wand"
+										? t("toolbar.wand")
+										: t("toolbar.rectangleSelect")
+							}
+							shortcut={formatShortcut(shortcuts.selectTool)}
+							icon={
+								lastSelectionTool === "lasso"
+									? IconLasso
+									: lastSelectionTool === "wand"
+										? IconWand
+										: IconMarquee
+							}
+							variant={
+								["select", "lasso", "wand"].includes(toolContext.tool)
+									? "primary"
+									: "default"
+							}
+							onClick={() => selectSelectionTool(lastSelectionTool)}
+						/>
+						<DropdownMenu
+							side="top"
+							menu={
+								<DropdownMenuRadioGroup
+									value={lastSelectionTool}
+									onValueChange={selectSelectionTool}
+								>
+									<DropdownMenuRadioItem
+										label={t("toolbar.rectangleSelect")}
+										value="select"
+									/>
+									<DropdownMenuRadioItem
+										label={t("toolbar.lasso")}
+										value="lasso"
+									/>
+									<DropdownMenuRadioItem
+										label={t("toolbar.wand")}
+										value="wand"
+									/>
+								</DropdownMenuRadioGroup>
+							}
+						>
+							<IconButton
+								size="small"
+								label={t("toolbar.select")}
+								icon={IconChevronUp}
+								variant={
+									["select", "lasso", "wand"].includes(toolContext.tool)
+										? "primary"
+										: "default"
+								}
+							/>
+						</DropdownMenu>
+					</div>
 					<IconButton
 						label={t("toolbar.transform")}
 						shortcut={formatShortcut(shortcuts.transformTool)}

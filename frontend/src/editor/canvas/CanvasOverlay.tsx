@@ -1,6 +1,13 @@
 import type { CSSProperties } from "react";
 
-type Selection = { x: number; y: number; width: number; height: number };
+type Selection = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	points?: { x: number; y: number }[];
+	mask?: Uint8Array;
+};
 
 type Props = {
 	width: number;
@@ -31,16 +38,81 @@ export const CanvasOverlay = ({
 				...transform,
 			}}
 		>
-			{selection != null && (
-				<div
-					className="absolute border border-dashed border-primary"
+			{selection != null &&
+			(selection.points != null || selection.mask != null) ? (
+				<svg
+					className="absolute overflow-visible"
 					style={{
 						left: selection.x,
 						top: selection.y,
 						width: selection.width,
 						height: selection.height,
 					}}
-				/>
+					viewBox={`0 0 ${selection.width} ${selection.height}`}
+					aria-hidden="true"
+				>
+					{selection.points != null ? (
+						<polygon
+							points={selection.points
+								.map(
+									(point) =>
+										`${point.x - selection.x + 0.5},${point.y - selection.y + 0.5}`,
+								)
+								.join(" ")}
+							fill="none"
+							stroke="white"
+							strokeDasharray="3 2"
+							vectorEffect="non-scaling-stroke"
+						/>
+					) : (
+						<path
+							d={(() => {
+								const edges: string[] = [];
+								const selected = (x: number, y: number) =>
+									x >= 0 &&
+									y >= 0 &&
+									x < width &&
+									y < height &&
+									selection.mask?.[y * width + x] === 1;
+								for (
+									let y = selection.y;
+									y < selection.y + selection.height;
+									y++
+								)
+									for (
+										let x = selection.x;
+										x < selection.x + selection.width;
+										x++
+									)
+										if (selected(x, y)) {
+											const lx = x - selection.x,
+												ly = y - selection.y;
+											if (!selected(x, y - 1)) edges.push(`M${lx},${ly}h1`);
+											if (!selected(x + 1, y)) edges.push(`M${lx + 1},${ly}v1`);
+											if (!selected(x, y + 1)) edges.push(`M${lx},${ly + 1}h1`);
+											if (!selected(x - 1, y)) edges.push(`M${lx},${ly}v1`);
+										}
+								return edges.join("");
+							})()}
+							fill="none"
+							stroke="white"
+							strokeDasharray="3 2"
+							vectorEffect="non-scaling-stroke"
+						/>
+					)}
+				</svg>
+			) : (
+				selection != null && (
+					<div
+						className="absolute border border-dashed border-white"
+						style={{
+							left: selection.x,
+							top: selection.y,
+							width: selection.width,
+							height: selection.height,
+						}}
+					/>
+				)
 			)}
 			{transformBounds != null && (
 				<div

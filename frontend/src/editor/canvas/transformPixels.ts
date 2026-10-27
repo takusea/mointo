@@ -74,6 +74,7 @@ export const transformPixels = (
 		scaleY: number;
 		rotation: number;
 	},
+	selectionMask?: Uint8Array,
 ) => {
 	const source = document.createElement("canvas");
 	source.width = width;
@@ -90,8 +91,13 @@ export const transformPixels = (
 	const top = Math.max(0, Math.floor(bounds.y));
 	const right = Math.min(width, Math.ceil(bounds.x + bounds.width));
 	const bottom = Math.min(height, Math.ceil(bounds.y + bounds.height));
-	for (let y = top; y < bottom; y++) {
-		result.data.fill(0, (y * width + left) * 4, (y * width + right) * 4);
+	if (selectionMask == null) {
+		for (let y = top; y < bottom; y++) result.data.fill(0, (y * width + left) * 4, (y * width + right) * 4);
+	} else {
+		for (let y = top; y < bottom; y++) for (let x = left; x < right; x++) if (selectionMask[y * width + x]) result.data.fill(0, (y * width + x) * 4, (y * width + x + 1) * 4);
+		const sourceImage = sourceContext.getImageData(0, 0, width, height);
+		for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (!selectionMask[y * width + x]) sourceImage.data.fill(0, (y * width + x) * 4, (y * width + x + 1) * 4);
+		sourceContext.putImageData(sourceImage, 0, 0);
 	}
 	const transformed = document.createElement("canvas");
 	transformed.width = width;
@@ -118,4 +124,25 @@ export const transformPixels = (
 		bounds.height,
 	);
 	return context.getImageData(0, 0, width, height).data;
+};
+
+export const transformSelectionMask = (
+	mask: Uint8Array,
+	width: number,
+	height: number,
+	bounds: PixelBounds,
+	matrix: PixelTransform,
+) => {
+	const transformed = new Uint8Array(width * height);
+	const centerX = bounds.x + bounds.width / 2;
+	const centerY = bounds.y + bounds.height / 2;
+	const cos = Math.cos(matrix.rotation), sin = Math.sin(matrix.rotation);
+	for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (mask[y * width + x]) {
+		const dx = (x + 0.5 - centerX) * matrix.scaleX;
+		const dy = (y + 0.5 - centerY) * matrix.scaleY;
+		const tx = Math.floor(centerX + matrix.x + dx * cos - dy * sin);
+		const ty = Math.floor(centerY + matrix.y + dx * sin + dy * cos);
+		if (tx >= 0 && ty >= 0 && tx < width && ty < height) transformed[ty * width + tx] = 1;
+	}
+	return transformed;
 };

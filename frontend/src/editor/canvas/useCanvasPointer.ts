@@ -12,6 +12,7 @@ import {
 	type PixelBounds,
 	type PixelTransform,
 	transformPixels,
+	transformSelectionMask,
 } from "./transformPixels";
 import { useCanvasDraw } from "./useCanvasDraw";
 import { useCanvasSelection } from "./useCanvasSelection";
@@ -47,6 +48,7 @@ export const useCanvasPointer = (
 		bounds: PixelBounds;
 		displayBounds: PixelBounds;
 		frameBounds: PixelBounds;
+		selectionMask?: Uint8Array;
 		hadSelection: boolean;
 		matrix: PixelTransform;
 	} | null>(null);
@@ -271,6 +273,7 @@ export const useCanvasPointer = (
 			displayBounds: bounds,
 			frameBounds: bounds,
 			hadSelection: clipContext.selection != null,
+			selectionMask: clipContext.selection?.mask,
 			matrix,
 		});
 		beginTransformDrag(event, x, y, bounds, matrix);
@@ -308,7 +311,16 @@ export const useCanvasPointer = (
 		}
 
 		if (!isPenEraser && toolContext.tool === "select") {
-			selection.beginSelection(event);
+			selection.beginSelection(event, "rectangle");
+			return;
+		}
+
+		if (!isPenEraser && toolContext.tool === "lasso") {
+			selection.beginSelection(event, "lasso");
+			return;
+		}
+		if (!isPenEraser && toolContext.tool === "wand") {
+			await selection.selectSimilar(event.clientX, event.clientY);
 			return;
 		}
 
@@ -365,6 +377,7 @@ export const useCanvasPointer = (
 				displayBounds: bounds,
 				frameBounds: bounds,
 				hadSelection: clipContext.selection != null,
+				selectionMask: clipContext.selection?.mask,
 				matrix,
 			});
 			beginTransformDrag(event, x, y, bounds, matrix);
@@ -499,6 +512,7 @@ export const useCanvasPointer = (
 				canvas.height,
 				transformSession.bounds,
 				matrix,
+				transformSession.selectionMask,
 			);
 			setTransformSession({
 				...transformSession,
@@ -586,7 +600,14 @@ export const useCanvasPointer = (
 				await core.replaceClipPixels(session.clipId, session.preview);
 			}
 			clipContext.setSelection(
-				session.hadSelection ? session.displayBounds : undefined,
+				session.hadSelection
+					? {
+							...session.displayBounds,
+							...(session.selectionMask == null
+								? {}
+								: { mask: transformSelectionMask(session.selectionMask, canvasRef.current?.width ?? 0, canvasRef.current?.height ?? 0, session.bounds, session.matrix) }),
+						}
+					: undefined,
 			);
 			setTransformSession(null);
 			if (canvasRef.current != null) {

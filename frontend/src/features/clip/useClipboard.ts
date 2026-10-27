@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCore } from "~/core/useCore";
 import type { ClipMetadata } from "~/lib/clip";
 import type { LayerId, LayerState } from "~/lib/layer";
+import type { SelectionArea } from "./ClipContext";
 
 type CompositionSettings = {
 	width: number;
@@ -18,9 +19,7 @@ type ClipboardImage = {
 
 type Options = {
 	currentClip: ClipMetadata | undefined;
-	selection:
-		| { x: number; y: number; width: number; height: number }
-		| undefined;
+	selection: SelectionArea | undefined;
 	selectedLayerId: LayerId | null;
 	layers: LayerState[];
 	currentFrame: number;
@@ -87,6 +86,12 @@ export const useClipboard = ({
 				pixels.subarray(sourceStart, sourceStart + width * 4),
 				destinationStart,
 			);
+			if (selection?.mask != null) {
+				for (let column = 0; column < width; column++) {
+					if (selection.mask[(y + row) * settings.width + x + column]) continue;
+					copiedPixels.fill(0, (row * width + column) * 4, (row * width + column + 1) * 4);
+				}
+			}
 		}
 
 		return { clip, x, y, width, height, pixels: copiedPixels };
@@ -120,7 +125,10 @@ export const useClipboard = ({
 		if (settings == null) return;
 		for (let row = 0; row < image.height; row++) {
 			const start = ((image.y + row) * settings.width + image.x) * 4;
-			pixels.fill(0, start, start + image.width * 4);
+			for (let column = 0; column < image.width; column++) {
+				if (selection?.mask != null && !selection.mask[(image.y + row) * settings.width + image.x + column]) continue;
+				pixels.fill(0, start + column * 4, start + column * 4 + 4);
+			}
 		}
 		await core.replaceClipPixels(clip.id, pixels);
 	};

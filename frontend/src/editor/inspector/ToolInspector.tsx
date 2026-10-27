@@ -12,6 +12,8 @@ const toolNameKeys = {
 	eraser: "tool.name.eraser",
 	fill: "tool.name.fill",
 	select: "tool.name.select",
+	lasso: "tool.name.lasso",
+	wand: "tool.name.wand",
 	eyedropper: "tool.name.eyedropper",
 } as const satisfies Record<ToolKind, MessageKey>;
 
