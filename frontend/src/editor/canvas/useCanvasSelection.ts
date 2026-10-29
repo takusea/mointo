@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
 import type { SelectionArea } from "~/features/clip/ClipContext";
 import { useClip } from "~/features/clip/useClip";
+import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
+import { useTool } from "~/features/tool/useTool";
 
 type Selection = SelectionArea;
 type Point = { x: number; y: number };
@@ -12,6 +14,8 @@ export const useCanvasSelection = (
 ) => {
 	const clipContext = useClip();
 	const playback = usePlayback();
+	const layer = useLayer();
+	const tool = useTool();
 	const selectionDragRef = useRef<Point | null>(null);
 	const pointsRef = useRef<Point[]>([]);
 	const modeRef = useRef<"rectangle" | "lasso">("lasso");
@@ -143,7 +147,14 @@ export const useCanvasSelection = (
 				sx = Math.floor(p.x),
 				sy = Math.floor(p.y);
 			if (sx < 0 || sy < 0 || sx >= canvas.width || sy >= canvas.height) return;
-			const data = await playback.renderFrame(playback.currentFrame);
+			const data = tool.referenceOtherLayers.wand
+				? await playback.renderFrame(playback.currentFrame)
+				: layer.selectedLayerId == null
+					? undefined
+					: await playback.renderLayerFrame(
+							playback.currentFrame,
+							layer.selectedLayerId,
+						);
 			if (!data || data.length !== canvas.width * canvas.height * 4) return;
 			const start = (sy * canvas.width + sx) * 4,
 				target = data.slice(start, start + 4);

@@ -91,11 +91,28 @@ export const useCanvasDraw = (currentFrame: number) => {
 		delete document.documentElement.dataset.drawing;
 	};
 
-	const draw = (state: DrawState) => {
+	const draw = (state: DrawState, referencePixels?: Uint8ClampedArray) => {
 		if (drawingClipIdRef.current == null) return;
 
 		const clipId = drawingClipIdRef.current;
 		const tool = drawingToolRef.current ?? toolContext.tool;
+		if (tool === "fill" && referencePixels != null) {
+			const color = new Uint8Array([
+				rgbaColor.r,
+				rgbaColor.g,
+				rgbaColor.b,
+				rgbaColor.a,
+			]);
+			void core.applyFillReference(
+				clipId,
+				state.x,
+				state.y,
+				referencePixels,
+				color,
+				currentFrame,
+			);
+			return;
+		}
 		void core.applyToolPoints(
 			clipId,
 			tool,

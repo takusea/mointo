@@ -136,6 +136,7 @@
 	"toolInspector.tolerance": "許容値",
 	"toolInspector.expansion": "領域拡張",
 	"toolInspector.opacity": "不透明度",
+	"toolInspector.referenceOtherLayers": "他のレイヤーを参照",
 	"inspector.colorPicker": "カラーピッカー",
 	"inspector.propertyOf": "{name} のプロパティ",
 	"inspector.show": "表示",

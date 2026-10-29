@@ -385,6 +385,28 @@ export class CoreService {
 		});
 	}
 
+	applyFillReference(
+		clipId: string,
+		x: number,
+		y: number,
+		referencePixels: Uint8ClampedArray,
+		color: Uint8Array,
+		frame: number,
+	) {
+		return this.enqueue(
+			(core) =>
+				core.apply_fill_reference(
+					clipId,
+					x,
+					y,
+					new Uint8Array(referencePixels),
+					color,
+					frame,
+				),
+			true,
+		);
+	}
+
 	endDraw() {
 		return this.enqueue((core) => core.end_draw(), true);
 	}
@@ -479,6 +501,10 @@ export class CoreService {
 
 	renderFrame(frame: number) {
 		return this.enqueue((core) => core.render_frame(frame));
+	}
+
+	renderLayerFrame(frame: number, layerId: LayerId) {
+		return this.enqueue((core) => core.render_layer_frame(frame, layerId));
 	}
 
 	renderFrameToCanvas(

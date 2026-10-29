@@ -19,6 +19,36 @@ pub struct Composition {
 }
 
 impl Composition {
+    pub async fn render_layer_frame_gpu(
+        &self,
+        renderer: &mut GpuRenderer,
+        frame_index: u32,
+        layer_id: LayerId,
+        width: u32,
+        height: u32,
+    ) -> Result<Image, String> {
+        let mut clips: Vec<Clip> = self
+            .clips
+            .iter()
+            .filter(|clip| clip.contains_frame(frame_index) && !clip.metadata.hidden)
+            .filter(|clip| clip.metadata.layer_id == layer_id)
+            .filter(|_| {
+                self.layer_index(layer_id)
+                    .is_some_and(|index| !self.is_layer_hidden(index))
+            })
+            .map(|clip| {
+                let mut clip = clip.clone();
+                let (transform, opacity) = clip.values_at(frame_index);
+                clip.transform = transform;
+                clip.metadata.opacity = opacity;
+                clip
+            })
+            .collect();
+        clips.sort_by_key(|clip| clip.metadata.start);
+        let refs: Vec<_> = clips.iter().collect();
+        renderer.render_frame(&refs, width, height).await
+    }
+
     pub fn new() -> Self {
         Self {
             name: default_composition_name(),

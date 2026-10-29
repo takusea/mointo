@@ -108,9 +108,14 @@ export const useCanvasPointer = (
 			pixelY >= canvas.height
 		)
 			return;
-		const image = await playbackContext.renderFrame(
-			playbackContext.currentFrame,
-		);
+		const image = toolContext.referenceOtherLayers.eyedropper
+			? await playbackContext.renderFrame(playbackContext.currentFrame)
+			: layerContext.selectedLayerId == null
+				? undefined
+				: await playbackContext.renderLayerFrame(
+						playbackContext.currentFrame,
+						layerContext.selectedLayerId,
+					);
 		if (image == null) return;
 		const pixelIndex = (pixelY * canvas.width + pixelX) * 4;
 		const data = image.subarray(pixelIndex, pixelIndex + 4);
@@ -416,7 +421,10 @@ export const useCanvasPointer = (
 			isPenEraser ? "eraser" : toolContext.tool,
 		);
 		if (!isPenEraser && toolContext.tool === "fill") {
-			canvasDraw.draw(drawState);
+			const referencePixels = toolContext.referenceOtherLayers.fill
+				? await playbackContext.renderFrame(playbackContext.currentFrame)
+				: undefined;
+			canvasDraw.draw(drawState, referencePixels);
 		}
 		render(canvasRef.current, isOnionSkin, layerContext.selectedLayerId);
 	};

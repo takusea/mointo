@@ -136,6 +136,7 @@
 	"toolInspector.tolerance": "Tolerance",
 	"toolInspector.expansion": "Region expansion",
 	"toolInspector.opacity": "Opacity",
+	"toolInspector.referenceOtherLayers": "Reference other layers",
 	"inspector.colorPicker": "Color picker",
 	"inspector.propertyOf": "{name} Properties",
 	"inspector.show": "Show",

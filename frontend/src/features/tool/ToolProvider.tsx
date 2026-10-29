@@ -3,6 +3,7 @@ import { storageKeys } from "~/constants/storageKeys";
 import type { ToolProperty } from "~/core/CoreService";
 import { useCore } from "~/core/useCore";
 import { type HSVAColor, hasSameRgbColor } from "~/lib/color";
+import type { LayerReferenceTool } from "./ToolContext";
 import { ToolContext } from "./ToolContext";
 import type { ToolKind } from "./type";
 
@@ -14,6 +15,17 @@ export const ToolProvider = ({ children }: Props) => {
 	const core = useCore();
 
 	const [tool, setTool] = useState<ToolKind>("pen");
+	const [referenceOtherLayers, setReferenceOtherLayersState] = useState<
+		Record<LayerReferenceTool, boolean>
+	>({ fill: true, eyedropper: true, wand: true });
+	const setReferenceOtherLayers = (
+		tool: LayerReferenceTool,
+		enabled: boolean,
+	) =>
+		setReferenceOtherLayersState((current) => ({
+			...current,
+			[tool]: enabled,
+		}));
 	const [properties, setProperties] = useState<ToolProperty[]>([]);
 	const [pressureEnabled, setPressureEnabled] = useState(
 		() => localStorage.getItem(storageKeys.tool.pressureEnabled) !== "false",
@@ -117,10 +129,12 @@ export const ToolProvider = ({ children }: Props) => {
 				pressureEnabled,
 				pressureCurve,
 				stabilization,
+				referenceOtherLayers,
 				setProperty,
 				setPressureEnabled,
 				setPressureCurve,
 				setStabilization,
+				setReferenceOtherLayers,
 			}}
 		>
 			{children}

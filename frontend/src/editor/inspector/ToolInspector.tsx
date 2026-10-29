@@ -1,8 +1,10 @@
 import Card from "~/components/Card";
 import Slider from "~/components/Slider";
+import Switch from "~/components/Switch";
 import type { ToolProperty } from "~/core/CoreService";
 import type { MessageKey } from "~/features/i18n/I18nContext";
 import { useI18n } from "~/features/i18n/useI18n";
+import type { LayerReferenceTool } from "~/features/tool/ToolContext";
 import type { ToolKind } from "~/features/tool/type";
 import { useTool } from "~/features/tool/useTool";
 
@@ -61,6 +63,24 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 						</div>
 					);
 				})}
+				{(["fill", "eyedropper", "wand"] as ToolKind[]).includes(
+					toolContext.tool,
+				) && (
+					<Switch
+						label={t("toolInspector.referenceOtherLayers")}
+						checked={
+							toolContext.referenceOtherLayers[
+								toolContext.tool as LayerReferenceTool
+							]
+						}
+						onCheckedChange={(enabled) =>
+							toolContext.setReferenceOtherLayers(
+								toolContext.tool as LayerReferenceTool,
+								enabled,
+							)
+						}
+					/>
+				)}
 			</div>
 		</Card>
 	);

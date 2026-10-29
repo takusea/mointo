@@ -6,6 +6,7 @@ use crate::app::layer::LayerId;
 use crate::core::image::Image;
 use crate::core::tool::{ToolId, ToolPropertyValue};
 use gloo::utils::format::JsValueSerdeExt;
+use js_sys::Uint8Array;
 use uuid::Uuid;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
@@ -22,6 +23,106 @@ fn parse_tool_id(current_tool: &str) -> Option<ToolId> {
 
 #[wasm_bindgen]
 impl MointoCore {
+    pub fn apply_fill_reference(
+        &mut self,
+        clip_id_str: String,
+        x: f32,
+        y: f32,
+        reference_pixels: Uint8Array,
+        color: &[u8],
+        frame_index: u32,
+    ) {
+        if color.len() != 4 {
+            return;
+        }
+        let Ok(clip_id) = Uuid::parse_str(&clip_id_str) else {
+            return;
+        };
+        let Some(project) = self.project.as_mut() else {
+            return;
+        };
+        if project.is_clip_locked(clip_id) {
+            return;
+        }
+        let (canvas_width, canvas_height) = {
+            let settings = &project.composition().settings;
+            (settings.width, settings.height)
+        };
+        let Some(clip) = project.get_clip(clip_id) else {
+            return;
+        };
+        let (clip_width, clip_height) = (clip.image.width, clip.image.height);
+        let (transform, _) = clip.values_at(frame_index);
+        let alpha_locked = clip.metadata.alpha_locked;
+        let bytes = reference_pixels.to_vec();
+        if bytes.len() != (canvas_width as usize * canvas_height as usize * 4) {
+            return;
+        }
+        let mut source = Image {
+            data: bytes,
+            width: canvas_width,
+            height: canvas_height,
+        };
+        let mut source_changes = Vec::new();
+        let Some(fill) = self.tools.get_mut(ToolId::Fill) else {
+            return;
+        };
+        fill.apply(
+            &mut source,
+            x,
+            y,
+            [color[0], color[1], color[2], color[3]],
+            None,
+            &mut source_changes,
+        );
+        if source_changes.is_empty() {
+            return;
+        }
+
+        let Some(clip) = project.get_clip_mut(clip_id) else {
+            return;
+        };
+        let mut changes = Vec::new();
+        for source_change in source_changes {
+            let world_pixel = source_change.index / 4;
+            let world_x = (world_pixel % canvas_width as usize) as f32 + 0.5;
+            let world_y = (world_pixel / canvas_width as usize) as f32 + 0.5;
+            let Some((local_x, local_y)) = transform.inverse_transform_point(
+                (world_x, world_y),
+                (clip_width as f32 / 2.0, clip_height as f32 / 2.0),
+            ) else {
+                continue;
+            };
+            if local_x < 0.0
+                || local_y < 0.0
+                || local_x >= clip_width as f32
+                || local_y >= clip_height as f32
+            {
+                continue;
+            }
+            let index =
+                ((local_y.floor() as usize * clip_width as usize) + local_x.floor() as usize) * 4;
+            let image = clip.get_image_mut();
+            let before: [u8; 4] = image.data[index..index + 4].try_into().unwrap();
+            if alpha_locked && before[3] == 0 {
+                continue;
+            }
+            let after = source_change.after;
+            if before != after {
+                image.data[index..index + 4].copy_from_slice(&after);
+                changes.push(crate::core::image::PixelChange {
+                    index,
+                    before,
+                    after,
+                });
+            }
+        }
+        if !changes.is_empty() {
+            clip.mark_image_region_changed([0, 0, clip_width, clip_height]);
+            self.action_manager.record_pixel_changes(clip_id, changes);
+        }
+    }
+
     pub fn begin_draw(&mut self, clip_id_str: String) {
         let clip_id = match Uuid::parse_str(&clip_id_str) {
             Ok(id) => id,

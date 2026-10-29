@@ -7,6 +7,32 @@ use web_sys::HtmlCanvasElement;
 
 #[wasm_bindgen]
 impl MointoCore {
+    pub async fn render_layer_frame(
+        &mut self,
+        frame_index: u32,
+        layer_id_str: String,
+    ) -> Option<Uint8ClampedArray> {
+        let layer_id = layer_id_str.parse::<LayerId>().ok()?;
+        let (width, height) = {
+            let project = self.project.as_ref()?;
+            (
+                project.composition().settings.width,
+                project.composition().settings.height,
+            )
+        };
+        if self.gpu_renderer.is_none() {
+            self.gpu_renderer = Some(GpuRenderer::new(None).await.ok()?);
+        }
+        let renderer = self.gpu_renderer.as_mut()?;
+        let project = self.project.as_ref()?;
+        let image = project
+            .composition()
+            .render_layer_frame_gpu(renderer, frame_index, layer_id, width, height)
+            .await
+            .ok()?;
+        Some(Uint8ClampedArray::from(&image.data[..]))
+    }
+
     pub async fn render_frame_to_canvas_with_onion(
         &mut self,
         frame_index: u32,

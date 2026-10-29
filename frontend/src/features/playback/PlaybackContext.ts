@@ -18,6 +18,10 @@ export type PlaybackContextValue = {
 	stop: () => void;
 
 	renderFrame: (frame: number) => Promise<Uint8ClampedArray | undefined>;
+	renderLayerFrame: (
+		frame: number,
+		layerId: string,
+	) => Promise<Uint8ClampedArray | undefined>;
 	renderFrameToCanvas: (
 		frame: number,
 		canvas: HTMLCanvasElement,

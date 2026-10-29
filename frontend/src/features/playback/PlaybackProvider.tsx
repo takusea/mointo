@@ -76,6 +76,8 @@ export const PlaybackProvider = ({ children }: Props) => {
 	): Promise<Uint8ClampedArray | undefined> => {
 		return core.renderFrame(frameIndex);
 	};
+	const renderLayerFrame = (frameIndex: number, layerId: string) =>
+		core.renderLayerFrame(frameIndex, layerId);
 
 	const renderFrameToCanvas = (frameIndex: number, canvas: HTMLCanvasElement) =>
 		core.renderFrameToCanvas(frameIndex, canvas);
@@ -97,6 +99,7 @@ export const PlaybackProvider = ({ children }: Props) => {
 				pause,
 				stop,
 				renderFrame,
+				renderLayerFrame,
 				renderFrameToCanvas,
 			}}
 		>
