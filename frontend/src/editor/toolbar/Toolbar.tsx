@@ -31,7 +31,6 @@ import {
 	IconZoomReset,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 import Card from "~/components/Card";
 import DropdownMenuRadioItem from "~/components/DropdownMenu/DropDownRadioItem";
 import DropdownMenu from "~/components/DropdownMenu/DropdownMenu";
@@ -43,7 +42,8 @@ import { useClip } from "~/features/clip/useClip";
 import { useUndo } from "~/features/history/useUndo";
 import { useI18n } from "~/features/i18n/useI18n";
 import { usePlayback } from "~/features/playback/usePlayback";
-import { useShortcuts } from "~/features/shortcuts/useShortcuts";
+import { useShortcut } from "~/features/shortcuts/useShortcut";
+import { useShortcutSettings } from "~/features/shortcuts/useShortcuts";
 import { useTool } from "~/features/tool/useTool";
 import { useCanvasView } from "../canvas/useCanvasView";
 
@@ -54,7 +54,7 @@ const Toolbar = () => {
 	const toolContext = useTool();
 	const canvasView = useCanvasView();
 	const undoStack = useUndo();
-	const { shortcuts } = useShortcuts();
+	const { shortcuts } = useShortcutSettings();
 	const toolbar = useRef<HTMLDivElement>(null);
 	const [lastSelectionTool, setLastSelectionTool] = useState<
 		"select" | "lasso" | "wand"
@@ -108,48 +108,50 @@ const Toolbar = () => {
 		controls[nextIndex]?.focus();
 	};
 
-	useHotkeys(shortcuts.undo, undoStack.undo);
-	useHotkeys(shortcuts.redo, undoStack.redo);
-	useHotkeys(shortcuts.cut, clipContext.cut);
-	useHotkeys(shortcuts.copy, clipContext.copy);
-	useHotkeys(shortcuts.paste, clipContext.paste);
-	useHotkeys(shortcuts.selectAll, (event) => {
+	useShortcut(shortcuts.undo, undoStack.undo);
+	useShortcut(shortcuts.redo, undoStack.redo);
+	useShortcut(shortcuts.cut, clipContext.cut);
+	useShortcut(shortcuts.copy, clipContext.copy);
+	useShortcut(shortcuts.paste, clipContext.paste);
+	useShortcut(shortcuts.selectAll, (event) => {
 		event.preventDefault();
 		clipContext.selectAll();
 	});
-	useHotkeys(shortcuts.clearSelection, () =>
+	useShortcut(shortcuts.clearSelection, () =>
 		clipContext.setSelection(undefined),
 	);
-	useHotkeys(shortcuts.togglePlayback, () =>
+	useShortcut(shortcuts.togglePlayback, () =>
 		playbackContext.isPlaying
 			? playbackContext.pause()
 			: playbackContext.play(),
 	);
-	useHotkeys(shortcuts.stop, () => playbackContext.stop());
-	useHotkeys(shortcuts.toggleOnionSkin, () =>
+	useShortcut(shortcuts.stop, () => playbackContext.stop());
+	useShortcut(shortcuts.toggleOnionSkin, () =>
 		canvasView.setIsOnionSkin((prev) => !prev),
 	);
-	useHotkeys(shortcuts.toggleLoop, () =>
+	useShortcut(shortcuts.toggleLoop, () =>
 		playbackContext.setIsLoop(!playbackContext.isLoop),
 	);
-	useHotkeys(shortcuts.firstFrame, () =>
+	useShortcut(shortcuts.firstFrame, () =>
 		playbackContext.setCurrentFrame(playbackContext.startFrame),
 	);
-	useHotkeys(shortcuts.previousFrame, () =>
+	useShortcut(shortcuts.previousFrame, () =>
 		playbackContext.setCurrentFrame(playbackContext.currentFrame - 1),
 	);
-	useHotkeys(shortcuts.nextFrame, () =>
+	useShortcut(shortcuts.nextFrame, () =>
 		playbackContext.setCurrentFrame(playbackContext.currentFrame + 1),
 	);
-	useHotkeys(shortcuts.lastFrame, () =>
+	useShortcut(shortcuts.lastFrame, () =>
 		playbackContext.setCurrentFrame(playbackContext.endFrame),
 	);
-	useHotkeys(shortcuts.transformTool, () => toolContext.setTool("move"));
-	useHotkeys(shortcuts.eyedropperTool, () => toolContext.setTool("eyedropper"));
-	useHotkeys(shortcuts.penTool, () => toolContext.setTool("pen"));
-	useHotkeys(shortcuts.eraserTool, () => toolContext.setTool("eraser"));
-	useHotkeys(shortcuts.fillTool, () => toolContext.setTool("fill"));
-	useHotkeys(shortcuts.selectTool, () =>
+	useShortcut(shortcuts.transformTool, () => toolContext.setTool("move"));
+	useShortcut(shortcuts.eyedropperTool, () =>
+		toolContext.setTool("eyedropper"),
+	);
+	useShortcut(shortcuts.penTool, () => toolContext.setTool("pen"));
+	useShortcut(shortcuts.eraserTool, () => toolContext.setTool("eraser"));
+	useShortcut(shortcuts.fillTool, () => toolContext.setTool("fill"));
+	useShortcut(shortcuts.selectTool, () =>
 		selectSelectionTool(lastSelectionTool),
 	);
 

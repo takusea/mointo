@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 import Card from "~/components/Card";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
@@ -7,7 +6,8 @@ import { useClip } from "~/features/clip/useClip";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
-import { useShortcuts } from "~/features/shortcuts/useShortcuts";
+import { useShortcut } from "~/features/shortcuts/useShortcut";
+import { useShortcutSettings } from "~/features/shortcuts/useShortcuts";
 import TrackBody from "./TrackBody";
 import TrackHeader from "./TrackHeader";
 import TrackSide from "./TrackSide";
@@ -25,17 +25,17 @@ const Timeline = () => {
 	const playbackContext = usePlayback();
 	const projectContext = useProject();
 	const layerContext = useLayer();
-	const { shortcuts } = useShortcuts();
+	const { shortcuts } = useShortcutSettings();
 
-	useHotkeys(shortcuts.deleteClip, () => {
+	useShortcut(shortcuts.deleteClip, () => {
 		if (clipContext.selectedClipId != null) {
 			clipContext.deleteClip(clipContext.selectedClipId);
 		}
 	});
-	useHotkeys(shortcuts.duplicateClip, () => {
+	useShortcut(shortcuts.duplicateClip, () => {
 		void clipContext.duplicateSelectedClip();
 	});
-	useHotkeys(shortcuts.duplicateLinkedClip, () => {
+	useShortcut(shortcuts.duplicateLinkedClip, () => {
 		void clipContext.linkDuplicateSelectedClip();
 	});
 

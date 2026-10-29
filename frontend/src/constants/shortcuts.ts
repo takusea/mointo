@@ -80,6 +80,11 @@ export const formatShortcut = (shortcut: string) =>
 	shortcut
 		.split("+")
 		.map((part) => {
+			const symbol = /^code:[A-Za-z0-9]+:([0-9a-f]+)$/i.exec(part);
+			if (symbol != null) {
+				return String.fromCodePoint(Number.parseInt(symbol[1], 16));
+			}
+			if (part === "backquote") return "`";
 			if (part === "ctrl") return "Ctrl";
 			if (part === "alt") return "Alt";
 			if (part === "shift") return "Shift";

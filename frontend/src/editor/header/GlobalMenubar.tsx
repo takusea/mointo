@@ -1,4 +1,3 @@
-import { useHotkeys } from "react-hotkeys-hook";
 import MenubarCheckboxItem from "~/components/Menubar/MenubarCheckboxItem";
 import MenubarItem from "~/components/Menubar/MenubarItem";
 import MenubarMenu from "~/components/Menubar/MenubarMenu";
@@ -13,12 +12,13 @@ import { useImageImport } from "~/features/io/import/useImageImport";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
-import { useShortcuts } from "~/features/shortcuts/useShortcuts";
+import { useShortcut } from "~/features/shortcuts/useShortcut";
+import { useShortcutSettings } from "~/features/shortcuts/useShortcuts";
 import { useCanvasView } from "../canvas/useCanvasView";
 
 const GlobalMenubar = () => {
 	const { t } = useI18n();
-	const { shortcuts } = useShortcuts();
+	const { shortcuts } = useShortcutSettings();
 	const undoStack = useUndo();
 	const clipContext = useClip();
 	const layerContext = useLayer();
@@ -54,23 +54,23 @@ const GlobalMenubar = () => {
 		canvasView.setIsFlippedVertical(false);
 	};
 
-	useHotkeys(shortcuts.newProject, () => {
+	useShortcut(shortcuts.newProject, () => {
 		if (project.confirmDiscard()) dialogs.open("createProject");
 	});
-	useHotkeys(shortcuts.openProject, () => project.open());
-	useHotkeys(shortcuts.saveProject, () => project.save());
-	useHotkeys(shortcuts.zoomIn, () => canvasView.zoom(1));
-	useHotkeys(shortcuts.zoomOut, () => canvasView.zoom(-1));
-	useHotkeys(shortcuts.resetZoom, () => canvasView.setScale(1));
-	useHotkeys(shortcuts.fitView, fitToView);
-	useHotkeys(shortcuts.rotateLeft, () => canvasView.rotate(-1));
-	useHotkeys(shortcuts.rotateRight, () => canvasView.rotate(1));
-	useHotkeys(shortcuts.resetRotation, () => canvasView.setRotation(0));
-	useHotkeys(shortcuts.flipHorizontal, toggleHorizontalFlip);
-	useHotkeys(shortcuts.flipVertical, toggleVerticalFlip);
-	useHotkeys(shortcuts.resetFlip, resetFlip);
-	useHotkeys(shortcuts.toggleGrid, toggleGrid);
-	useHotkeys(shortcuts.toggleOnionSkin, () =>
+	useShortcut(shortcuts.openProject, () => project.open());
+	useShortcut(shortcuts.saveProject, () => project.save());
+	useShortcut(shortcuts.zoomIn, () => canvasView.zoom(1));
+	useShortcut(shortcuts.zoomOut, () => canvasView.zoom(-1));
+	useShortcut(shortcuts.resetZoom, () => canvasView.setScale(1));
+	useShortcut(shortcuts.fitView, fitToView);
+	useShortcut(shortcuts.rotateLeft, () => canvasView.rotate(-1));
+	useShortcut(shortcuts.rotateRight, () => canvasView.rotate(1));
+	useShortcut(shortcuts.resetRotation, () => canvasView.setRotation(0));
+	useShortcut(shortcuts.flipHorizontal, toggleHorizontalFlip);
+	useShortcut(shortcuts.flipVertical, toggleVerticalFlip);
+	useShortcut(shortcuts.resetFlip, resetFlip);
+	useShortcut(shortcuts.toggleGrid, toggleGrid);
+	useShortcut(shortcuts.toggleOnionSkin, () =>
 		canvasView.setIsOnionSkin((prev) => !prev),
 	);
 

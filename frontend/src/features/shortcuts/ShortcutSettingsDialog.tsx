@@ -7,7 +7,7 @@ import {
 	shortcutDefinitions,
 } from "~/constants/shortcuts";
 import { useI18n } from "~/features/i18n/useI18n";
-import { useShortcuts } from "./useShortcuts";
+import { useShortcutSettings } from "./useShortcuts";
 
 type Props = {
 	open: boolean;
@@ -36,9 +36,11 @@ const getShortcutFromEvent = (event: React.KeyboardEvent): string | null => {
 	if (modifiers.has(event.key)) return null;
 
 	let key = keyNames[event.key];
-	if (event.key === "=" || event.key === "+") key = "equal";
-	else if (event.key === "-") key = "minus";
-	else if (key == null && event.key.length === 1) key = event.key.toLowerCase();
+	if (key == null && event.key.length === 1) {
+		key = /^[a-z0-9]$/i.test(event.key)
+			? event.key.toLowerCase()
+			: `code:${event.code}:${event.key.codePointAt(0)?.toString(16)}`;
+	}
 	if (key == null) return null;
 
 	return [
@@ -54,7 +56,7 @@ const getShortcutFromEvent = (event: React.KeyboardEvent): string | null => {
 
 const ShortcutSettingsDialog = (props: Props) => {
 	const { t } = useI18n();
-	const { shortcuts, setShortcut, resetShortcuts } = useShortcuts();
+	const { shortcuts, setShortcut, resetShortcuts } = useShortcutSettings();
 	const [recording, setRecording] = useState<ShortcutId | null>(null);
 	const [conflict, setConflict] = useState(false);
 
