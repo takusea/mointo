@@ -57,7 +57,8 @@ const GlobalMenubar = () => {
 		canvasView.setIsFlippedVertical(false);
 	};
 	const addClipAtCurrentFrame = () => {
-		if (project.settings == null || layerContext.selectedLayerId == null) return;
+		if (project.settings == null || layerContext.selectedLayerId == null)
+			return;
 
 		const selectedLayerIndex = layerContext.layers.findIndex(
 			(layer) => layer.id === layerContext.selectedLayerId,
