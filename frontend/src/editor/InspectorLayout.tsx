@@ -267,6 +267,8 @@ const InspectorLayout = () => {
 							<ClipInspector
 								clips={clipContext.clips}
 								onUnlink={() => void core.unlinkClip(selectedClip.id)}
+								onDuplicate={() => void clipContext.duplicateSelectedClip()}
+								onDelete={() => void clipContext.deleteClip(selectedClip.id)}
 								clip={
 									evaluated
 										? { ...selectedClip, opacity: evaluated.opacity }

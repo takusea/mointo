@@ -5,6 +5,7 @@ import {
 	IconArrowsHorizontal,
 	IconArrowsMoveHorizontal,
 	IconArrowsMoveVertical,
+	IconCopy,
 	IconEye,
 	IconEyeOff,
 	IconKeyframe,
@@ -12,6 +13,7 @@ import {
 	IconLock,
 	IconLockOpen,
 	IconRotate,
+	IconTrash,
 	IconUnlink,
 } from "@tabler/icons-react";
 import Card from "~/components/Card";
@@ -29,6 +31,8 @@ type Props = {
 	clip: ClipMetadata;
 	clips: ClipMetadata[];
 	onUnlink: () => void;
+	onDuplicate: () => void;
+	onDelete: () => void;
 	isLayerLocked: boolean;
 	transform: Transform;
 	onStartChange: (start: number) => void;
@@ -57,6 +61,8 @@ const ClipInspector = ({
 	clip,
 	clips,
 	onUnlink,
+	onDuplicate,
+	onDelete,
 	isLayerLocked,
 	transform,
 	onStartChange,
@@ -119,6 +125,16 @@ const ClipInspector = ({
 							onClick={onUnlink}
 						/>
 					)}
+					<IconButton
+						icon={IconCopy}
+						label={t("menubar.duplicateClip")}
+						onClick={onDuplicate}
+					/>
+					<IconButton
+						icon={IconTrash}
+						label={t("menubar.deleteClip")}
+						onClick={onDelete}
+					/>
 				</div>
 				<span className="font-medium">{t("inspector.name")}</span>
 				<TextField
@@ -397,7 +413,7 @@ const ClipInspector = ({
 				</div>
 				<Separator />
 				<span className="flex items-center justify-between gap-1 font-medium">
-					{t("inspector.opacity")}{" "}
+					{t("inspector.opacity")}
 					<IconButton
 						icon={IconKeyframe}
 						label={t("inspector.togglePropertyKeyframe", {
