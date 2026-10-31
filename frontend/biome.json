@@ -7,7 +7,13 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!!*.html", "!!wasm", "!!.cloudflare", "!!dev-dist"]
+		"includes": [
+			"**",
+			"!!*.html",
+			"!!src/core/wasm",
+			"!!.cloudflare",
+			"!!dev-dist"
+		]
 	},
 	"formatter": {
 		"enabled": true,
