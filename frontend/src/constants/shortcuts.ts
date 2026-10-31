@@ -11,6 +11,7 @@ export const shortcutDefinitions = {
 	copy: { label: "shortcut.copy", defaultKey: "ctrl+c" },
 	paste: { label: "shortcut.paste", defaultKey: "ctrl+v" },
 	selectAll: { label: "shortcut.selectAll", defaultKey: "ctrl+a" },
+	addClip: { label: "shortcut.addClip", defaultKey: "insert" },
 	duplicateClip: { label: "shortcut.duplicateClip", defaultKey: "ctrl+d" },
 	duplicateLinkedClip: {
 		label: "shortcut.duplicateLinkedClip",
@@ -96,6 +97,9 @@ export const formatShortcut = (shortcut: string) =>
 			if (part === "ArrowUp") return "↑";
 			if (part === "ArrowDown") return "↓";
 			if (part === "space") return "Space";
+			if (part === "insert") return "Insert";
+			if (part === "delete") return "Delete";
+			if (part === "escape") return "Escape";
 			return part.length === 1 ? part.toUpperCase() : part;
 		})
 		.join("+");

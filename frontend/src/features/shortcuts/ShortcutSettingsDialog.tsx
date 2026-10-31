@@ -27,6 +27,7 @@ const keyNames: Record<string, string> = {
 	Enter: "enter",
 	Escape: "escape",
 	Home: "home",
+	Insert: "insert",
 	PageDown: "pagedown",
 	PageUp: "pageup",
 	Tab: "tab",

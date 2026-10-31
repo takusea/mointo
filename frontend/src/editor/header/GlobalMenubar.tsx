@@ -22,6 +22,9 @@ const GlobalMenubar = () => {
 	const undoStack = useUndo();
 	const clipContext = useClip();
 	const layerContext = useLayer();
+	const selectedClip = clipContext.clips.find(
+		(clip) => clip.id === clipContext.selectedClipId,
+	);
 	const playbackContext = usePlayback();
 	const project = useProject();
 	const dialogs = useDialogs();
@@ -53,6 +56,33 @@ const GlobalMenubar = () => {
 		canvasView.setIsFlippedHorizontal(false);
 		canvasView.setIsFlippedVertical(false);
 	};
+	const addClipAtCurrentFrame = () => {
+		if (project.settings == null || layerContext.selectedLayerId == null) return;
+
+		const selectedLayerIndex = layerContext.layers.findIndex(
+			(layer) => layer.id === layerContext.selectedLayerId,
+		);
+		if (selectedLayerIndex < 0) return;
+
+		const currentFrame = playbackContext.currentFrame;
+		const targetLayer = layerContext.layers
+			.slice(selectedLayerIndex)
+			.find(
+				(layer) =>
+					!layerContext.isLayerLocked(layer.id) &&
+					!clipContext.clips.some(
+						(clip) =>
+							clip.layer_id === layer.id &&
+							clip.start <= currentFrame &&
+							currentFrame < clip.start + clip.duration,
+					),
+			);
+
+		if (targetLayer != null) {
+			void clipContext.addClip(currentFrame, targetLayer.id);
+		}
+	};
+	useShortcut(shortcuts.addClip, addClipAtCurrentFrame);
 
 	useShortcut(shortcuts.newProject, () => {
 		if (project.confirmDiscard()) dialogs.open("createProject");
@@ -156,6 +186,29 @@ const GlobalMenubar = () => {
 					onSelect={clipContext.selectAll}
 				/>
 				<MenubarSeparator />
+				<MenubarItem
+					label={t("menubar.addClip")}
+					shortcut={formatShortcut(shortcuts.addClip)}
+					disabled={
+						project.settings == null ||
+						layerContext.selectedLayerId == null ||
+						layerContext.isLayerLocked(layerContext.selectedLayerId)
+					}
+					onSelect={addClipAtCurrentFrame}
+				/>
+				<MenubarItem
+					label={t("menubar.deleteClip")}
+					shortcut={formatShortcut(shortcuts.deleteClip)}
+					disabled={
+						selectedClip == null ||
+						layerContext.isLayerLocked(selectedClip.layer_id)
+					}
+					onSelect={() => {
+						if (selectedClip != null) {
+							void clipContext.deleteClip(selectedClip.id);
+						}
+					}}
+				/>
 				<MenubarItem
 					label={t("menubar.duplicateClip")}
 					shortcut={formatShortcut(shortcuts.duplicateClip)}
