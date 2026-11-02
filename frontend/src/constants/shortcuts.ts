@@ -58,6 +58,14 @@ export const shortcutDefinitions = {
 		label: "shortcut.lastFrame",
 		defaultKey: "shift+ArrowRight",
 	},
+	previousLayer: {
+		label: "shortcut.previousLayer",
+		defaultKey: "ArrowUp",
+	},
+	nextLayer: {
+		label: "shortcut.nextLayer",
+		defaultKey: "ArrowDown",
+	},
 	penTool: { label: "shortcut.penTool", defaultKey: "1" },
 	eraserTool: { label: "shortcut.eraserTool", defaultKey: "2" },
 	fillTool: { label: "shortcut.fillTool", defaultKey: "3" },

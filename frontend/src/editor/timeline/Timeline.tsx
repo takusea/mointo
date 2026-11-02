@@ -38,6 +38,8 @@ const Timeline = () => {
 	useShortcut(shortcuts.duplicateLinkedClip, () => {
 		void clipContext.linkDuplicateSelectedClip();
 	});
+	useShortcut(shortcuts.previousLayer, () => moveSelectedLayer(-1));
+	useShortcut(shortcuts.nextLayer, () => moveSelectedLayer(1));
 
 	const [layerHeight, setTrackHeight] = useState<number>(32);
 	const [frameWidth, setFrameWidth] = useState<number>(16);
@@ -208,6 +210,18 @@ const Timeline = () => {
 		if (nextScrollTop === viewport.scrollTop) return;
 		viewport.scrollTop = nextScrollTop;
 		setScrollPosition((position) => ({ ...position, y: nextScrollTop }));
+	}
+
+	function moveSelectedLayer(offset: number) {
+		const selectedLayerIndex = layerContext.layers.findIndex(
+			(layer) => layer.id === layerContext.selectedLayerId,
+		);
+		const nextLayerIndex = selectedLayerIndex + offset;
+		const nextLayer = layerContext.layers[nextLayerIndex];
+		if (selectedLayerIndex < 0 || nextLayer == null) return;
+
+		layerContext.selectLayer(nextLayer.id);
+		handleLayerFocus(nextLayerIndex);
 	}
 
 	function handleFrameFocus(frame: number) {

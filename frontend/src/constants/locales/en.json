@@ -58,6 +58,8 @@
 	"shortcut.previousFrame": "Previous Frame",
 	"shortcut.nextFrame": "Next Frame",
 	"shortcut.lastFrame": "Go to Last Frame",
+	"shortcut.previousLayer": "Select Layer Above",
+	"shortcut.nextLayer": "Select Layer Below",
 	"shortcut.transformTool": "Transform Tool",
 	"shortcut.eyedropperTool": "Eyedropper Tool",
 	"shortcut.penTool": "Pen Tool",

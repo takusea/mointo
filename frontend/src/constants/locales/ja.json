@@ -58,6 +58,8 @@
 	"shortcut.previousFrame": "前のフレーム",
 	"shortcut.nextFrame": "次のフレーム",
 	"shortcut.lastFrame": "最後のフレームへ移動",
+	"shortcut.previousLayer": "上のレイヤーを選択",
+	"shortcut.nextLayer": "下のレイヤーを選択",
 	"shortcut.transformTool": "変形ツール",
 	"shortcut.eyedropperTool": "スポイトツール",
 	"shortcut.penTool": "ペンツール",
