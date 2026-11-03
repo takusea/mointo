@@ -174,17 +174,18 @@ const Timeline = () => {
 		autoScrollFrameRef.current = requestAnimationFrame(scrollAtPointer);
 	}
 
-	function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
-		if (!(event.buttons & 1)) return;
-		const rect = event.currentTarget.getBoundingClientRect();
+	function handlePointerDown(clientX: number, clientY: number) {
+		const viewport = timelineViewportRef.current;
+		if (viewport == null) return;
+		const rect = viewport.getBoundingClientRect();
 
 		const currentFrame = Math.floor(
-			(event.clientX - rect.left + scrollPosition.x) / frameWidth,
+			(clientX - rect.left + viewport.scrollLeft) / frameWidth,
 		);
 		playbackContext.setCurrentFrame(currentFrame);
 
 		const layerIndex = Math.floor(
-			(event.clientY - rect.top + scrollPosition.y) / layerHeight,
+			(clientY - rect.top + viewport.scrollTop) / layerHeight,
 		);
 		const layerId = layerContext.layers[layerIndex]?.id;
 		layerContext.selectLayer(layerId);
@@ -367,11 +368,13 @@ const Timeline = () => {
 					startFrame={playbackContext.startFrame}
 					endFrame={playbackContext.endFrame}
 					selectedClipId={clipContext.selectedClipId}
+					selectedClipIds={clipContext.selectedClipIds}
 					isLayerHidden={layerContext.isLayerHidden}
 					isLayerLocked={layerContext.isLayerLocked}
 					onPointerDown={handlePointerDown}
 					onScroll={handleScroll}
 					onClipSelect={clipContext.selectClip}
+					onClipsSelect={clipContext.selectClips}
 					onClipMove={clipContext.moveClip}
 					onClipDurationChange={clipContext.changeClipDuration}
 					onKeyframeMove={(id, property, fromFrame, toFrame) => {

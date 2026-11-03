@@ -38,7 +38,11 @@ type Props = {
 	onStartChange: (start: number) => void;
 	onDurationChange: (duration: number) => void;
 	onNameChange: (name: string) => void;
-	onSizeChange: (width: number, height: number) => void;
+	onSizeChange: (
+		width: number,
+		height: number,
+		dimension?: "width" | "height",
+	) => void;
 	onPropertiesChange: (properties: Partial<ClipProperties>) => void;
 	onTransformChange: (transform: Transform) => void;
 	onInteractionStart: () => void;
@@ -167,7 +171,7 @@ const ClipInspector = ({
 						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
-						onValueChange={(width) => onSizeChange(width, clip.height)}
+						onValueChange={(width) => onSizeChange(width, clip.height, "width")}
 					/>
 					<NumberField
 						id="clipHeight"
@@ -179,7 +183,9 @@ const ClipInspector = ({
 						rightElement="px"
 						onInteractionStart={onInteractionStart}
 						onInteractionEnd={onInteractionEnd}
-						onValueChange={(height) => onSizeChange(clip.width, height)}
+						onValueChange={(height) =>
+							onSizeChange(clip.width, height, "height")
+						}
 					/>
 				</div>
 				<Separator />

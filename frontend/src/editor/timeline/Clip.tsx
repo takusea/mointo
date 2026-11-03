@@ -14,9 +14,24 @@ type Props = {
 	isSelected: boolean;
 	isHidden: boolean;
 	isLocked: boolean;
-	onSelect: () => void;
-	onMove: (startFrame: number, layerIndex: number) => void;
-	onDurationChange: (duration: number) => void;
+	onSelect: (
+		addToSelection: boolean,
+		preserveSelection: boolean,
+		selectRange: boolean,
+		addRangeToSelection: boolean,
+	) => void;
+	onMove: (
+		startFrame: number,
+		layerIndex: number,
+		frameDelta: number,
+		layerDelta: number,
+		gestureId: string,
+	) => void;
+	onDurationChange: (
+		duration: number,
+		durationDelta: number,
+		gestureId: string,
+	) => void;
 	onKeyframeMove: (
 		property: string,
 		fromFrame: number,
@@ -38,6 +53,9 @@ type Drag = {
 	startFrame: number;
 	duration: number;
 	layerIndex: number;
+	gestureId: string;
+	deferSelection: boolean;
+	didMove: boolean;
 	kind: "move" | "resize";
 };
 
@@ -95,7 +113,16 @@ const Clip = ({
 		if (event.button !== 0) return;
 		event.currentTarget.setPointerCapture(event.pointerId);
 
-		onSelect();
+		const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
+		const deferSelection = isSelected && !hasModifier;
+		if (!deferSelection) {
+			onSelect(
+				(event.ctrlKey || event.metaKey) && !event.shiftKey,
+				isSelected,
+				event.shiftKey,
+				event.shiftKey && (event.ctrlKey || event.metaKey),
+			);
+		}
 		dragRef.current = {
 			pointerId: event.pointerId,
 			startX: event.clientX,
@@ -109,6 +136,9 @@ const Clip = ({
 			startFrame,
 			duration,
 			layerIndex,
+			gestureId: `${event.pointerId}:${event.timeStamp}`,
+			deferSelection,
+			didMove: false,
 			kind: event.currentTarget.dataset.resize === "true" ? "resize" : "move",
 		};
 	};
@@ -119,6 +149,10 @@ const Clip = ({
 			return;
 		}
 		if (drag.kind !== "move") return;
+		drag.didMove =
+			drag.didMove ||
+			Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 3;
+		if (!drag.didMove) return;
 		event.stopPropagation();
 		startInteraction();
 		drag.lastX = event.clientX;
@@ -130,29 +164,37 @@ const Clip = ({
 		const scrollDeltaX = scrollX - drag.startScrollX;
 		const scrollDeltaY = scrollY - drag.startScrollY;
 		if (drag.kind === "move") {
+			const nextStartFrame = Math.max(
+				0,
+				drag.startFrame +
+					Math.floor((clientX - drag.startX + scrollDeltaX) / frameWidth),
+			);
+			const nextLayerIndex = Math.max(
+				0,
+				drag.layerIndex +
+					Math.floor(
+						(drag.grabOffsetY + clientY - drag.startY + scrollDeltaY) /
+							layerHeight,
+					),
+			);
 			onMove(
-				Math.max(
-					0,
-					drag.startFrame +
-						Math.floor((clientX - drag.startX + scrollDeltaX) / frameWidth),
-				),
-				Math.max(
-					0,
-					drag.layerIndex +
-						Math.floor(
-							(drag.grabOffsetY + clientY - drag.startY + scrollDeltaY) /
-								layerHeight,
-						),
-				),
+				nextStartFrame,
+				nextLayerIndex,
+				nextStartFrame - drag.startFrame,
+				nextLayerIndex - drag.layerIndex,
+				drag.gestureId,
 			);
 			return;
 		}
+		const nextDuration = Math.max(
+			1,
+			drag.duration +
+				Math.floor((clientX - drag.startX + scrollDeltaX) / frameWidth),
+		);
 		onDurationChange(
-			Math.max(
-				1,
-				drag.duration +
-					Math.floor((clientX - drag.startX + scrollDeltaX) / frameWidth),
-			),
+			nextDuration,
+			nextDuration - drag.duration,
+			drag.gestureId,
 		);
 	};
 
@@ -166,6 +208,10 @@ const Clip = ({
 			drag.kind !== "resize"
 		)
 			return;
+		drag.didMove =
+			drag.didMove ||
+			Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 3;
+		if (!drag.didMove) return;
 		event.stopPropagation();
 		startInteraction();
 		drag.lastX = event.clientX;
@@ -174,7 +220,16 @@ const Clip = ({
 	};
 
 	const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-		if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
+		const drag = dragRef.current;
+		if (drag?.pointerId !== event.pointerId) return;
+		dragRef.current = null;
+		if (
+			event.type !== "pointercancel" &&
+			drag.deferSelection &&
+			!drag.didMove
+		) {
+			onSelect(false, false, false, false);
+		}
 		endInteraction();
 	};
 	const keysByFrame = new Map<number, { frame: number; property: string }[]>();
@@ -233,7 +288,7 @@ const Clip = ({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Recompute the active drag only when scroll offsets change.
 	useEffect(() => {
 		const drag = dragRef.current;
-		if (drag != null) updateClipDrag(drag, drag.lastX, drag.lastY);
+		if (drag?.didMove) updateClipDrag(drag, drag.lastX, drag.lastY);
 
 		const keyframeDrag = keyframeDragRef.current;
 		if (keyframeDrag == null) return;
@@ -273,6 +328,7 @@ const Clip = ({
 	return (
 		<div
 			key={id}
+			data-clip="true"
 			data-selected={isSelected}
 			data-hidden={isHidden}
 			data-locked={isLocked}

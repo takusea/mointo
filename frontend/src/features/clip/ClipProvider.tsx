@@ -39,8 +39,11 @@ export const ClipProvider = ({ children }: Props) => {
 	});
 	const commands = useClipCommands({
 		clips,
+		layers: layerContext.layers,
+		selectedClipIds: selectionState.selectedClipIds,
 		isLayerLocked: layerContext.isLayerLocked,
 		onClipSelected: selectionState.markClipSelected,
+		onClipsSelected: selectionState.selectClips,
 	});
 	const clipboard = useClipboard({
 		currentClip,
@@ -64,9 +67,11 @@ export const ClipProvider = ({ children }: Props) => {
 			value={{
 				clips,
 				selectedClipId: selectionState.selectedClipId,
+				selectedClipIds: selectionState.selectedClipIds,
 				transform: clipTransform.transform,
 				selection: selectionState.selection,
 				selectClip: selectionState.selectClip,
+				selectClips: selectionState.selectClips,
 				setSelection: selectionState.setSelection,
 				...clipboard,
 				selectAll: selectionState.selectAll,

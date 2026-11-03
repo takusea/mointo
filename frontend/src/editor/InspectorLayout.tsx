@@ -95,6 +95,15 @@ const InspectorLayout = () => {
 	const selectedClip = clipContext.clips.find(
 		(clip) => clip.id === clipContext.selectedClipId,
 	);
+	const selectedClips = clipContext.selectedClipIds
+		.map((id) => clipContext.clips.find((clip) => clip.id === id))
+		.filter((clip) => clip != null);
+	if (
+		selectedClip != null &&
+		!selectedClips.some((clip) => clip.id === selectedClip.id)
+	) {
+		selectedClips.push(selectedClip);
+	}
 	const selectedKeys = selectedClip
 		? (snapshot.clipKeyframes[selectedClip.id] ?? [])
 		: [];
@@ -291,18 +300,16 @@ const InspectorLayout = () => {
 								onNameChange={(name) =>
 									clipContext.changeClipName(selectedClip.id, name)
 								}
-								onSizeChange={(width, height) =>
-									clipContext.changeClipSize(selectedClip.id, width, height)
+								onSizeChange={(width, height, dimension) =>
+									clipContext.changeClipSize(
+										selectedClip.id,
+										width,
+										height,
+										dimension,
+									)
 								}
 								onPropertiesChange={(properties) =>
-									clipContext.changeClipProperties(selectedClip.id, {
-										hidden: selectedClip.hidden,
-										alpha_locked: selectedClip.alpha_locked,
-										locked: selectedClip.locked,
-										opacity: selectedClip.opacity,
-										blend_mode: selectedClip.blend_mode,
-										...properties,
-									})
+									clipContext.changeClipProperties(selectedClip.id, properties)
 								}
 								onTransformChange={(transform) => {
 									const previous =
@@ -322,33 +329,44 @@ const InspectorLayout = () => {
 									for (const [property, value] of Object.entries(values)) {
 										if (JSON.stringify(value) === JSON.stringify(old[property]))
 											continue;
-										const hasKey = selectedKeys.some(
-											(key) =>
-												key.frame === playback.currentFrame &&
-												key.property === property,
-										);
-										const hasPropertyKeys = selectedKeys.some(
-											(key) => key.property === property,
-										);
-										if (hasKey)
-											void core.setClipKeyframe(
-												selectedClip.id,
-												playback.currentFrame,
-												property,
-												value,
+										for (const targetClip of selectedClips) {
+											if (
+												targetClip.locked ||
+												layerContext.isLayerLocked(targetClip.layer_id)
+											)
+												continue;
+											const targetKeys =
+												snapshot.clipKeyframes[targetClip.id] ?? [];
+											const hasKey = targetKeys.some(
+												(key) =>
+													key.frame === playback.currentFrame &&
+													key.property === property,
 											);
-										else if (hasPropertyKeys)
-											void core.setClipPreviewKeyframe(
-												selectedClip.id,
-												playback.currentFrame,
-												property,
-												value,
+											const hasPropertyKeys = targetKeys.some(
+												(key) => key.property === property,
 											);
-										else
-											void clipContext.changeTransform(selectedClip.id, {
-												...(clipContext.transform ?? transform),
-												[property]: value,
-											});
+											if (hasKey)
+												void core.setClipKeyframe(
+													targetClip.id,
+													playback.currentFrame,
+													property,
+													value,
+												);
+											else if (hasPropertyKeys)
+												void core.setClipPreviewKeyframe(
+													targetClip.id,
+													playback.currentFrame,
+													property,
+													value,
+												);
+											else
+												void clipContext.changeTransform(targetClip.id, {
+													...(snapshot.clipTransforms[targetClip.id] ??
+														clipContext.transform ??
+														transform),
+													[property]: value,
+												});
+										}
 									}
 								}}
 								onInteractionStart={() => {
@@ -382,34 +400,44 @@ const InspectorLayout = () => {
 								}}
 								onOpacityChange={(opacity) => {
 									const frame = playback.currentFrame;
-									const hasKey = selectedKeys.some(
-										(key) => key.frame === frame && key.property === "opacity",
-									);
-									const hasOpacityKeys = selectedKeys.some(
-										(key) => key.property === "opacity",
-									);
-									if (hasKey)
-										void core.setClipKeyframe(
-											selectedClip.id,
-											frame,
-											"opacity",
-											opacity,
+									for (const targetClip of selectedClips) {
+										if (
+											targetClip.locked ||
+											layerContext.isLayerLocked(targetClip.layer_id)
+										)
+											continue;
+										const targetKeys =
+											snapshot.clipKeyframes[targetClip.id] ?? [];
+										const hasKey = targetKeys.some(
+											(key) =>
+												key.frame === frame && key.property === "opacity",
 										);
-									else if (hasOpacityKeys)
-										void core.setClipPreviewKeyframe(
-											selectedClip.id,
-											frame,
-											"opacity",
-											opacity,
+										const hasOpacityKeys = targetKeys.some(
+											(key) => key.property === "opacity",
 										);
-									else
-										void clipContext.changeClipProperties(selectedClip.id, {
-											hidden: selectedClip.hidden,
-											alpha_locked: selectedClip.alpha_locked,
-											locked: selectedClip.locked,
-											opacity,
-											blend_mode: selectedClip.blend_mode,
-										});
+										if (hasKey)
+											void core.setClipKeyframe(
+												targetClip.id,
+												frame,
+												"opacity",
+												opacity,
+											);
+										else if (hasOpacityKeys)
+											void core.setClipPreviewKeyframe(
+												targetClip.id,
+												frame,
+												"opacity",
+												opacity,
+											);
+										else
+											void core.changeClipProperties(targetClip.id, {
+												hidden: targetClip.hidden,
+												alpha_locked: targetClip.alpha_locked,
+												locked: targetClip.locked,
+												opacity,
+												blend_mode: targetClip.blend_mode,
+											});
+									}
 								}}
 								onFrameSelect={playback.setCurrentFrame}
 							/>

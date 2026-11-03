@@ -6,9 +6,18 @@ import type { Transform } from "~/lib/transform";
 export type ClipContextValue = {
 	clips: ClipMetadata[];
 	selectedClipId: string | undefined;
+	selectedClipIds: string[];
 	transform: Transform | undefined;
 	selection: SelectionArea | undefined;
-	selectClip: (id: string) => void;
+	selectClip: (
+		id: string,
+		addToSelection?: boolean,
+		preserveSelection?: boolean,
+		deferLayerSelect?: boolean,
+		selectRange?: boolean,
+		addRangeToSelection?: boolean,
+	) => void;
+	selectClips: (ids: string[]) => void;
 	setSelection: (selection: SelectionArea | undefined) => void;
 	copy: () => Promise<void>;
 	cut: () => Promise<void>;
@@ -18,13 +27,30 @@ export type ClipContextValue = {
 	linkDuplicateSelectedClip: () => Promise<void>;
 	addClip: (start: number, layerId: LayerId) => Promise<void>;
 	deleteClip: (id: string) => Promise<void>;
-	moveClip: (id: string, start: number, layerId: LayerId) => Promise<void>;
-	changeClipDuration: (id: string, duration: number) => Promise<void>;
+	moveClip: (
+		id: string,
+		start: number,
+		layerId: LayerId,
+		frameDelta?: number,
+		layerDelta?: number,
+		gestureId?: string,
+	) => Promise<void>;
+	changeClipDuration: (
+		id: string,
+		duration: number,
+		durationDelta?: number,
+		gestureId?: string,
+	) => Promise<void>;
 	changeClipName: (id: string, name: string) => Promise<void>;
-	changeClipSize: (id: string, width: number, height: number) => Promise<void>;
+	changeClipSize: (
+		id: string,
+		width: number,
+		height: number,
+		dimension?: "width" | "height",
+	) => Promise<void>;
 	changeClipProperties: (
 		id: string,
-		properties: ClipProperties,
+		properties: Partial<ClipProperties>,
 	) => Promise<void>;
 	changeTransform: (id: string, transform: Transform) => Promise<void>;
 	ensureClipAt: (

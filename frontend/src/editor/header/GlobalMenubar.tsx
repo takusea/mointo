@@ -25,6 +25,12 @@ const GlobalMenubar = () => {
 	const selectedClip = clipContext.clips.find(
 		(clip) => clip.id === clipContext.selectedClipId,
 	);
+	const canDeleteSelectedClips = clipContext.clips.some(
+		(clip) =>
+			(clipContext.selectedClipIds.includes(clip.id) ||
+				clip.id === clipContext.selectedClipId) &&
+			!layerContext.isLayerLocked(clip.layer_id),
+	);
 	const playbackContext = usePlayback();
 	const project = useProject();
 	const dialogs = useDialogs();
@@ -200,10 +206,7 @@ const GlobalMenubar = () => {
 				<MenubarItem
 					label={t("menubar.deleteClip")}
 					shortcut={formatShortcut(shortcuts.deleteClip)}
-					disabled={
-						selectedClip == null ||
-						layerContext.isLayerLocked(selectedClip.layer_id)
-					}
+					disabled={!canDeleteSelectedClips}
 					onSelect={() => {
 						if (selectedClip != null) {
 							void clipContext.deleteClip(selectedClip.id);
