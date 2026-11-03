@@ -9,12 +9,14 @@ use crate::action::set_clip_name_action::SetClipNameAction;
 use crate::action::set_clip_properties_action::SetClipPropertiesAction;
 use crate::action::set_clip_size_action::SetClipSizeAction;
 use crate::action::set_clip_transform_action::SetClipTransformAction;
-use crate::app::clip::{BlendMode, ClipId, ClipProperties};
+use crate::app::clip::{BlendMode, Clip, ClipId, ClipProperties};
 use crate::app::clip::{ClipKeyframe, ClipKeyframeValue};
 use crate::app::layer::LayerId;
 use crate::core::transform::Transform;
+use crate::render::GpuRenderer;
 use gloo::utils::format::JsValueSerdeExt;
 use js_sys::Uint8ClampedArray;
+use std::collections::HashSet;
 use uuid::Uuid;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
@@ -211,6 +213,75 @@ impl MointoCore {
             .iter()
             .find(|clip| clip.metadata.id == clip_id)?;
         Some(Uint8ClampedArray::from(&clip.image.data[..]))
+    }
+
+    pub async fn render_selected_clips(
+        &mut self,
+        clip_ids: Vec<String>,
+        frame_index: u32,
+    ) -> Result<Uint8ClampedArray, JsValue> {
+        let clip_ids: HashSet<Uuid> = clip_ids
+            .iter()
+            .map(|id| Uuid::parse_str(id).map_err(|error| JsValue::from_str(&error.to_string())))
+            .collect::<Result<_, _>>()?;
+        if clip_ids.len() < 2 {
+            return Err(JsValue::from_str("At least two clips must be selected"));
+        }
+
+        let (width, height) = {
+            let project = self
+                .project
+                .as_ref()
+                .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+            (
+                project.composition().settings.width,
+                project.composition().settings.height,
+            )
+        };
+        if self.gpu_renderer.is_none() {
+            self.gpu_renderer = Some(
+                GpuRenderer::new(None)
+                    .await
+                    .map_err(|error| JsValue::from_str(&error))?,
+            );
+        }
+
+        let project = self
+            .project
+            .as_ref()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        let composition = project.composition();
+        let mut clips: Vec<Clip> = composition
+            .clips
+            .iter()
+            .filter(|clip| clip_ids.contains(&clip.metadata.id))
+            .map(|clip| {
+                let mut clip = clip.clone();
+                let (transform, opacity) = clip.values_at(frame_index);
+                clip.transform = transform;
+                clip.metadata.opacity = opacity;
+                clip
+            })
+            .collect();
+        if clips.len() != clip_ids.len() {
+            return Err(JsValue::from_str("One or more selected clips do not exist"));
+        }
+        clips.sort_by_key(|clip| {
+            (
+                composition.layer_index(clip.metadata.layer_id).unwrap(),
+                clip.metadata.start,
+            )
+        });
+        let clip_refs: Vec<_> = clips.iter().collect();
+        let renderer = self
+            .gpu_renderer
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("GPU renderer is unavailable"))?;
+        let image = renderer
+            .render_frame(&clip_refs, width, height)
+            .await
+            .map_err(|error| JsValue::from_str(&error))?;
+        Ok(Uint8ClampedArray::from(&image.data[..]))
     }
 
     pub fn replace_clip_pixels(

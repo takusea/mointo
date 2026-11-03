@@ -507,6 +507,10 @@ export class CoreService {
 		return this.enqueue((core) => core.render_layer_frame(frame, layerId));
 	}
 
+	renderSelectedClips(clipIds: string[], frame: number) {
+		return this.enqueue((core) => core.render_selected_clips(clipIds, frame));
+	}
+
 	renderFrameToCanvas(
 		frame: number,
 		canvas: HTMLCanvasElement,

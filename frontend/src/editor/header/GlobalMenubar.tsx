@@ -223,6 +223,12 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.duplicateLinkedClip)}
 					onSelect={clipContext.linkDuplicateSelectedClip}
 				/>
+				<MenubarItem
+					label={t("menubar.mergeClips")}
+					shortcut={formatShortcut(shortcuts.mergeClips)}
+					onSelect={clipContext.mergeSelectedClips}
+					disabled={!clipContext.canMergeSelectedClips}
+				/>
 			</MenubarMenu>
 			<MenubarMenu label={t("menubar.view")}>
 				<MenubarItem

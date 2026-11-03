@@ -40,6 +40,7 @@ export const ClipProvider = ({ children }: Props) => {
 	const commands = useClipCommands({
 		clips,
 		layers: layerContext.layers,
+		selectedClipId: selectionState.selectedClipId,
 		selectedClipIds: selectionState.selectedClipIds,
 		isLayerLocked: layerContext.isLayerLocked,
 		onClipSelected: selectionState.markClipSelected,

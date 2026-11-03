@@ -38,6 +38,9 @@ const Timeline = () => {
 	useShortcut(shortcuts.duplicateLinkedClip, () => {
 		void clipContext.linkDuplicateSelectedClip();
 	});
+	useShortcut(shortcuts.mergeClips, () => {
+		void clipContext.mergeSelectedClips();
+	});
 	useShortcut(shortcuts.previousLayer, () => moveSelectedLayer(-1));
 	useShortcut(shortcuts.nextLayer, () => moveSelectedLayer(1));
 

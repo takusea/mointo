@@ -25,6 +25,8 @@ export type ClipContextValue = {
 	selectAll: () => void;
 	duplicateSelectedClip: () => Promise<void>;
 	linkDuplicateSelectedClip: () => Promise<void>;
+	canMergeSelectedClips: boolean;
+	mergeSelectedClips: () => Promise<void>;
 	addClip: (start: number, layerId: LayerId) => Promise<void>;
 	deleteClip: (id: string) => Promise<void>;
 	moveClip: (

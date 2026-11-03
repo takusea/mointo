@@ -6,6 +6,7 @@ import type { LayerId, LayerState } from "~/lib/layer";
 type Options = {
 	clips: ClipMetadata[];
 	layers: LayerState[];
+	selectedClipId: string | undefined;
 	selectedClipIds: string[];
 	isLayerLocked: (layerId: LayerId) => boolean;
 	onClipSelected: (
@@ -19,6 +20,7 @@ type Options = {
 export const useClipCommands = ({
 	clips,
 	layers,
+	selectedClipId,
 	selectedClipIds,
 	isLayerLocked,
 	onClipSelected,
@@ -150,6 +152,66 @@ export const useClipCommands = ({
 
 	const duplicateLinkedClip = (id: string | undefined) =>
 		duplicateClip(id, true);
+
+	const getMergeSources = () => {
+		const selectedIds = new Set([
+			...selectedClipIds,
+			...(selectedClipId == null ? [] : [selectedClipId]),
+		]);
+		const sources = clips.filter((clip) => selectedIds.has(clip.id));
+		if (sources.length < 2) return [];
+
+		if (sources.some((clip) => clip.locked || isLayerLocked(clip.layer_id))) {
+			return [];
+		}
+
+		return sources;
+	};
+
+	const mergeSelectedClips = async () => {
+		const sources = getMergeSources();
+		if (sources.length < 2) return;
+
+		const target = sources.reduce((bottommost, clip) =>
+			clip.layer_index < bottommost.layer_index ? clip : bottommost,
+		);
+		const { start, duration } = target;
+		const pixels = await core.renderSelectedClips(
+			sources.map((clip) => clip.id),
+			start,
+		);
+		if (pixels == null) {
+			throw new Error("Could not render the selected clips for merging.");
+		}
+
+		const existingIds = new Set(clips.map((clip) => clip.id));
+		await core.beginActionGroup();
+		let changed = false;
+		let mergedId: string | undefined;
+		try {
+			const nextClips = await core.addClip(start, target.layer_id);
+			changed = true;
+			const mergedClip = nextClips.find(
+				(clip) =>
+					!existingIds.has(clip.id) &&
+					clip.start === start &&
+					clip.layer_id === target.layer_id,
+			);
+			if (mergedClip == null) {
+				throw new Error("Could not create the merged clip.");
+			}
+			mergedId = mergedClip.id;
+			await core.changeClipDuration(mergedClip.id, duration);
+			await core.replaceClipPixels(mergedClip.id, pixels);
+			for (const source of sources) await core.deleteClip(source.id);
+		} catch (error) {
+			await core.endActionGroup();
+			if (changed) await core.undo();
+			throw error;
+		}
+		await core.endActionGroup();
+		if (mergedId != null) onClipSelected(mergedId, target.layer_id, true);
+	};
 
 	const deleteClip = async (id: string) => {
 		const targets = getSelectedClips(id).filter(
@@ -392,5 +454,7 @@ export const useClipCommands = ({
 		ensureClipAt,
 		duplicateClip,
 		duplicateLinkedClip,
+		canMergeSelectedClips: getMergeSources().length >= 2,
+		mergeSelectedClips,
 	};
 };

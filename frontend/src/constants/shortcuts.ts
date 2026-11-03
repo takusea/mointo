@@ -17,6 +17,7 @@ export const shortcutDefinitions = {
 		label: "shortcut.duplicateLinkedClip",
 		defaultKey: "alt+d",
 	},
+	mergeClips: { label: "shortcut.mergeClips", defaultKey: "ctrl+e" },
 	clearSelection: { label: "shortcut.clearSelection", defaultKey: "escape" },
 	zoomIn: { label: "shortcut.zoomIn", defaultKey: "ctrl+shift+equal" },
 	zoomOut: { label: "shortcut.zoomOut", defaultKey: "ctrl+minus" },
