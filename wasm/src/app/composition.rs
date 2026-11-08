@@ -5,6 +5,7 @@ use crate::app::composition_settings::CompositionSettings;
 use crate::app::layer::{Layer, LayerId};
 use crate::core::image::Image;
 use crate::render::GpuRenderer;
+use std::collections::{HashMap, HashSet};
 
 const DEFAULT_LAYER_COUNT: usize = 100;
 
@@ -23,6 +24,8 @@ pub struct Composition {
     pub clips: Vec<Clip>,
     pub layers: Vec<Layer>,
     pub assets: std::collections::HashMap<AssetId, Asset>,
+    #[serde(skip)]
+    reconciled_image_revisions: HashMap<ClipId, u64>,
 }
 
 impl Composition {
@@ -65,17 +68,39 @@ impl Composition {
             clips: Vec::new(),
             layers: (0..DEFAULT_LAYER_COUNT).map(Layer::new).collect(),
             assets: std::collections::HashMap::new(),
+            reconciled_image_revisions: HashMap::new(),
         }
     }
 
     pub fn add_clip(&mut self, clip: Clip) {
-        if let Some(image) = clip.image() {
+        let clip_id = clip.metadata.id;
+        let image_revision = clip.image_revision();
+        let image_matches_asset = if let Some(image) = clip.image() {
             let asset_id = clip.asset_id();
-            self.assets
-                .entry(asset_id)
-                .or_insert_with(|| Asset::Image(image.clone()));
-        }
+            match self.assets.get(&asset_id) {
+                Some(Asset::Image(asset)) => {
+                    asset.data == image.data
+                        && asset.width == image.width
+                        && asset.height == image.height
+                }
+                Some(Asset::Audio(_)) => false,
+                None => {
+                    self.assets.insert(asset_id, Asset::Image(image.clone()));
+                    true
+                }
+            }
+        } else {
+            false
+        };
         self.clips.push(clip);
+        if let Some(image_revision) = image_revision {
+            if image_matches_asset {
+                self.reconciled_image_revisions
+                    .insert(clip_id, image_revision);
+            } else {
+                self.reconciled_image_revisions.remove(&clip_id);
+            }
+        }
     }
 
     pub fn audio_data(&self, clip: &Clip) -> Option<&[u8]> {
@@ -105,29 +130,29 @@ impl Composition {
             if linked.metadata.id != clip_id {
                 linked.set_image(image.clone());
             }
+            if let Some(revision) = linked.image_revision() {
+                self.reconciled_image_revisions
+                    .insert(linked.metadata.id, revision);
+            }
         }
     }
 
     pub fn reconcile_assets(&mut self) {
-        let ids: Vec<_> = self.clips.iter().map(|clip| clip.metadata.id).collect();
-        for id in ids {
-            let Some(clip) = self.get_clip(id) else {
-                continue;
-            };
-            let Some(image) = clip.image().cloned() else {
-                continue;
-            };
-            let asset_id = clip.asset_id();
-            let differs = !matches!(
-                self.assets.get(&asset_id),
-                Some(Asset::Image(asset))
-                    if asset.data == image.data
-                        && asset.width == image.width
-                        && asset.height == image.height
-            );
-            if differs {
-                self.publish_clip_asset(id);
-            }
+        let mut changed_assets = HashSet::new();
+        let changed_clip_ids: Vec<_> = self
+            .clips
+            .iter()
+            .filter_map(|clip| {
+                let revision = clip.image_revision()?;
+                let clip_id = clip.metadata.id;
+                let asset_id = clip.asset_id();
+                (self.reconciled_image_revisions.get(&clip_id) != Some(&revision)
+                    && changed_assets.insert(asset_id))
+                .then_some(clip_id)
+            })
+            .collect();
+        for clip_id in changed_clip_ids {
+            self.publish_clip_asset(clip_id);
         }
     }
 
@@ -145,6 +170,11 @@ impl Composition {
             };
             clip.set_image(image.clone());
         }
+        self.reconciled_image_revisions = self
+            .clips
+            .iter()
+            .filter_map(|clip| Some((clip.metadata.id, clip.image_revision()?)))
+            .collect();
         Ok(())
     }
 
@@ -155,6 +185,7 @@ impl Composition {
             .position(|clip| clip.metadata.id == clip_id)
         {
             let removed = self.clips.remove(pos);
+            self.reconciled_image_revisions.remove(&clip_id);
             let asset_id = removed.asset_id();
             if !self.clips.iter().any(|clip| clip.asset_id() == asset_id) {
                 self.assets.remove(&asset_id);
@@ -542,5 +573,80 @@ mod tests {
 
         assert_eq!(restored.audio_data(restored_clip), Some(&[1, 2, 3][..]));
         assert!(restored.ensure_layers().is_ok());
+    }
+
+    #[test]
+    fn reconciling_changed_image_updates_linked_clips_once() {
+        let mut composition = Composition::new();
+        let layer_id = composition.layer_id_at(0);
+        let asset_id = Uuid::new_v4();
+        let first_clip_id = Uuid::new_v4();
+        let linked_clip_id = Uuid::new_v4();
+        let make_clip = |id| {
+            crate::app::clip::Clip::new_image(
+                crate::app::clip::ClipMetadata {
+                    id,
+                    start: 0,
+                    layer_id,
+                    duration: 1,
+                    hidden: false,
+                    locked: false,
+                    name: "Image".to_string(),
+                },
+                asset_id,
+                crate::core::image::Image::new(1, 1),
+                Default::default(),
+                Vec::new(),
+            )
+        };
+        composition.add_clip(make_clip(first_clip_id));
+        composition.add_clip(make_clip(linked_clip_id));
+
+        let changed_pixel = [1, 2, 3, 4];
+        let clip = composition.find_clip(first_clip_id).unwrap();
+        clip.image_mut()
+            .unwrap()
+            .data
+            .copy_from_slice(&changed_pixel);
+        clip.mark_image_changed();
+        composition.reconcile_assets();
+
+        assert_eq!(
+            composition
+                .get_clip(linked_clip_id)
+                .unwrap()
+                .image()
+                .unwrap()
+                .data,
+            changed_pixel
+        );
+        assert!(matches!(
+            composition.assets.get(&asset_id),
+            Some(Asset::Image(image)) if image.data == changed_pixel
+        ));
+
+        let first_revision = composition
+            .get_clip(first_clip_id)
+            .unwrap()
+            .image_revision();
+        let linked_revision = composition
+            .get_clip(linked_clip_id)
+            .unwrap()
+            .image_revision();
+        composition.reconcile_assets();
+        assert_eq!(
+            composition
+                .get_clip(first_clip_id)
+                .unwrap()
+                .image_revision(),
+            first_revision
+        );
+        assert_eq!(
+            composition
+                .get_clip(linked_clip_id)
+                .unwrap()
+                .image_revision(),
+            linked_revision
+        );
     }
 }
