@@ -9,6 +9,8 @@ import { useDialogs } from "~/editor/dialogs/useDialogs";
 import { useClip } from "~/features/clip/useClip";
 import { useUndo } from "~/features/history/useUndo";
 import { useI18n } from "~/features/i18n/useI18n";
+import { projectExporters } from "~/features/io/export/projectExporters";
+import { useProjectExport } from "~/features/io/export/useProjectExport";
 import { useAudioImport } from "~/features/io/import/useAudioImport";
 import { useImageImport } from "~/features/io/import/useImageImport";
 import { useLayer } from "~/features/layer/useLayer";
@@ -39,6 +41,7 @@ const GlobalMenubar = () => {
 	const canvasView = useCanvasView();
 	const importImage = useImageImport();
 	const importAudio = useAudioImport();
+	const { progress: exportProgress, exportAs } = useProjectExport();
 
 	const fitToView = () => {
 		if (project.settings == null) {
@@ -159,11 +162,16 @@ const GlobalMenubar = () => {
 						onSelect={importAudio}
 					/>
 				</MenubarSub>
-				<MenubarItem
-					label={t("menubar.export")}
-					disabled={project.settings == null}
-					onSelect={() => dialogs.open("exportProject")}
-				/>
+				<MenubarSub label={t("menubar.export")}>
+					{projectExporters.map((exporter) => (
+						<MenubarItem
+							key={exporter.format}
+							label={t(exporter.labelKey)}
+							disabled={project.settings == null || exportProgress != null}
+							onSelect={() => void exportAs(exporter.format)}
+						/>
+					))}
+				</MenubarSub>
 				<MenubarSeparator />
 				<MenubarItem
 					label={t("menubar.projectSettings")}
