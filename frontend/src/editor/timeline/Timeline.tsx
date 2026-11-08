@@ -132,7 +132,7 @@ const Timeline = () => {
 			const viewport = timelineViewportRef.current;
 			if (pointer == null || viewport == null) return;
 			const rect = viewport.getBoundingClientRect();
-			const edgeSize = 48;
+			const edgeSize = 16;
 			const elapsed =
 				previousTime === 0 ? 16 : Math.min(time - previousTime, 32);
 			previousTime = time;
@@ -145,9 +145,7 @@ const Timeline = () => {
 				deltaX = edgeSpeed(pointer.x - (rect.right - edgeSize));
 			}
 			let deltaY = 0;
-			// The frame ruler is above the scroll viewport; dragging there should
-			// not scroll the layer list vertically.
-			if (pointer.y >= rect.top && pointer.y <= rect.bottom) {
+			if (!pointer.isFrameRuler) {
 				if (pointer.y < rect.top + edgeSize) {
 					deltaY = -edgeSpeed(rect.top + edgeSize - pointer.y);
 				} else if (pointer.y > rect.bottom - edgeSize) {
