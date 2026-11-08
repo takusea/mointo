@@ -31,21 +31,24 @@ impl Action for SetClipSizeAction {
             if clip.metadata.locked {
                 return;
             }
+            let Some(image) = clip.image() else {
+                return;
+            };
             if self.previous.is_none() {
-                self.previous = Some(clip.image.clone());
+                self.previous = Some(image.clone());
             }
-            if clip.image.width == self.width && clip.image.height == self.height {
+            if image.width == self.width && image.height == self.height {
                 return;
             }
             let mut resized = Image::new(self.width, self.height);
-            let copy_width = clip.image.width.min(self.width) as usize;
-            let copy_height = clip.image.height.min(self.height) as usize;
+            let copy_width = image.width.min(self.width) as usize;
+            let copy_height = image.height.min(self.height) as usize;
             for y in 0..copy_height {
-                let old_start = y * clip.image.width as usize * 4;
+                let old_start = y * image.width as usize * 4;
                 let new_start = y * self.width as usize * 4;
                 let length = copy_width * 4;
                 resized.data[new_start..new_start + length]
-                    .copy_from_slice(&clip.image.data[old_start..old_start + length]);
+                    .copy_from_slice(&image.data[old_start..old_start + length]);
             }
             clip.set_image(resized);
         }

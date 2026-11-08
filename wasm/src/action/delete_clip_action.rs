@@ -1,12 +1,14 @@
 use uuid::Uuid;
 
 use crate::app::action::{Action, UndoableAction};
-use crate::app::clip::Clip;
+use crate::app::clip::{AssetId, Clip};
+use crate::app::composition::Asset;
 use crate::app::project::Project;
 
 pub struct DeleteClipAction {
     clip_id: Uuid,
     deleted_clip: Option<Clip>,
+    deleted_asset: Option<(AssetId, Asset)>,
 }
 
 impl DeleteClipAction {
@@ -14,6 +16,7 @@ impl DeleteClipAction {
         Self {
             clip_id,
             deleted_clip: None,
+            deleted_asset: None,
         }
     }
 }
@@ -29,6 +32,18 @@ impl Action for DeleteClipAction {
         {
             return;
         }
+        self.deleted_asset = project
+            .composition()
+            .get_clip(self.clip_id)
+            .and_then(|clip| {
+                let asset_id = clip.asset_id();
+                project
+                    .composition()
+                    .assets
+                    .get(&asset_id)
+                    .cloned()
+                    .map(|asset| (asset_id, asset))
+            });
         self.deleted_clip = project.composition_mut().delete_clip(self.clip_id);
     }
 }
@@ -36,6 +51,12 @@ impl Action for DeleteClipAction {
 impl UndoableAction for DeleteClipAction {
     fn undo(&mut self, project: &mut Project) {
         if let Some(ref clip) = self.deleted_clip {
+            if let Some((asset_id, asset)) = &self.deleted_asset {
+                project
+                    .composition_mut()
+                    .assets
+                    .insert(*asset_id, asset.clone());
+            }
             project.composition_mut().add_clip(clip.clone());
         }
     }

@@ -243,6 +243,7 @@ const TrackBody = ({
 					id={clip.id}
 					keyframes={clipKeyframes[clip.id] ?? []}
 					name={clip.name}
+					type={clip.clip_type}
 					layerHeight={layerHeight}
 					frameWidth={frameWidth}
 					scrollX={scrollX}

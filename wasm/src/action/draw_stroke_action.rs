@@ -25,7 +25,10 @@ impl DrawStrokeAction {
         };
         let mut changed = false;
         for change in self.changes.values() {
-            let Some(pixel) = clip.image.data.get_mut(change.index..change.index + 4) else {
+            let Some(image) = clip.image_mut() else {
+                return;
+            };
+            let Some(pixel) = image.data.get_mut(change.index..change.index + 4) else {
                 continue;
             };
             pixel.copy_from_slice(if use_after {
@@ -36,14 +39,17 @@ impl DrawStrokeAction {
             changed = true;
         }
         if changed {
-            let mut left = clip.image.width;
-            let mut top = clip.image.height;
+            let Some(image) = clip.image() else {
+                return;
+            };
+            let mut left = image.width;
+            let mut top = image.height;
             let mut right = 0;
             let mut bottom = 0;
             for change in self.changes.values() {
                 let pixel = change.index / 4;
-                let x = (pixel % clip.image.width as usize) as u32;
-                let y = (pixel / clip.image.width as usize) as u32;
+                let x = (pixel % image.width as usize) as u32;
+                let y = (pixel / image.width as usize) as u32;
                 left = left.min(x);
                 top = top.min(y);
                 right = right.max(x + 1);
@@ -91,7 +97,7 @@ mod tests {
     use super::DrawStrokeAction;
     use crate::app::{
         action_manager::ActionManager,
-        clip::{BlendMode, Clip, ClipMetadata},
+        clip::{Clip, ClipMetadata},
         composition::Composition,
         composition_settings::CompositionSettings,
         project::Project,
@@ -109,26 +115,21 @@ mod tests {
         image.data.copy_from_slice(&before);
         let mut composition = Composition::new();
         let layer_id = composition.layer_id_at(0);
-        let clip = Clip {
-            metadata: ClipMetadata {
+        let clip = Clip::new_image(
+            ClipMetadata {
                 id: clip_id,
-                asset_id: Uuid::new_v4(),
                 name: "Test".to_string(),
                 start: 0,
                 layer_id,
                 duration: 1,
                 hidden: false,
-                alpha_locked: false,
                 locked: false,
-                opacity: 1.0,
-                blend_mode: BlendMode::Normal,
             },
-            transform: Default::default(),
-            keyframes: Vec::new(),
+            Uuid::new_v4(),
             image,
-            image_revision: 0,
-            dirty_rect: std::cell::Cell::new(None),
-        };
+            Default::default(),
+            Vec::new(),
+        );
         composition.add_clip(clip);
         composition.settings = CompositionSettings {
             width: 1,
@@ -156,7 +157,8 @@ mod tests {
         project
             .get_clip_mut(clip_id)
             .unwrap()
-            .image
+            .image_mut()
+            .unwrap()
             .data
             .copy_from_slice(&middle);
         action_manager.record_pixel_changes(
@@ -170,13 +172,20 @@ mod tests {
         project
             .get_clip_mut(clip_id)
             .unwrap()
-            .image
+            .image_mut()
+            .unwrap()
             .data
             .copy_from_slice(&after);
 
         action_manager.undo(&mut project);
-        assert_eq!(&project.get_clip(clip_id).unwrap().image.data[..], &before);
+        assert_eq!(
+            &project.get_clip(clip_id).unwrap().image().unwrap().data[..],
+            &before
+        );
         action_manager.redo(&mut project);
-        assert_eq!(&project.get_clip(clip_id).unwrap().image.data[..], &after);
+        assert_eq!(
+            &project.get_clip(clip_id).unwrap().image().unwrap().data[..],
+            &after
+        );
     }
 }

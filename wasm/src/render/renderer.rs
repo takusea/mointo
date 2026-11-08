@@ -273,7 +273,11 @@ impl GpuRenderer {
 
         for item in clips {
             let clip = item.clip;
-            let image = &clip.image;
+            let image = clip
+                .image()
+                .ok_or_else(|| "Audio clip reached image renderer".to_string())?;
+            let image_revision = clip.image_revision().unwrap();
+            let dirty_rect = clip.dirty_rect().unwrap();
             if self
                 .clip_textures
                 .get(&clip.metadata.id)
@@ -329,11 +333,11 @@ impl GpuRenderer {
                 };
             }
 
-            if cached.revision != clip.image_revision {
+            if cached.revision != image_revision {
                 let rect = if cached.revision == u64::MAX {
                     [0, 0, image.width, image.height]
                 } else {
-                    clip.dirty_rect
+                    dirty_rect
                         .get()
                         .unwrap_or([0, 0, image.width, image.height])
                 };
@@ -370,8 +374,8 @@ impl GpuRenderer {
                         depth_or_array_layers: 1,
                     },
                 );
-                cached.revision = clip.image_revision;
-                clip.dirty_rect.set(None);
+                cached.revision = image_revision;
+                dirty_rect.set(None);
             }
 
             let clip_id = clip.metadata.id;
@@ -442,7 +446,9 @@ impl GpuRenderer {
 
         for (clip_index, item) in clips.iter().enumerate() {
             let clip = item.clip;
-            let image = &clip.image;
+            let image = clip
+                .image()
+                .ok_or_else(|| "Audio clip reached image renderer".to_string())?;
             let inverse = clip
                 .transform
                 .to_inverse_matrix3((image.width as f32 / 2.0, image.height as f32 / 2.0))
@@ -455,7 +461,7 @@ impl GpuRenderer {
                 ],
                 image_size: [image.width as f32, image.height as f32],
                 output_size: [width as f32, height as f32],
-                opacity: clip.metadata.opacity
+                opacity: clip.image_opacity().unwrap_or(1.0)
                     * if item.tint[3] > 0.0 {
                         item.tint[3]
                     } else {
@@ -464,7 +470,7 @@ impl GpuRenderer {
                 blend_mode: if item.tint[3] > 0.0 {
                     0
                 } else {
-                    match clip.metadata.blend_mode {
+                    match clip.image_blend_mode().unwrap_or(BlendMode::Normal) {
                         BlendMode::Normal => 0,
                         BlendMode::Multiply => 1,
                         BlendMode::Screen => 2,

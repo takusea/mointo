@@ -2,8 +2,8 @@ use uuid::Uuid;
 
 use crate::app::action::Action;
 use crate::app::action::UndoableAction;
-use crate::app::clip::Clip;
-use crate::app::clip::ClipMetadata;
+use crate::app::clip::{Clip, ClipMetadata};
+use crate::app::composition::Asset;
 use crate::app::layer::LayerId;
 use crate::app::project::Project;
 use crate::core::image::Image;
@@ -12,9 +12,21 @@ use crate::core::transform::Transform;
 pub struct AddClipAction {
     start_frame: u32,
     layer_id: LayerId,
-    image_size: Option<(u32, u32)>,
+    content: AddClipContent,
     clip_id: Option<Uuid>,
     name: Option<String>,
+    duration: u32,
+}
+
+enum AddClipContent {
+    Image {
+        size: Option<(u32, u32)>,
+    },
+    Audio {
+        asset_id: Uuid,
+        data: Vec<u8>,
+        mime_type: String,
+    },
 }
 
 impl AddClipAction {
@@ -22,9 +34,10 @@ impl AddClipAction {
         Self {
             start_frame,
             layer_id,
-            image_size: None,
+            content: AddClipContent::Image { size: None },
             clip_id: None,
             name: None,
+            duration: 1,
         }
     }
 
@@ -32,9 +45,34 @@ impl AddClipAction {
         Self {
             start_frame,
             layer_id,
-            image_size: Some((width, height)),
+            content: AddClipContent::Image {
+                size: Some((width, height)),
+            },
             clip_id: None,
             name: None,
+            duration: 1,
+        }
+    }
+
+    pub fn audio(
+        start_frame: u32,
+        layer_id: LayerId,
+        duration: u32,
+        audio_data: Vec<u8>,
+        audio_mime_type: String,
+        name: String,
+    ) -> Self {
+        Self {
+            start_frame,
+            layer_id,
+            content: AddClipContent::Audio {
+                asset_id: Uuid::new_v4(),
+                data: audio_data,
+                mime_type: audio_mime_type,
+            },
+            clip_id: None,
+            name: Some(name),
+            duration: duration.max(1),
         }
     }
 }
@@ -46,31 +84,46 @@ impl Action for AddClipAction {
             .name
             .get_or_insert_with(|| format!("Clip {}", project.composition_mut().clips.len() + 1))
             .clone();
-        let clip = Clip {
-            metadata: ClipMetadata {
-                id: clip_id,
-                asset_id: Uuid::new_v4(),
-                name,
-                start: self.start_frame,
-                layer_id: self.layer_id,
-                duration: 1,
-                hidden: false,
-                alpha_locked: false,
-                locked: false,
-                opacity: 1.0,
-                blend_mode: crate::app::clip::BlendMode::default(),
-            },
-            transform: Transform::default(),
-            keyframes: Vec::new(),
-            image: {
-                let (width, height) = self.image_size.unwrap_or((
+        let metadata = ClipMetadata {
+            id: clip_id,
+            name,
+            start: self.start_frame,
+            layer_id: self.layer_id,
+            duration: self.duration,
+            hidden: false,
+            locked: false,
+        };
+        let clip = match &self.content {
+            AddClipContent::Image { size } => {
+                let (width, height) = size.unwrap_or((
                     project.composition().settings.width,
                     project.composition().settings.height,
                 ));
-                Image::new(width, height)
-            },
-            image_revision: 0,
-            dirty_rect: std::cell::Cell::new(None),
+                Clip::new_image(
+                    metadata,
+                    Uuid::new_v4(),
+                    Image::new(width, height),
+                    Transform::default(),
+                    Vec::new(),
+                )
+            }
+            AddClipContent::Audio {
+                asset_id,
+                data,
+                mime_type,
+            } => {
+                project
+                    .composition_mut()
+                    .assets
+                    .insert(*asset_id, Asset::Audio(data.clone()));
+                Clip::new_audio(
+                    metadata,
+                    *asset_id,
+                    mime_type.clone(),
+                    Transform::default(),
+                    Vec::new(),
+                )
+            }
         };
         project.composition_mut().add_clip(clip);
     }

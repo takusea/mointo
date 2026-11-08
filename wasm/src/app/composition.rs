@@ -1,12 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-use crate::app::clip::{AssetId, Clip, ClipId};
+use crate::app::clip::{AssetId, Clip, ClipContent, ClipId};
 use crate::app::composition_settings::CompositionSettings;
 use crate::app::layer::{Layer, LayerId};
 use crate::core::image::Image;
 use crate::render::GpuRenderer;
 
 const DEFAULT_LAYER_COUNT: usize = 100;
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(tag = "type", content = "data", rename_all = "snake_case")]
+pub enum Asset {
+    Image(Image),
+    Audio(Vec<u8>),
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Composition {
@@ -15,7 +22,7 @@ pub struct Composition {
     pub settings: CompositionSettings,
     pub clips: Vec<Clip>,
     pub layers: Vec<Layer>,
-    pub assets: std::collections::HashMap<AssetId, Image>,
+    pub assets: std::collections::HashMap<AssetId, Asset>,
 }
 
 impl Composition {
@@ -30,7 +37,9 @@ impl Composition {
         let mut clips: Vec<Clip> = self
             .clips
             .iter()
-            .filter(|clip| clip.contains_frame(frame_index) && !clip.metadata.hidden)
+            .filter(|clip| {
+                clip.is_image() && clip.contains_frame(frame_index) && !clip.metadata.hidden
+            })
             .filter(|clip| clip.metadata.layer_id == layer_id)
             .filter(|_| {
                 self.layer_index(layer_id)
@@ -40,7 +49,7 @@ impl Composition {
                 let mut clip = clip.clone();
                 let (transform, opacity) = clip.values_at(frame_index);
                 clip.transform = transform;
-                clip.metadata.opacity = opacity;
+                clip.set_image_opacity(opacity);
                 clip
             })
             .collect();
@@ -60,23 +69,38 @@ impl Composition {
     }
 
     pub fn add_clip(&mut self, clip: Clip) {
-        self.assets
-            .entry(clip.metadata.asset_id)
-            .or_insert_with(|| clip.image.clone());
+        if let Some(image) = clip.image() {
+            let asset_id = clip.asset_id();
+            self.assets
+                .entry(asset_id)
+                .or_insert_with(|| Asset::Image(image.clone()));
+        }
         self.clips.push(clip);
+    }
+
+    pub fn audio_data(&self, clip: &Clip) -> Option<&[u8]> {
+        let ClipContent::Audio { asset_id, .. } = &clip.content else {
+            return None;
+        };
+        match self.assets.get(asset_id)? {
+            Asset::Audio(data) => Some(data),
+            Asset::Image(_) => None,
+        }
     }
 
     pub fn publish_clip_asset(&mut self, clip_id: ClipId) {
         let Some(clip) = self.get_clip(clip_id) else {
             return;
         };
-        let asset_id = clip.metadata.asset_id;
-        let image = clip.image.clone();
-        self.assets.insert(asset_id, image.clone());
+        let Some(image) = clip.image().cloned() else {
+            return;
+        };
+        let asset_id = clip.asset_id();
+        self.assets.insert(asset_id, Asset::Image(image.clone()));
         for linked in self
             .clips
             .iter_mut()
-            .filter(|c| c.metadata.asset_id == asset_id)
+            .filter(|c| c.is_image() && c.asset_id() == asset_id)
         {
             if linked.metadata.id != clip_id {
                 linked.set_image(image.clone());
@@ -90,13 +114,17 @@ impl Composition {
             let Some(clip) = self.get_clip(id) else {
                 continue;
             };
-            let asset_id = clip.metadata.asset_id;
-            let image = clip.image.clone();
-            let differs = self.assets.get(&asset_id).is_none_or(|asset| {
-                asset.data != image.data
-                    || asset.width != image.width
-                    || asset.height != image.height
-            });
+            let Some(image) = clip.image().cloned() else {
+                continue;
+            };
+            let asset_id = clip.asset_id();
+            let differs = !matches!(
+                self.assets.get(&asset_id),
+                Some(Asset::Image(asset))
+                    if asset.data == image.data
+                        && asset.width == image.width
+                        && asset.height == image.height
+            );
             if differs {
                 self.publish_clip_asset(id);
             }
@@ -105,15 +133,17 @@ impl Composition {
 
     pub fn hydrate_asset_views(&mut self) -> Result<(), String> {
         for clip in &mut self.clips {
-            let image = self
-                .assets
-                .get(&clip.metadata.asset_id)
-                .ok_or_else(|| {
-                    format!("Clip {} references a missing image asset", clip.metadata.id)
-                })?
-                .clone();
-            clip.image = image;
-            clip.image_revision = 0;
+            if !clip.is_image() {
+                continue;
+            }
+            let asset_id = clip.asset_id();
+            let Some(Asset::Image(image)) = self.assets.get(&asset_id) else {
+                return Err(format!(
+                    "Clip {} references a missing or invalid image asset",
+                    clip.metadata.id
+                ));
+            };
+            clip.set_image(image.clone());
         }
         Ok(())
     }
@@ -125,12 +155,8 @@ impl Composition {
             .position(|clip| clip.metadata.id == clip_id)
         {
             let removed = self.clips.remove(pos);
-            let asset_id = removed.metadata.asset_id;
-            if !self
-                .clips
-                .iter()
-                .any(|clip| clip.metadata.asset_id == asset_id)
-            {
+            let asset_id = removed.asset_id();
+            if !self.clips.iter().any(|clip| clip.asset_id() == asset_id) {
                 self.assets.remove(&asset_id);
             }
             Some(removed)
@@ -198,9 +224,17 @@ impl Composition {
             }
         }
         for clip in &self.clips {
-            if !self.assets.contains_key(&clip.metadata.asset_id) {
+            let missing_asset = match &clip.content {
+                ClipContent::Image { asset_id, .. } => {
+                    !matches!(self.assets.get(asset_id), Some(Asset::Image(_)))
+                }
+                ClipContent::Audio { asset_id, .. } => {
+                    !matches!(self.assets.get(asset_id), Some(Asset::Audio(_)))
+                }
+            };
+            if missing_asset {
                 return Err(format!(
-                    "Clip {} references a missing image asset",
+                    "Clip {} references a missing asset",
                     clip.metadata.id
                 ));
             }
@@ -268,7 +302,7 @@ impl Composition {
         let mut clips: Vec<Clip> = self
             .clips
             .iter()
-            .filter(|clip| clip.contains_frame(frame_index))
+            .filter(|clip| clip.is_image() && clip.contains_frame(frame_index))
             .filter(|clip| !clip.metadata.hidden)
             .filter(|clip| {
                 self.layer_index(clip.metadata.layer_id)
@@ -278,7 +312,7 @@ impl Composition {
                 let mut clip = clip.clone();
                 let (transform, opacity) = clip.values_at(frame_index);
                 clip.transform = transform;
-                clip.metadata.opacity = opacity;
+                clip.set_image_opacity(opacity);
                 clip
             })
             .collect();
@@ -297,7 +331,7 @@ impl Composition {
         let mut clips: Vec<Clip> = self
             .clips
             .iter()
-            .filter(|clip| clip.contains_frame(frame_index))
+            .filter(|clip| clip.is_image() && clip.contains_frame(frame_index))
             .filter(|clip| !clip.metadata.hidden)
             .filter(|clip| {
                 self.layer_index(clip.metadata.layer_id)
@@ -307,7 +341,7 @@ impl Composition {
                 let mut clip = clip.clone();
                 let (transform, opacity) = clip.values_at(frame_index);
                 clip.transform = transform;
-                clip.metadata.opacity = opacity;
+                clip.set_image_opacity(opacity);
                 clip
             })
             .collect();
@@ -330,7 +364,8 @@ impl Composition {
                 .await;
         };
         let visible = |clip: &&Clip| {
-            !clip.metadata.hidden
+            clip.is_image()
+                && !clip.metadata.hidden
                 && self
                     .layer_index(clip.metadata.layer_id)
                     .is_some_and(|index| !self.is_layer_hidden(index))
@@ -343,10 +378,11 @@ impl Composition {
             .map(|clip| (clip, self.layer_index(clip.metadata.layer_id).unwrap()))
             .collect();
         current.sort_by_key(|(_, layer_index)| *layer_index);
-        let current_clip = self
-            .clips
-            .iter()
-            .find(|clip| clip.metadata.layer_id == layer_id && clip.contains_frame(frame_index));
+        let current_clip = self.clips.iter().find(|clip| {
+            clip.is_image()
+                && clip.metadata.layer_id == layer_id
+                && clip.contains_frame(frame_index)
+        });
         let anchor_start = current_clip.map_or(frame_index, |clip| clip.metadata.start);
         let anchor_end = current_clip.map_or(frame_index.saturating_add(1), |clip| {
             clip.metadata.start.saturating_add(clip.metadata.duration)
@@ -355,6 +391,7 @@ impl Composition {
             .clips
             .iter()
             .filter(|clip| clip.metadata.layer_id == layer_id)
+            .filter(|clip| clip.is_image())
             .filter(|clip| {
                 clip.metadata.start.saturating_add(clip.metadata.duration) == anchor_start
             })
@@ -363,6 +400,7 @@ impl Composition {
             .clips
             .iter()
             .filter(|clip| clip.metadata.layer_id == layer_id)
+            .filter(|clip| clip.is_image())
             .filter(|clip| clip.metadata.start == anchor_end)
             .min_by_key(|clip| clip.metadata.start);
         let mut previous = previous_clip
@@ -380,7 +418,7 @@ impl Composition {
                 .saturating_sub(1);
             let (transform, opacity) = clip.values_at(sample_frame);
             clip.transform = transform;
-            clip.metadata.opacity = opacity;
+            clip.set_image_opacity(opacity);
         }
         let mut next = next_clip
             .filter(|clip| {
@@ -392,7 +430,7 @@ impl Composition {
         if let Some(clip) = next.first_mut() {
             let (transform, opacity) = clip.values_at(clip.metadata.start);
             clip.transform = transform;
-            clip.metadata.opacity = opacity;
+            clip.set_image_opacity(opacity);
         }
         let previous: Vec<_> = previous.iter().collect();
         let next: Vec<_> = next.iter().collect();
@@ -415,7 +453,7 @@ fn default_composition_name() -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::Composition;
+    use super::{Asset, Composition};
     use uuid::Uuid;
 
     #[test]
@@ -445,26 +483,21 @@ mod tests {
     fn inserting_a_layer_preserves_clip_layer_identity() {
         let mut composition = Composition::new();
         let layer_id = composition.layer_id_at(2);
-        let clip = crate::app::clip::Clip {
-            metadata: crate::app::clip::ClipMetadata {
+        let clip = crate::app::clip::Clip::new_image(
+            crate::app::clip::ClipMetadata {
                 id: Uuid::new_v4(),
-                asset_id: Uuid::new_v4(),
                 start: 0,
                 layer_id,
                 duration: 1,
                 hidden: false,
-                alpha_locked: false,
                 locked: false,
-                opacity: 1.0,
-                blend_mode: crate::app::clip::BlendMode::Normal,
                 name: "Clip".to_string(),
             },
-            transform: Default::default(),
-            keyframes: Vec::new(),
-            image: crate::core::image::Image::new(1, 1),
-            image_revision: 0,
-            dirty_rect: std::cell::Cell::new(None),
-        };
+            Uuid::new_v4(),
+            crate::core::image::Image::new(1, 1),
+            Default::default(),
+            Vec::new(),
+        );
         composition.add_clip(clip);
 
         composition.set_layer_visible_by_id(layer_id, false);
@@ -475,5 +508,39 @@ mod tests {
         assert_eq!(composition.layer_index(layer_id), Some(3));
         assert_eq!(composition.is_layer_hidden_by_id(layer_id), Some(true));
         assert_eq!(composition.is_layer_locked_by_id(layer_id), Some(true));
+    }
+
+    #[test]
+    fn audio_clip_resolves_data_from_its_composition_asset() {
+        let mut composition = Composition::new();
+        let layer_id = composition.layer_id_at(0);
+        let asset_id = Uuid::new_v4();
+        let clip = crate::app::clip::Clip::new_audio(
+            crate::app::clip::ClipMetadata {
+                id: Uuid::new_v4(),
+                start: 0,
+                layer_id,
+                duration: 1,
+                hidden: false,
+                locked: false,
+                name: "Audio".to_string(),
+            },
+            asset_id,
+            "audio/wav".to_string(),
+            Default::default(),
+            Vec::new(),
+        );
+        composition
+            .assets
+            .insert(asset_id, Asset::Audio(vec![1, 2, 3]));
+        composition.add_clip(clip);
+
+        let manifest = serde_json::to_value(&composition).unwrap();
+        assert_eq!(manifest["assets"][asset_id.to_string()]["type"], "audio");
+        let mut restored: Composition = serde_json::from_value(manifest).unwrap();
+        let restored_clip = restored.clips.first().unwrap();
+
+        assert_eq!(restored.audio_data(restored_clip), Some(&[1, 2, 3][..]));
+        assert!(restored.ensure_layers().is_ok());
     }
 }

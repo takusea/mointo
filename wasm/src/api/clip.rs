@@ -9,7 +9,7 @@ use crate::action::set_clip_name_action::SetClipNameAction;
 use crate::action::set_clip_properties_action::SetClipPropertiesAction;
 use crate::action::set_clip_size_action::SetClipSizeAction;
 use crate::action::set_clip_transform_action::SetClipTransformAction;
-use crate::app::clip::{BlendMode, Clip, ClipId, ClipProperties};
+use crate::app::clip::{BlendMode, Clip, ClipContent, ClipId, ClipProperties};
 use crate::app::clip::{ClipKeyframe, ClipKeyframeValue};
 use crate::app::layer::LayerId;
 use crate::core::transform::Transform;
@@ -22,21 +22,37 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 
 #[derive(serde::Serialize)]
-struct ClipMetadataView<'a> {
+struct ClipMetadataCommon<'a> {
     id: ClipId,
-    asset_id: crate::app::clip::AssetId,
     name: &'a str,
     start: u32,
     duration: u32,
     layer_index: usize,
     layer_id: LayerId,
     hidden: bool,
-    alpha_locked: bool,
     locked: bool,
-    opacity: f32,
-    blend_mode: BlendMode,
-    width: u32,
-    height: u32,
+}
+
+#[derive(serde::Serialize)]
+#[serde(tag = "clip_type", rename_all = "snake_case")]
+enum ClipMetadataView<'a> {
+    Image {
+        #[serde(flatten)]
+        common: ClipMetadataCommon<'a>,
+        asset_id: crate::app::clip::AssetId,
+        width: u32,
+        height: u32,
+        alpha_locked: bool,
+        opacity: f32,
+        blend_mode: BlendMode,
+    },
+    Audio {
+        #[serde(flatten)]
+        common: ClipMetadataCommon<'a>,
+        asset_id: crate::app::clip::AssetId,
+        audio_mime_type: &'a str,
+        audio_start_frame: u32,
+    },
 }
 
 #[wasm_bindgen]
@@ -57,10 +73,17 @@ impl MointoCore {
                 .composition()
                 .get_clip(target)
                 .ok_or_else(|| JsValue::from_str("Target clip does not exist"))?;
-            if source_clip.metadata.asset_id == target_clip.metadata.asset_id {
+            if source_clip.is_image() != target_clip.is_image() {
+                return Err(JsValue::from_str(
+                    "Clips must have the same content type to share assets",
+                ));
+            }
+            let source_asset_id = source_clip.asset_id();
+            let target_asset_id = target_clip.asset_id();
+            if source_asset_id == target_asset_id {
                 return Ok(());
             }
-            source_clip.metadata.asset_id
+            source_asset_id
         };
         let project = self
             .project
@@ -79,9 +102,10 @@ impl MointoCore {
             .project
             .as_mut()
             .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
-        if project.composition_mut().get_clip(id).is_none() {
-            return Err(JsValue::from_str("Clip does not exist"));
-        }
+        let _clip = project
+            .composition_mut()
+            .get_clip(id)
+            .ok_or_else(|| JsValue::from_str("Clip does not exist"))?;
         self.action_manager
             .do_action(Box::new(ChangeClipAssetAction::unlink(id)), project);
         Ok(())
@@ -107,9 +131,8 @@ impl MointoCore {
             .iter()
             .map(|clip| {
                 let metadata = &clip.metadata;
-                ClipMetadataView {
+                let common = ClipMetadataCommon {
                     id: metadata.id,
-                    asset_id: metadata.asset_id,
                     name: &metadata.name,
                     start: metadata.start,
                     duration: metadata.duration,
@@ -119,12 +142,34 @@ impl MointoCore {
                         .expect("Clip references an unknown layer"),
                     layer_id: metadata.layer_id,
                     hidden: metadata.hidden,
-                    alpha_locked: metadata.alpha_locked,
                     locked: metadata.locked,
-                    opacity: metadata.opacity,
-                    blend_mode: metadata.blend_mode,
-                    width: clip.image.width,
-                    height: clip.image.height,
+                };
+                match &clip.content {
+                    ClipContent::Image {
+                        asset_id,
+                        image,
+                        opacity,
+                        blend_mode,
+                        ..
+                    } => ClipMetadataView::Image {
+                        common,
+                        asset_id: *asset_id,
+                        width: image.width,
+                        height: image.height,
+                        alpha_locked: clip.alpha_locked(),
+                        opacity: *opacity,
+                        blend_mode: *blend_mode,
+                    },
+                    ClipContent::Audio {
+                        asset_id,
+                        mime_type,
+                        start_frame,
+                    } => ClipMetadataView::Audio {
+                        common,
+                        asset_id: *asset_id,
+                        audio_mime_type: mime_type,
+                        audio_start_frame: *start_frame,
+                    },
                 }
             })
             .collect();
@@ -188,6 +233,52 @@ impl MointoCore {
         Ok(())
     }
 
+    pub fn add_audio_clip(
+        &mut self,
+        start_frame: u32,
+        layer_id_str: String,
+        duration: u32,
+        audio_data: Vec<u8>,
+        audio_mime_type: String,
+        name: String,
+    ) -> Result<(), JsValue> {
+        if duration == 0 || audio_data.is_empty() || audio_mime_type.is_empty() {
+            return Err(JsValue::from_str(
+                "Audio clip data and duration must be valid",
+            ));
+        }
+        let layer_id = layer_id_str
+            .parse::<LayerId>()
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        let project = self
+            .project
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        if project.composition_mut().layer_index(layer_id).is_none() {
+            return Err(JsValue::from_str("Layer does not exist"));
+        }
+        self.action_manager.do_action(
+            Box::new(AddClipAction::audio(
+                start_frame,
+                layer_id,
+                duration,
+                audio_data,
+                audio_mime_type,
+                name,
+            )),
+            project,
+        );
+        Ok(())
+    }
+
+    pub fn get_audio_clip_data(&self, clip_id_str: String) -> Option<Vec<u8>> {
+        let clip_id = Uuid::parse_str(&clip_id_str).ok()?;
+        let project = self.project.as_ref()?;
+        let composition = project.composition();
+        let clip = composition.get_clip(clip_id)?;
+        composition.audio_data(clip).map(<[u8]>::to_vec)
+    }
+
     pub fn delete_clip(&mut self, clip_id_str: String) {
         let clip_id = match Uuid::parse_str(&clip_id_str) {
             Ok(id) => id,
@@ -212,7 +303,7 @@ impl MointoCore {
             .clips
             .iter()
             .find(|clip| clip.metadata.id == clip_id)?;
-        Some(Uint8ClampedArray::from(&clip.image.data[..]))
+        Some(Uint8ClampedArray::from(&clip.image()?.data[..]))
     }
 
     pub async fn render_selected_clips(
@@ -255,16 +346,19 @@ impl MointoCore {
             .clips
             .iter()
             .filter(|clip| clip_ids.contains(&clip.metadata.id))
+            .filter(|clip| clip.is_image())
             .map(|clip| {
                 let mut clip = clip.clone();
                 let (transform, opacity) = clip.values_at(frame_index);
                 clip.transform = transform;
-                clip.metadata.opacity = opacity;
+                clip.set_image_opacity(opacity);
                 clip
             })
             .collect();
         if clips.len() != clip_ids.len() {
-            return Err(JsValue::from_str("One or more selected clips do not exist"));
+            return Err(JsValue::from_str(
+                "Selected clips must exist and be image clips",
+            ));
         }
         clips.sort_by_key(|clip| {
             (
@@ -301,14 +395,16 @@ impl MointoCore {
         if project.is_clip_locked(clip_id) {
             return Err(JsValue::from_str("Clip is locked"));
         }
-        if clip.image.data.len() != pixels.len() {
+        let image = clip
+            .image()
+            .ok_or_else(|| JsValue::from_str("Clip is not an image clip"))?;
+        if image.data.len() != pixels.len() {
             return Err(JsValue::from_str(
                 "Pixel data dimensions do not match the clip",
             ));
         }
 
-        let changes: Vec<_> = clip
-            .image
+        let changes: Vec<_> = image
             .data
             .chunks_exact(4)
             .zip(pixels.chunks_exact(4))
@@ -333,7 +429,10 @@ impl MointoCore {
             .iter_mut()
             .find(|clip| clip.metadata.id == clip_id)
             .ok_or_else(|| JsValue::from_str("Clip does not exist"))?;
-        clip.image.data.copy_from_slice(pixels);
+        clip.image_mut()
+            .ok_or_else(|| JsValue::from_str("Clip is not an image clip"))?
+            .data
+            .copy_from_slice(pixels);
         clip.mark_image_changed();
         Ok(())
     }
@@ -355,12 +454,18 @@ impl MointoCore {
         let clip = project
             .get_clip_mut(clip_id)
             .ok_or_else(|| JsValue::from_str("Clip does not exist"))?;
-        if clip.image.data.len() != pixels.len() {
+        let image = clip
+            .image()
+            .ok_or_else(|| JsValue::from_str("Clip is not an image clip"))?;
+        if image.data.len() != pixels.len() {
             return Err(JsValue::from_str(
                 "Pixel data dimensions do not match the clip",
             ));
         }
-        clip.image.data.copy_from_slice(pixels);
+        clip.image_mut()
+            .ok_or_else(|| JsValue::from_str("Clip is not an image clip"))?
+            .data
+            .copy_from_slice(pixels);
         clip.mark_image_changed();
         Ok(())
     }
@@ -436,7 +541,10 @@ impl MointoCore {
                 return;
             }
         };
-        if !properties.opacity.is_finite() {
+        if properties
+            .opacity
+            .is_some_and(|opacity| !opacity.is_finite())
+        {
             eprintln!("Clip opacity must be finite.");
             return;
         }
@@ -578,7 +686,7 @@ impl MointoCore {
             .as_mut()
             .and_then(|p| p.composition_mut().find_clip(id))
         {
-            if clip.metadata.locked {
+            if clip.metadata.locked || (property == "opacity" && !clip.is_image()) {
                 return;
             }
             if let Some(key) = clip
@@ -637,7 +745,7 @@ impl MointoCore {
             .as_mut()
             .and_then(|project| project.composition_mut().find_clip(id))
         {
-            if clip.metadata.locked {
+            if clip.metadata.locked || (property == "opacity" && !clip.is_image()) {
                 return;
             }
             if let Some(key) = clip
@@ -675,7 +783,7 @@ impl MointoCore {
             .as_mut()
             .and_then(|p| p.composition_mut().find_clip(id))
         {
-            if !clip.metadata.locked {
+            if !clip.metadata.locked && (property != "opacity" || clip.is_image()) {
                 let key_value = clip
                     .keyframes
                     .iter()
@@ -704,7 +812,7 @@ impl MointoCore {
                                 clip.transform.anchor = value;
                             }
                             ("opacity", ClipKeyframeValue::Scalar(value)) => {
-                                clip.metadata.opacity = value;
+                                clip.set_image_opacity(value);
                             }
                             _ => {}
                         }

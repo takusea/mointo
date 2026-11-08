@@ -263,6 +263,24 @@ export class CoreService {
 		}, true);
 	}
 
+	addAudioClip(
+		start: number,
+		layerId: LayerId,
+		duration: number,
+		data: Uint8Array,
+		mimeType: string,
+		name: string,
+	) {
+		return this.enqueue((core) => {
+			core.add_audio_clip(start, layerId, duration, data, mimeType, name);
+			return (core.get_clips() as ClipMetadata[] | undefined) ?? [];
+		}, true);
+	}
+
+	getAudioClipData(id: string) {
+		return this.enqueue((core) => core.get_audio_clip_data(id));
+	}
+
 	deleteClip(id: string) {
 		return this.enqueue((core) => core.delete_clip(id), true);
 	}
@@ -313,15 +331,20 @@ export class CoreService {
 	}
 
 	changeClipProperties(id: string, properties: ClipProperties) {
+		const wasmProperties: ClipProperties = {
+			hidden: properties.hidden,
+			locked: properties.locked,
+		};
+		if (properties.alpha_locked !== undefined)
+			wasmProperties.alpha_locked = properties.alpha_locked;
+		if (properties.opacity !== undefined)
+			wasmProperties.opacity = properties.opacity;
+		if (properties.blend_mode !== undefined)
+			wasmProperties.blend_mode = properties.blend_mode;
+		if (properties.audio_start_frame !== undefined)
+			wasmProperties.audio_start_frame = properties.audio_start_frame;
 		return this.enqueue(
-			(core) =>
-				core.set_clip_properties(id, {
-					hidden: properties.hidden,
-					alpha_locked: properties.alpha_locked,
-					locked: properties.locked,
-					opacity: properties.opacity,
-					blend_mode: properties.blend_mode,
-				}),
+			(core) => core.set_clip_properties(id, wasmProperties),
 			true,
 		);
 	}

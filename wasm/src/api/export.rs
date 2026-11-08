@@ -23,37 +23,75 @@ impl MointoCore {
         let mut manifest = serde_json::to_value(project.composition()).map_err(js_error)?;
         let manifest_name = composition_manifest_name(Some(&manifest));
         let mut png_assets = Vec::new();
-        {
-            let assets = manifest["assets"]
-                .as_object_mut()
-                .ok_or_else(|| js_error("Composition assets are invalid"))?;
-            for (id, asset) in assets.iter_mut() {
-                let width = asset["width"]
-                    .as_u64()
-                    .ok_or_else(|| js_error("Asset width is invalid"))?
-                    as u32;
-                let height = asset["height"]
-                    .as_u64()
-                    .ok_or_else(|| js_error("Asset height is invalid"))?
-                    as u32;
-                let pixels: Vec<u8> =
-                    serde_json::from_value(asset["data"].clone()).map_err(js_error)?;
-                let mut png_data = Vec::new();
-                {
-                    let mut encoder = png::Encoder::new(&mut png_data, width, height);
-                    encoder.set_color(png::ColorType::Rgba);
-                    encoder.set_depth(png::BitDepth::Eight);
-                    let mut writer = encoder.write_header().map_err(js_error)?;
-                    writer.write_image_data(&pixels).map_err(js_error)?;
-                }
-                asset
-                    .as_object_mut()
-                    .ok_or_else(|| js_error("Asset data is invalid"))?
-                    .remove("data");
-                png_assets.push((format!("assets/{id}.png"), png_data));
+        let mut audio_assets = Vec::new();
+        let referenced_assets: Vec<(String, String)> = manifest["clips"]
+            .as_array()
+            .ok_or_else(|| js_error("Composition clips are invalid"))?
+            .iter()
+            .map(|clip| {
+                let asset_id = clip["content"]["asset_id"]
+                    .as_str()
+                    .ok_or_else(|| js_error("Clip asset ID is missing"))?
+                    .to_string();
+                let asset_type = clip["content"]["type"]
+                    .as_str()
+                    .ok_or_else(|| js_error("Clip content type is missing"))?
+                    .to_string();
+                Ok((asset_id, asset_type))
+            })
+            .collect::<Result<_, wasm_bindgen::JsValue>>()?;
+        let asset_manifest = manifest
+            .get_mut("assets")
+            .and_then(serde_json::Value::as_object_mut)
+            .ok_or_else(|| js_error("Composition assets are invalid"))?;
+        for (asset_id, asset_type) in referenced_assets {
+            let asset = asset_manifest
+                .get(&asset_id)
+                .ok_or_else(|| js_error(format!("Clip references missing asset {asset_id}")))?;
+            if asset["type"].as_str() != Some(asset_type.as_str()) {
+                return Err(js_error(format!(
+                    "Clip references asset {asset_id} with the wrong content type"
+                )));
             }
-            manifest.as_object_mut().unwrap().remove("assets");
         }
+        for (id, asset) in asset_manifest.iter_mut() {
+            match asset["type"].as_str() {
+                Some("image") => {
+                    let width = asset["data"]["width"]
+                        .as_u64()
+                        .ok_or_else(|| js_error("Asset width is invalid"))?
+                        as u32;
+                    let height = asset["data"]["height"]
+                        .as_u64()
+                        .ok_or_else(|| js_error("Asset height is invalid"))?
+                        as u32;
+                    let pixels: Vec<u8> =
+                        serde_json::from_value(asset["data"]["data"].clone()).map_err(js_error)?;
+                    let mut png_data = Vec::new();
+                    {
+                        let mut encoder = png::Encoder::new(&mut png_data, width, height);
+                        encoder.set_color(png::ColorType::Rgba);
+                        encoder.set_depth(png::BitDepth::Eight);
+                        let mut writer = encoder.write_header().map_err(js_error)?;
+                        writer.write_image_data(&pixels).map_err(js_error)?;
+                    }
+                    png_assets.push((format!("assets/{id}.png"), png_data));
+                }
+                Some("audio") => {
+                    let audio_data: Vec<u8> =
+                        serde_json::from_value(asset["data"].clone()).map_err(js_error)?;
+                    if audio_data.is_empty() {
+                        return Err(js_error(format!("Audio asset {id} is empty")));
+                    }
+                    audio_assets.push((format!("assets/{id}.wav"), audio_data));
+                }
+                _ => return Err(js_error(format!("Asset {id} has an invalid type"))),
+            }
+        }
+        manifest
+            .as_object_mut()
+            .ok_or_else(|| js_error("Composition manifest is invalid"))?
+            .remove("assets");
 
         // The composition starts with many unused placeholder layers. Keep layers
         // referenced by clips and any layers whose visibility/lock state changed.
@@ -121,6 +159,10 @@ impl MointoCore {
             archive.start_file(name, options).map_err(js_error)?;
             archive.write_all(&data).map_err(js_error)?;
         }
+        for (name, data) in audio_assets {
+            archive.start_file(name, options).map_err(js_error)?;
+            archive.write_all(&data).map_err(js_error)?;
+        }
         Ok(archive.finish().map_err(js_error)?.into_inner())
     }
 
@@ -161,8 +203,125 @@ impl MointoCore {
             .as_array_mut()
             .ok_or_else(|| js_error("Composition clips are invalid"))?;
         for clip in clips {
+            if clip.get("content").is_none() {
+                let clip_type = clip.get("clip_type").and_then(serde_json::Value::as_str);
+                let clip_type = if clip_type == Some("audio") {
+                    "audio"
+                } else {
+                    "image"
+                };
+                let mut content = serde_json::Map::new();
+                content.insert(
+                    "type".to_string(),
+                    serde_json::Value::String(clip_type.to_string()),
+                );
+                if clip_type == "audio" {
+                    let clip_id = clip["metadata"]["id"]
+                        .as_str()
+                        .ok_or_else(|| js_error("Audio clip ID is missing"))?;
+                    content.insert(
+                        "asset_id".to_string(),
+                        serde_json::Value::String(clip_id.to_string()),
+                    );
+                    if let Some(data) = clip
+                        .as_object_mut()
+                        .and_then(|clip| clip.remove("audio_data"))
+                    {
+                        content.insert("data".to_string(), data);
+                    }
+                    if let Some(mime_type) = clip
+                        .as_object_mut()
+                        .and_then(|clip| clip.remove("audio_mime_type"))
+                    {
+                        content.insert("mime_type".to_string(), mime_type);
+                    }
+                } else {
+                    let metadata = clip
+                        .get_mut("metadata")
+                        .and_then(serde_json::Value::as_object_mut)
+                        .ok_or_else(|| js_error("Clip metadata is invalid"))?;
+                    let asset_id = metadata
+                        .remove("asset_id")
+                        .ok_or_else(|| js_error("Clip asset ID is missing"))?;
+                    content.insert("asset_id".to_string(), asset_id);
+                    if let Some(alpha_locked) = metadata
+                        .remove("alpha_locked")
+                        .filter(|value| *value != false)
+                    {
+                        content.insert("alpha_locked".to_string(), alpha_locked);
+                    }
+                }
+                if let Some(clip) = clip.as_object_mut() {
+                    clip.remove("clip_type");
+                    clip.insert("content".to_string(), serde_json::Value::Object(content));
+                }
+            }
+            if clip["content"]["type"].as_str() == Some("audio") {
+                let clip_id = clip["metadata"]["id"]
+                    .as_str()
+                    .ok_or_else(|| js_error("Audio clip ID is missing"))?
+                    .to_string();
+                let metadata = clip
+                    .get_mut("metadata")
+                    .and_then(serde_json::Value::as_object_mut)
+                    .ok_or_else(|| js_error("Clip metadata is invalid"))?;
+                metadata.remove("opacity");
+                metadata.remove("blend_mode");
+                let content = clip
+                    .get_mut("content")
+                    .and_then(serde_json::Value::as_object_mut)
+                    .ok_or_else(|| js_error("Audio clip is invalid"))?;
+                let asset_id = content
+                    .get("asset_id")
+                    .and_then(serde_json::Value::as_str)
+                    .map(str::to_owned)
+                    .unwrap_or(clip_id.clone());
+                content.insert(
+                    "asset_id".to_string(),
+                    serde_json::Value::String(asset_id.clone()),
+                );
+                let data = content.remove("data");
+                content.remove("opacity");
+                content.remove("blend_mode");
+                if !assets.contains_key(&asset_id) {
+                    let audio_data = if let Some(data) = data {
+                        data
+                    } else {
+                        let mut audio_data = Vec::new();
+                        archive
+                            .by_name(&format!("assets/{asset_id}.wav"))
+                            .map_err(js_error)?
+                            .read_to_end(&mut audio_data)
+                            .map_err(js_error)?;
+                        serde_json::json!(audio_data)
+                    };
+                    assets.insert(
+                        asset_id,
+                        serde_json::json!({"type": "audio", "data": audio_data}),
+                    );
+                }
+                continue;
+            }
             let metadata = clip
-                .get("metadata")
+                .get_mut("metadata")
+                .and_then(serde_json::Value::as_object_mut)
+                .ok_or_else(|| js_error("Clip metadata is invalid"))?;
+            let legacy_opacity = metadata.remove("opacity");
+            let legacy_blend_mode = metadata.remove("blend_mode");
+            let content = clip
+                .get_mut("content")
+                .and_then(serde_json::Value::as_object_mut)
+                .ok_or_else(|| js_error("Image clip content is invalid"))?;
+            if let Some(opacity) = legacy_opacity {
+                content.entry("opacity".to_string()).or_insert(opacity);
+            }
+            if let Some(blend_mode) = legacy_blend_mode {
+                content
+                    .entry("blend_mode".to_string())
+                    .or_insert(blend_mode);
+            }
+            let metadata = clip
+                .get("content")
                 .and_then(serde_json::Value::as_object)
                 .ok_or_else(|| js_error("Clip metadata is invalid"))?;
             let id = metadata
@@ -187,7 +346,14 @@ impl MointoCore {
             let pixels = to_rgba(&decoded[..info.buffer_size()], info.color_type)?;
             assets.insert(
                 id,
-                serde_json::json!({"width": info.width, "height": info.height, "data": pixels}),
+                serde_json::json!({
+                    "type": "image",
+                    "data": {
+                        "width": info.width,
+                        "height": info.height,
+                        "data": pixels,
+                    },
+                }),
             );
         }
         manifest["assets"] = serde_json::Value::Object(assets);
@@ -243,18 +409,30 @@ fn omit_default_values(value: &mut serde_json::Value) {
                         metadata.remove(key);
                     }
                 }
-                if metadata.get("opacity").and_then(serde_json::Value::as_f64) == Some(1.0) {
-                    metadata.remove("opacity");
+                if metadata.get("name").and_then(serde_json::Value::as_str) == Some("Clip") {
+                    metadata.remove("name");
                 }
-                if metadata
+            }
+            if let Some(content) = clip
+                .get_mut("content")
+                .and_then(serde_json::Value::as_object_mut)
+            {
+                if content
+                    .get("alpha_locked")
+                    .and_then(serde_json::Value::as_bool)
+                    == Some(false)
+                {
+                    content.remove("alpha_locked");
+                }
+                if content.get("opacity").and_then(serde_json::Value::as_f64) == Some(1.0) {
+                    content.remove("opacity");
+                }
+                if content
                     .get("blend_mode")
                     .and_then(serde_json::Value::as_str)
                     == Some("normal")
                 {
-                    metadata.remove("blend_mode");
-                }
-                if metadata.get("name").and_then(serde_json::Value::as_str) == Some("Clip") {
-                    metadata.remove("name");
+                    content.remove("blend_mode");
                 }
             }
             if let Some(transform) = clip

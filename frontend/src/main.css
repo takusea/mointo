@@ -20,7 +20,11 @@
 		oklch(from var(--color-surface) calc(l * 1.1) c h)
 	);
 	--color-foreground: light-dark(var(--color-zinc-950), var(--color-zinc-50));
-	--color-foreground-muted: var(--color-zinc-500);
+	--color-foreground-muted: color-mix(
+		in oklch,
+		var(--color-foreground) 50%,
+		transparent 50%
+	);
 	--color-foreground-primary: light-dark(
 		var(--color-zinc-50),
 		var(--color-zinc-950)
@@ -36,6 +40,7 @@
 		transparent 60%
 	);
 	--color-warning: light-dark(var(--color-red-600), var(--color-red-400));
+	--color-clip: var(--color-primary);
 }
 
 :root {
@@ -43,6 +48,8 @@
 		oklch(60% 0.15 var(--hue)),
 		oklch(80% 0.15 var(--hue))
 	);
+	--color-clip-audio: oklch(60% 0.2 20);
+	--color-clip-image: oklch(60% 0.2 240);
 
 	overscroll-behavior-y: none;
 	color-scheme: light dark;

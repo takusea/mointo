@@ -51,9 +51,12 @@ impl MointoCore {
         let Some(clip) = project.get_clip(clip_id) else {
             return;
         };
-        let (clip_width, clip_height) = (clip.image.width, clip.image.height);
+        let Some(image) = clip.image() else {
+            return;
+        };
+        let (clip_width, clip_height) = (image.width, image.height);
         let (transform, _) = clip.values_at(frame_index);
-        let alpha_locked = clip.metadata.alpha_locked;
+        let alpha_locked = clip.alpha_locked();
         let bytes = reference_pixels.to_vec();
         if bytes.len() != (canvas_width as usize * canvas_height as usize * 4) {
             return;
@@ -102,7 +105,9 @@ impl MointoCore {
             }
             let index =
                 ((local_y.floor() as usize * clip_width as usize) + local_x.floor() as usize) * 4;
-            let image = clip.get_image_mut();
+            let Some(image) = clip.image_mut() else {
+                return;
+            };
             let before: [u8; 4] = image.data[index..index + 4].try_into().unwrap();
             if alpha_locked && before[3] == 0 {
                 continue;
@@ -256,9 +261,12 @@ impl MointoCore {
             }
         };
 
-        let (width, height) = (clip.image.width, clip.image.height);
+        let Some(image) = clip.image() else {
+            return;
+        };
+        let (width, height) = (image.width, image.height);
         let (transform, _) = clip.values_at(frame_index);
-        let alpha_locked = clip.metadata.alpha_locked;
+        let alpha_locked = clip.alpha_locked();
         let color_array = [color[0], color[1], color[2], color[3]];
 
         let mut changes = Vec::new();
@@ -285,7 +293,9 @@ impl MointoCore {
             };
 
             let change_start = changes.len();
-            let image = clip.get_image_mut();
+            let Some(image) = clip.image_mut() else {
+                return;
+            };
             tool.apply(
                 image,
                 x,

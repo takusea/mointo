@@ -28,6 +28,16 @@ export const ClipProvider = ({ children }: Props) => {
 						clip.start <= playbackContext.currentFrame &&
 						playbackContext.currentFrame < clip.start + clip.duration,
 				);
+	const currentImageClip =
+		layerContext.selectedLayerId == null
+			? undefined
+			: clips.find(
+					(clip) =>
+						clip.clip_type === "image" &&
+						clip.layer_id === layerContext.selectedLayerId &&
+						clip.start <= playbackContext.currentFrame &&
+						playbackContext.currentFrame < clip.start + clip.duration,
+				);
 
 	const selectionState = useClipSelection({
 		clips,
@@ -47,7 +57,7 @@ export const ClipProvider = ({ children }: Props) => {
 		onClipsSelected: selectionState.selectClips,
 	});
 	const clipboard = useClipboard({
-		currentClip,
+		currentClip: currentImageClip,
 		selection: selectionState.selection,
 		selectedLayerId: layerContext.selectedLayerId,
 		layers: layerContext.layers,

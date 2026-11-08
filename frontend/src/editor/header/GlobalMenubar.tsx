@@ -3,11 +3,13 @@ import MenubarItem from "~/components/Menubar/MenubarItem";
 import MenubarMenu from "~/components/Menubar/MenubarMenu";
 import MenubarRoot from "~/components/Menubar/MenubarRoot";
 import MenubarSeparator from "~/components/Menubar/MenubarSeparator";
+import MenubarSub from "~/components/Menubar/MenubarSub";
 import { formatShortcut } from "~/constants/shortcuts";
 import { useDialogs } from "~/editor/dialogs/useDialogs";
 import { useClip } from "~/features/clip/useClip";
 import { useUndo } from "~/features/history/useUndo";
 import { useI18n } from "~/features/i18n/useI18n";
+import { useAudioImport } from "~/features/io/import/useAudioImport";
 import { useImageImport } from "~/features/io/import/useImageImport";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
@@ -36,6 +38,7 @@ const GlobalMenubar = () => {
 	const dialogs = useDialogs();
 	const canvasView = useCanvasView();
 	const importImage = useImageImport();
+	const importAudio = useAudioImport();
 
 	const fitToView = () => {
 		if (project.settings == null) {
@@ -136,15 +139,26 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.saveWith)}
 				/>
 				<MenubarSeparator />
-				<MenubarItem
-					label={t("menubar.import")}
-					disabled={
-						project.settings == null ||
-						layerContext.selectedLayerId == null ||
-						layerContext.isLayerLocked(layerContext.selectedLayerId)
-					}
-					onSelect={importImage}
-				/>
+				<MenubarSub label={t("menubar.import")}>
+					<MenubarItem
+						label={t("menubar.importImage")}
+						disabled={
+							project.settings == null ||
+							layerContext.selectedLayerId == null ||
+							layerContext.isLayerLocked(layerContext.selectedLayerId)
+						}
+						onSelect={importImage}
+					/>
+					<MenubarItem
+						label={t("menubar.importAudio")}
+						disabled={
+							project.settings == null ||
+							layerContext.selectedLayerId == null ||
+							layerContext.isLayerLocked(layerContext.selectedLayerId)
+						}
+						onSelect={importAudio}
+					/>
+				</MenubarSub>
 				<MenubarItem
 					label={t("menubar.export")}
 					disabled={project.settings == null}

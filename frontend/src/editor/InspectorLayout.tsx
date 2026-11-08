@@ -108,7 +108,8 @@ const InspectorLayout = () => {
 		? (snapshot.clipKeyframes[selectedClip.id] ?? [])
 		: [];
 	const fallbackOpacity = selectedClip
-		? (snapshot.clipPreviewOpacities[selectedClip.id] ?? selectedClip.opacity)
+		? (snapshot.clipPreviewOpacities[selectedClip.id] ??
+			(selectedClip.clip_type === "image" ? selectedClip.opacity : 1))
 		: 1;
 	const evaluated =
 		selectedClip && clipContext.transform
@@ -279,7 +280,7 @@ const InspectorLayout = () => {
 								onDuplicate={() => void clipContext.duplicateSelectedClip()}
 								onDelete={() => void clipContext.deleteClip(selectedClip.id)}
 								clip={
-									evaluated
+									evaluated && selectedClip.clip_type === "image"
 										? { ...selectedClip, opacity: evaluated.opacity }
 										: selectedClip
 								}
@@ -402,6 +403,7 @@ const InspectorLayout = () => {
 									const frame = playback.currentFrame;
 									for (const targetClip of selectedClips) {
 										if (
+											targetClip.clip_type !== "image" ||
 											targetClip.locked ||
 											layerContext.isLayerLocked(targetClip.layer_id)
 										)

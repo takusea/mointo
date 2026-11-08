@@ -1,6 +1,7 @@
 import {
 	IconAlpha,
 	IconArrowAutofitHeight,
+	IconArrowAutofitRight,
 	IconArrowAutofitWidth,
 	IconArrowsHorizontal,
 	IconArrowsMoveHorizontal,
@@ -100,18 +101,20 @@ const ClipInspector = ({
 						disabled={isLocked}
 						onClick={() => onPropertiesChange({ hidden: !clip.hidden })}
 					/>
-					<IconButton
-						icon={IconAlpha}
-						label={t("inspector.lockAlpha")}
-						variant={clip.alpha_locked ? "primary" : undefined}
-						aria-pressed={clip.alpha_locked}
-						disabled={isLocked}
-						onClick={() =>
-							onPropertiesChange({
-								alpha_locked: !clip.alpha_locked,
-							})
-						}
-					/>
+					{clip.clip_type === "image" && (
+						<IconButton
+							icon={IconAlpha}
+							label={t("inspector.lockAlpha")}
+							variant={clip.alpha_locked ? "primary" : undefined}
+							aria-pressed={clip.alpha_locked}
+							disabled={isLocked}
+							onClick={() =>
+								onPropertiesChange({
+									alpha_locked: !clip.alpha_locked,
+								})
+							}
+						/>
+					)}
 					<IconButton
 						icon={isLocked ? IconLock : IconLockOpen}
 						label={isLocked ? t("inspector.unlock") : t("inspector.lock")}
@@ -121,7 +124,9 @@ const ClipInspector = ({
 					/>
 					{clips.some(
 						(candidate) =>
-							candidate.id !== clip.id && candidate.asset_id === clip.asset_id,
+							candidate.clip_type === clip.clip_type &&
+							candidate.id !== clip.id &&
+							candidate.asset_id === clip.asset_id,
 					) && (
 						<IconButton
 							icon={IconUnlink}
@@ -159,36 +164,6 @@ const ClipInspector = ({
 					}}
 				/>
 				<Separator />
-				<span className="font-medium">{t("inspector.size")}</span>
-				<div className="grid grid-cols-2 gap-2">
-					<NumberField
-						id="clipWidth"
-						aria-label={t("inspector.width")}
-						min={1}
-						value={clip.width}
-						disabled={isLocked}
-						leftElement={<IconArrowAutofitWidth />}
-						rightElement="px"
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(width) => onSizeChange(width, clip.height, "width")}
-					/>
-					<NumberField
-						id="clipHeight"
-						aria-label={t("inspector.height")}
-						min={1}
-						value={clip.height}
-						disabled={isLocked}
-						leftElement={<IconArrowAutofitHeight />}
-						rightElement="px"
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(height) =>
-							onSizeChange(clip.width, height, "height")
-						}
-					/>
-				</div>
-				<Separator />
 				<span className="font-medium">{t("inspector.framePosition")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
@@ -217,262 +192,321 @@ const ClipInspector = ({
 					/>
 				</div>
 				<Separator />
-				<div className="flex items-center justify-between gap-1 font-medium">
-					{t("inspector.position")}
-					<IconButton
-						icon={IconKeyframe}
-						label={t("inspector.togglePropertyKeyframe", {
-							property: t("inspector.position"),
-						})}
-						variant={
-							keyframes.some(
-								(k) => k.frame === currentFrame && k.property === "position",
-							)
-								? "primary"
-								: undefined
-						}
-						disabled={isLocked}
-						onClick={() => onKeyframeToggle("position", transform.position)}
-					/>
-				</div>
-				<div className="grid grid-cols-2 gap-2">
-					<NumberField
-						id="clipPosition"
-						aria-label={t("inspector.positionX")}
-						value={transform.position[0]}
-						disabled={isLocked}
-						leftElement={<IconArrowsMoveHorizontal />}
-						rightElement="px"
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(value) => {
-							onTransformChange({
-								...transform,
-								position: [value, transform.position[1]],
-							});
-						}}
-					/>
-					<NumberField
-						id="clipPositionY"
-						aria-label={t("inspector.positionY")}
-						value={transform.position[1]}
-						disabled={isLocked}
-						leftElement={<IconArrowsMoveVertical />}
-						rightElement="px"
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(value) => {
-							onTransformChange({
-								...transform,
-								position: [transform.position[0], value],
-							});
-						}}
-					/>
-				</div>
-				<span className="flex items-center justify-between gap-1 font-medium">
-					{t("inspector.anchor")}
-					<IconButton
-						icon={IconKeyframe}
-						label={t("inspector.togglePropertyKeyframe", {
-							property: t("inspector.anchor"),
-						})}
-						variant={
-							keyframes.some(
-								(k) => k.frame === currentFrame && k.property === "anchor",
-							)
-								? "primary"
-								: undefined
-						}
-						disabled={isLocked}
-						onClick={() => onKeyframeToggle("anchor", transform.anchor)}
-					/>
-				</span>
-				<div className="grid grid-cols-2 gap-2">
-					<NumberField
-						id="clipAnchor"
-						aria-label={t("inspector.anchorX")}
-						min={0}
-						max={1}
-						step={0.01}
-						value={transform.anchor[0]}
-						disabled={isLocked}
-						leftElement={<IconArrowsMoveHorizontal />}
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(value) => {
-							onTransformChange({
-								...transform,
-								anchor: [value, transform.anchor[1]],
-							});
-						}}
-					/>
-					<NumberField
-						id="clipAnchorY"
-						aria-label={t("inspector.anchorY")}
-						min={0}
-						max={1}
-						step={0.01}
-						value={transform.anchor[1]}
-						disabled={isLocked}
-						leftElement={<IconArrowsMoveVertical />}
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(value) => {
-							onTransformChange({
-								...transform,
-								anchor: [transform.anchor[0], value],
-							});
-						}}
-					/>
-				</div>
-				<span className="flex items-center justify-between gap-1 font-medium">
-					{t("inspector.rotation")}
-					<IconButton
-						icon={IconKeyframe}
-						label={t("inspector.togglePropertyKeyframe", {
-							property: t("inspector.rotation"),
-						})}
-						variant={
-							keyframes.some(
-								(k) => k.frame === currentFrame && k.property === "rotation",
-							)
-								? "primary"
-								: undefined
-						}
-						disabled={isLocked}
-						onClick={() => onKeyframeToggle("rotation", transform.rotation)}
-					/>
-				</span>
-				<NumberField
-					id="clipRotation"
-					aria-label={t("inspector.rotation")}
-					min={0}
-					max={360}
-					value={transform.rotation}
-					disabled={isLocked}
-					leftElement={<IconRotate />}
-					rightElement="°"
-					onInteractionStart={onInteractionStart}
-					onInteractionEnd={onInteractionEnd}
-					onValueChange={(value) => {
-						onTransformChange({
-							...transform,
-							rotation: value,
-						});
-					}}
-				/>
-				<span className="flex items-center justify-between gap-1 font-medium">
-					{t("inspector.scale")}
-					<IconButton
-						icon={IconKeyframe}
-						label={t("inspector.togglePropertyKeyframe", {
-							property: t("inspector.scale"),
-						})}
-						variant={
-							keyframes.some(
-								(k) => k.frame === currentFrame && k.property === "scale",
-							)
-								? "primary"
-								: undefined
-						}
-						disabled={isLocked}
-						onClick={() => onKeyframeToggle("scale", transform.scale)}
-					/>
-				</span>
-				<div className="grid grid-cols-2 gap-2">
-					<NumberField
-						id="clipScale"
-						aria-label={t("inspector.scaleX")}
-						min={0}
-						max={1000}
-						value={transform.scale[0] * 100}
-						disabled={isLocked}
-						leftElement={<IconArrowsMoveHorizontal />}
-						rightElement="%"
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(value) => {
-							onTransformChange({
-								...transform,
-								scale: [value / 100, transform.scale[1]],
-							});
-						}}
-					/>
-					<NumberField
-						id="clipScaleY"
-						aria-label={t("inspector.scaleY")}
-						min={0}
-						max={1000}
-						value={transform.scale[1] * 100}
-						disabled={isLocked}
-						leftElement={<IconArrowsMoveVertical />}
-						rightElement="%"
-						onInteractionStart={onInteractionStart}
-						onInteractionEnd={onInteractionEnd}
-						onValueChange={(value) => {
-							onTransformChange({
-								...transform,
-								scale: [transform.scale[0], Math.round(value / 100)],
-							});
-						}}
-					/>
-				</div>
-				<Separator />
-				<span className="flex items-center justify-between gap-1 font-medium">
-					{t("inspector.opacity")}
-					<IconButton
-						icon={IconKeyframe}
-						label={t("inspector.togglePropertyKeyframe", {
-							property: t("inspector.opacity"),
-						})}
-						variant={
-							keyframes.some(
-								(k) => k.frame === currentFrame && k.property === "opacity",
-							)
-								? "primary"
-								: undefined
-						}
-						disabled={isLocked}
-						onClick={() => onKeyframeToggle("opacity", clip.opacity)}
-					/>
-				</span>
-				<NumberField
-					id="clipOpacity"
-					aria-label={t("inspector.opacity")}
-					min={0}
-					max={100}
-					value={clip.opacity * 100}
-					disabled={isLocked}
-					leftElement={<IconAlpha />}
-					rightElement="%"
-					onInteractionStart={onInteractionStart}
-					onInteractionEnd={onInteractionEnd}
-					onValueChange={(value) => onOpacityChange(value / 100)}
-				/>
-				<span className="font-medium">{t("inspector.blendMode")}</span>
-				<Select
-					id="clipBlendMode"
-					value={clip.blend_mode}
-					disabled={isLocked}
-					onValueChange={(blend_mode) =>
-						(blend_mode === "normal" ||
-							blend_mode === "multiply" ||
-							blend_mode === "screen" ||
-							blend_mode === "add") &&
-						onPropertiesChange({ blend_mode })
-					}
-				>
-					<SelectItem value="normal">
-						{t("inspector.blendMode.normal")}
-					</SelectItem>
-					<SelectItem value="multiply">
-						{t("inspector.blendMode.multiply")}
-					</SelectItem>
-					<SelectItem value="screen">
-						{t("inspector.blendMode.screen")}
-					</SelectItem>
-					<SelectItem value="add">{t("inspector.blendMode.add")}</SelectItem>
-				</Select>
+				{clip.clip_type === "audio" ? (
+					<>
+						<span className="font-medium">{t("inspector.playbackOffset")}</span>
+						<NumberField
+							id="clipAudioStartFrame"
+							aria-label={t("inspector.playbackOffset")}
+							min={0}
+							step={1}
+							value={clip.audio_start_frame}
+							disabled={isLocked}
+							leftElement={<IconArrowAutofitRight />}
+							rightElement="f"
+							onInteractionStart={onInteractionStart}
+							onInteractionEnd={onInteractionEnd}
+							onValueChange={(audio_start_frame) =>
+								onPropertiesChange({ audio_start_frame })
+							}
+						/>
+					</>
+				) : (
+					<>
+						<span className="font-medium">{t("inspector.size")}</span>
+						<div className="grid grid-cols-2 gap-2">
+							<NumberField
+								id="clipWidth"
+								aria-label={t("inspector.width")}
+								min={1}
+								value={clip.width}
+								disabled={isLocked}
+								leftElement={<IconArrowAutofitWidth />}
+								rightElement="px"
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(width) =>
+									onSizeChange(width, clip.height, "width")
+								}
+							/>
+							<NumberField
+								id="clipHeight"
+								aria-label={t("inspector.height")}
+								min={1}
+								value={clip.height}
+								disabled={isLocked}
+								leftElement={<IconArrowAutofitHeight />}
+								rightElement="px"
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(height) =>
+									onSizeChange(clip.width, height, "height")
+								}
+							/>
+						</div>
+						<Separator />
+						<div className="flex items-center justify-between gap-1 font-medium">
+							{t("inspector.position")}
+							<IconButton
+								icon={IconKeyframe}
+								label={t("inspector.togglePropertyKeyframe", {
+									property: t("inspector.position"),
+								})}
+								variant={
+									keyframes.some(
+										(k) =>
+											k.frame === currentFrame && k.property === "position",
+									)
+										? "primary"
+										: undefined
+								}
+								disabled={isLocked}
+								onClick={() => onKeyframeToggle("position", transform.position)}
+							/>
+						</div>
+						<div className="grid grid-cols-2 gap-2">
+							<NumberField
+								id="clipPosition"
+								aria-label={t("inspector.positionX")}
+								value={transform.position[0]}
+								disabled={isLocked}
+								leftElement={<IconArrowsMoveHorizontal />}
+								rightElement="px"
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(value) => {
+									onTransformChange({
+										...transform,
+										position: [value, transform.position[1]],
+									});
+								}}
+							/>
+							<NumberField
+								id="clipPositionY"
+								aria-label={t("inspector.positionY")}
+								value={transform.position[1]}
+								disabled={isLocked}
+								leftElement={<IconArrowsMoveVertical />}
+								rightElement="px"
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(value) => {
+									onTransformChange({
+										...transform,
+										position: [transform.position[0], value],
+									});
+								}}
+							/>
+						</div>
+						<span className="flex items-center justify-between gap-1 font-medium">
+							{t("inspector.anchor")}
+							<IconButton
+								icon={IconKeyframe}
+								label={t("inspector.togglePropertyKeyframe", {
+									property: t("inspector.anchor"),
+								})}
+								variant={
+									keyframes.some(
+										(k) => k.frame === currentFrame && k.property === "anchor",
+									)
+										? "primary"
+										: undefined
+								}
+								disabled={isLocked}
+								onClick={() => onKeyframeToggle("anchor", transform.anchor)}
+							/>
+						</span>
+						<div className="grid grid-cols-2 gap-2">
+							<NumberField
+								id="clipAnchor"
+								aria-label={t("inspector.anchorX")}
+								min={0}
+								max={1}
+								step={0.01}
+								value={transform.anchor[0]}
+								disabled={isLocked}
+								leftElement={<IconArrowsMoveHorizontal />}
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(value) => {
+									onTransformChange({
+										...transform,
+										anchor: [value, transform.anchor[1]],
+									});
+								}}
+							/>
+							<NumberField
+								id="clipAnchorY"
+								aria-label={t("inspector.anchorY")}
+								min={0}
+								max={1}
+								step={0.01}
+								value={transform.anchor[1]}
+								disabled={isLocked}
+								leftElement={<IconArrowsMoveVertical />}
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(value) => {
+									onTransformChange({
+										...transform,
+										anchor: [transform.anchor[0], value],
+									});
+								}}
+							/>
+						</div>
+						<span className="flex items-center justify-between gap-1 font-medium">
+							{t("inspector.rotation")}
+							<IconButton
+								icon={IconKeyframe}
+								label={t("inspector.togglePropertyKeyframe", {
+									property: t("inspector.rotation"),
+								})}
+								variant={
+									keyframes.some(
+										(k) =>
+											k.frame === currentFrame && k.property === "rotation",
+									)
+										? "primary"
+										: undefined
+								}
+								disabled={isLocked}
+								onClick={() => onKeyframeToggle("rotation", transform.rotation)}
+							/>
+						</span>
+						<NumberField
+							id="clipRotation"
+							aria-label={t("inspector.rotation")}
+							min={0}
+							max={360}
+							value={transform.rotation}
+							disabled={isLocked}
+							leftElement={<IconRotate />}
+							rightElement="°"
+							onInteractionStart={onInteractionStart}
+							onInteractionEnd={onInteractionEnd}
+							onValueChange={(value) => {
+								onTransformChange({
+									...transform,
+									rotation: value,
+								});
+							}}
+						/>
+						<span className="flex items-center justify-between gap-1 font-medium">
+							{t("inspector.scale")}
+							<IconButton
+								icon={IconKeyframe}
+								label={t("inspector.togglePropertyKeyframe", {
+									property: t("inspector.scale"),
+								})}
+								variant={
+									keyframes.some(
+										(k) => k.frame === currentFrame && k.property === "scale",
+									)
+										? "primary"
+										: undefined
+								}
+								disabled={isLocked}
+								onClick={() => onKeyframeToggle("scale", transform.scale)}
+							/>
+						</span>
+						<div className="grid grid-cols-2 gap-2">
+							<NumberField
+								id="clipScale"
+								aria-label={t("inspector.scaleX")}
+								min={0}
+								max={1000}
+								value={transform.scale[0] * 100}
+								disabled={isLocked}
+								leftElement={<IconArrowsMoveHorizontal />}
+								rightElement="%"
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(value) => {
+									onTransformChange({
+										...transform,
+										scale: [value / 100, transform.scale[1]],
+									});
+								}}
+							/>
+							<NumberField
+								id="clipScaleY"
+								aria-label={t("inspector.scaleY")}
+								min={0}
+								max={1000}
+								value={transform.scale[1] * 100}
+								disabled={isLocked}
+								leftElement={<IconArrowsMoveVertical />}
+								rightElement="%"
+								onInteractionStart={onInteractionStart}
+								onInteractionEnd={onInteractionEnd}
+								onValueChange={(value) => {
+									onTransformChange({
+										...transform,
+										scale: [transform.scale[0], Math.round(value / 100)],
+									});
+								}}
+							/>
+						</div>
+						<Separator />
+						<span className="flex items-center justify-between gap-1 font-medium">
+							{t("inspector.opacity")}
+							<IconButton
+								icon={IconKeyframe}
+								label={t("inspector.togglePropertyKeyframe", {
+									property: t("inspector.opacity"),
+								})}
+								variant={
+									keyframes.some(
+										(k) => k.frame === currentFrame && k.property === "opacity",
+									)
+										? "primary"
+										: undefined
+								}
+								disabled={isLocked}
+								onClick={() => onKeyframeToggle("opacity", clip.opacity)}
+							/>
+						</span>
+						<NumberField
+							id="clipOpacity"
+							aria-label={t("inspector.opacity")}
+							min={0}
+							max={100}
+							value={clip.opacity * 100}
+							disabled={isLocked}
+							leftElement={<IconAlpha />}
+							rightElement="%"
+							onInteractionStart={onInteractionStart}
+							onInteractionEnd={onInteractionEnd}
+							onValueChange={(value) => onOpacityChange(value / 100)}
+						/>
+						<span className="font-medium">{t("inspector.blendMode")}</span>
+						<Select
+							id="clipBlendMode"
+							value={clip.blend_mode}
+							disabled={isLocked}
+							onValueChange={(blend_mode) =>
+								(blend_mode === "normal" ||
+									blend_mode === "multiply" ||
+									blend_mode === "screen" ||
+									blend_mode === "add") &&
+								onPropertiesChange({ blend_mode })
+							}
+						>
+							<SelectItem value="normal">
+								{t("inspector.blendMode.normal")}
+							</SelectItem>
+							<SelectItem value="multiply">
+								{t("inspector.blendMode.multiply")}
+							</SelectItem>
+							<SelectItem value="screen">
+								{t("inspector.blendMode.screen")}
+							</SelectItem>
+							<SelectItem value="add">
+								{t("inspector.blendMode.add")}
+							</SelectItem>
+						</Select>
+					</>
+				)}
 			</div>
 		</Card>
 	);

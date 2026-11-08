@@ -1,5 +1,5 @@
 use super::MointoCore;
-use crate::app::clip::{BlendMode, Clip, ClipMetadata};
+use crate::app::clip::{Clip, ClipMetadata};
 use crate::app::composition_settings::CompositionSettings;
 use crate::app::project::Project;
 use crate::core::{image::Image, transform::Transform};
@@ -49,26 +49,21 @@ impl MointoCore {
             .saturating_sub(start_frame)
             .saturating_add(1)
             .max(1);
-        project.composition_mut().add_clip(Clip {
-            metadata: ClipMetadata {
+        project.composition_mut().add_clip(Clip::new_image(
+            ClipMetadata {
                 id: uuid::Uuid::new_v4(),
-                asset_id: uuid::Uuid::new_v4(),
                 name: "Background".to_string(),
                 start: start_frame,
                 layer_id: paper_layer_id,
                 duration,
                 hidden: false,
-                alpha_locked: false,
                 locked: false,
-                opacity: 1.0,
-                blend_mode: BlendMode::Normal,
             },
-            transform: Transform::default(),
-            keyframes: Vec::new(),
+            uuid::Uuid::new_v4(),
             image,
-            image_revision: 0,
-            dirty_rect: std::cell::Cell::new(None),
-        });
+            Transform::default(),
+            Vec::new(),
+        ));
         self.project = Some(project);
         Ok(())
     }

@@ -247,6 +247,7 @@ export const useCanvasPointer = (
 		const targetClip = clipContext.clips.find((clip) => clip.id === clipId);
 		if (
 			targetClip == null ||
+			targetClip.clip_type !== "image" ||
 			targetClip.locked ||
 			layerContext.isLayerLocked(targetClip.layer_id)
 		)
@@ -348,6 +349,7 @@ export const useCanvasPointer = (
 			const targetClip = clipContext.clips.find((clip) => clip.id === clipId);
 			if (
 				targetClip == null ||
+				targetClip.clip_type !== "image" ||
 				targetClip.locked ||
 				layerContext.isLayerLocked(targetClip.layer_id)
 			)

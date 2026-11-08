@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import type { ClipType } from "~/lib/clip";
 
 type Props = {
 	id: string;
 	keyframes: { frame: number; property: string }[];
 	name: string;
+	type: ClipType;
 	layerHeight: number;
 	frameWidth: number;
 	scrollX: number;
@@ -63,6 +65,7 @@ const Clip = ({
 	id,
 	keyframes,
 	name,
+	type,
 	layerHeight,
 	frameWidth,
 	scrollX,
@@ -329,10 +332,11 @@ const Clip = ({
 		<div
 			key={id}
 			data-clip="true"
+			data-type={type}
 			data-selected={isSelected}
 			data-hidden={isHidden}
 			data-locked={isLocked}
-			className="group absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-border bg-surface font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[selected=true]:border-primary data-[selected=true]:bg-primary/25"
+			className="group data-[selected=true]:bg-clip bg-clip/25 absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-clip font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[type=audio]:[--color-clip:var(--color-clip-audio)] data-[type=image]:[--color-clip:var(--color-clip-image)]"
 			style={{
 				left: `${startFrame * frameWidth}px`,
 				top: `${layerIndex * layerHeight}px`,
@@ -343,7 +347,7 @@ const Clip = ({
 			onPointerCancel={handlePointerUp}
 			onLostPointerCapture={handlePointerUp}
 		>
-			<div className="pointer-events-none absolute flex h-full items-center px-1 text-nowrap">
+			<div className="pointer-events-none absolute flex h-full items-center gap-1 px-1 text-nowrap">
 				{name}
 			</div>
 			{[...keysByFrame.entries()].flatMap(([frame, keys]) =>
@@ -374,7 +378,7 @@ const Clip = ({
 							onPointerCancel={finishKeyframeDrag}
 							onLostPointerCapture={finishKeyframeDrag}
 						>
-							<span className="size-2 rotate-45 border border-border bg-border group-data-[selected=true]:bg-primary" />
+							<span className="size-2 rotate-45 bg-foreground-muted" />
 						</button>
 					);
 				}),
@@ -385,11 +389,13 @@ const Clip = ({
 				onPointerMove={isLocked ? undefined : handlePointerMove}
 			/>
 			<div
-				className="bg-border group-data-[locked=false]:cursor-w-resize group-data-[selected=true]:bg-primary"
+				className="bg-clip grid place-items-center group-data-[locked=false]:cursor-w-resize"
 				data-resize="true"
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handleRightPointerMove}
-			/>
+			>
+				<div className="h-4 w-px bg-foreground-muted" />
+			</div>
 		</div>
 	);
 };

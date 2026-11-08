@@ -44,7 +44,9 @@ export const useClipCommands = ({
 		const nextClips = await core.addClip(start, layerId);
 		const clip = nextClips.find(
 			(candidate) =>
-				candidate.start === start && candidate.layer_id === layerId,
+				candidate.clip_type === "image" &&
+				candidate.start === start &&
+				candidate.layer_id === layerId,
 		);
 		if (clip != null) onClipSelected(clip.id, layerId, true);
 	};
@@ -54,6 +56,7 @@ export const useClipCommands = ({
 
 		const existingClip = clips.find(
 			(clip) =>
+				clip.clip_type === "image" &&
 				clip.layer_id === layerId &&
 				clip.start <= frame &&
 				frame < clip.start + clip.duration,
@@ -63,19 +66,39 @@ export const useClipCommands = ({
 			return existingClip.id;
 		}
 
-		const nextClips = await core.addClip(frame, layerId);
+		const selectedLayerIndex = layers.findIndex(
+			(layer) => layer.id === layerId,
+		);
+		if (selectedLayerIndex < 0) return undefined;
+		const destinationLayer = layers
+			.slice(selectedLayerIndex)
+			.find(
+				(layer) =>
+					!isLayerLocked(layer.id) &&
+					!clips.some(
+						(clip) =>
+							clip.layer_id === layer.id &&
+							clip.start <= frame &&
+							frame < clip.start + clip.duration,
+					),
+			);
+		if (destinationLayer == null) return undefined;
+
+		const existingIds = new Set(clips.map((clip) => clip.id));
+		const nextClips = await core.addClip(frame, destinationLayer.id);
 		const newClip = nextClips.find(
 			(clip) =>
+				clip.clip_type === "image" &&
 				clip.start === frame &&
-				clip.layer_id === layerId &&
-				!clips.some((existing) => existing.id === clip.id),
+				clip.layer_id === destinationLayer.id &&
+				!existingIds.has(clip.id),
 		);
 		if (newClip == null) return undefined;
-		onClipSelected(newClip.id, layerId);
+		onClipSelected(newClip.id, destinationLayer.id, true);
 		return newClip.id;
 	};
 
-	const duplicateClip = async (id: string | undefined, linkImage = false) => {
+	const duplicateClip = async (id: string | undefined, linkAsset = false) => {
 		const sources = getSelectedClips(id ?? "").filter(
 			(clip) => !clip.locked && !isLayerLocked(clip.layer_id),
 		);
@@ -115,7 +138,23 @@ export const useClipCommands = ({
 		try {
 			for (const source of sources) {
 				const start = source.start + offset;
-				const nextClips = await core.addClip(start, source.layer_id);
+				let nextClips: ClipMetadata[];
+				if (source.clip_type === "audio") {
+					const audioData = await core.getAudioClipData(source.id);
+					if (audioData == null) {
+						throw new Error(`Audio data is missing for clip ${source.id}.`);
+					}
+					nextClips = await core.addAudioClip(
+						start,
+						source.layer_id,
+						source.duration,
+						audioData,
+						source.audio_mime_type,
+						source.name,
+					);
+				} else {
+					nextClips = await core.addClip(start, source.layer_id);
+				}
 				const duplicate = nextClips.find(
 					(candidate) =>
 						!existingIds.has(candidate.id) &&
@@ -126,19 +165,28 @@ export const useClipCommands = ({
 				existingIds.add(duplicate.id);
 				duplicateIds.push(duplicate.id);
 
-				await core.changeClipDuration(duplicate.id, source.duration);
+				if (source.clip_type !== "audio") {
+					await core.changeClipDuration(duplicate.id, source.duration);
+				}
 				await core.changeClipName(duplicate.id, source.name);
-				await core.changeClipSize(duplicate.id, source.width, source.height);
-				await core.changeClipProperties(duplicate.id, {
+				if (source.clip_type !== "audio") {
+					await core.changeClipSize(duplicate.id, source.width, source.height);
+				}
+				const properties: ClipProperties = {
 					hidden: source.hidden,
-					alpha_locked: source.alpha_locked,
 					locked: source.locked,
-					opacity: source.opacity,
-					blend_mode: source.blend_mode,
-				});
-				if (linkImage) {
-					await core.linkClips(source.id, duplicate.id);
+				};
+				if (source.clip_type === "image") {
+					properties.alpha_locked = source.alpha_locked;
+					properties.opacity = source.opacity;
+					properties.blend_mode = source.blend_mode;
 				} else {
+					properties.audio_start_frame = source.audio_start_frame;
+				}
+				await core.changeClipProperties(duplicate.id, properties);
+				if (linkAsset) {
+					await core.linkClips(source.id, duplicate.id);
+				} else if (source.clip_type === "image") {
 					const pixels = await core.getClipPixels(source.id);
 					if (pixels != null)
 						await core.replaceClipPixels(duplicate.id, pixels);
@@ -164,6 +212,7 @@ export const useClipCommands = ({
 		if (sources.some((clip) => clip.locked || isLayerLocked(clip.layer_id))) {
 			return [];
 		}
+		if (sources.some((clip) => clip.clip_type === "audio")) return [];
 
 		return sources;
 	};
@@ -413,7 +462,12 @@ export const useClipCommands = ({
 		dimension?: "width" | "height",
 	) => {
 		for (const clip of getSelectedClips(id)) {
-			if (clip.locked || isLayerLocked(clip.layer_id)) continue;
+			if (
+				clip.clip_type !== "image" ||
+				clip.locked ||
+				isLayerLocked(clip.layer_id)
+			)
+				continue;
 			await core.changeClipSize(
 				clip.id,
 				Math.max(1, Math.floor(dimension === "height" ? clip.width : width)),
@@ -432,13 +486,21 @@ export const useClipCommands = ({
 				(clip.locked && properties.locked !== false)
 			)
 				continue;
+			const currentProperties: ClipProperties =
+				clip.clip_type === "image"
+					? {
+							hidden: clip.hidden,
+							alpha_locked: clip.alpha_locked,
+							locked: clip.locked,
+							opacity: clip.opacity,
+							blend_mode: clip.blend_mode,
+						}
+					: { hidden: clip.hidden, locked: clip.locked };
 			await core.changeClipProperties(clip.id, {
-				hidden: clip.hidden,
-				alpha_locked: clip.alpha_locked,
-				locked: clip.locked,
-				opacity: clip.opacity,
-				blend_mode: clip.blend_mode,
+				...currentProperties,
 				...properties,
+				hidden: properties.hidden ?? currentProperties.hidden,
+				locked: properties.locked ?? currentProperties.locked,
 			});
 		}
 	};
