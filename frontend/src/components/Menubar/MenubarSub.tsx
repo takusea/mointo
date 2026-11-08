@@ -10,11 +10,11 @@ const MenubarSub = ({ label, children, ...props }: Props) => {
 		<Menubar.Sub {...props}>
 			<Menubar.SubTrigger
 				{...props}
-				className="relative grid h-8 cursor-pointer grid-cols-[24px_1fr_auto] items-center gap-1 rounded-md pr-2 pl-1 hover:not-data-disabled:bg-clear-hover data-disabled:cursor-not-allowed data-disabled:opacity-50 data-highlighted:bg-clear-hover"
+				className="relative grid h-8 cursor-pointer grid-cols-[24px_1fr_auto] items-center gap-1 rounded-md px-1 hover:not-data-disabled:bg-clear-hover data-disabled:cursor-not-allowed data-disabled:opacity-50 data-highlighted:bg-clear-hover"
 			>
 				<div />
 				{label}
-				<IconChevronRight />
+				<IconChevronRight size={16} />
 			</Menubar.SubTrigger>
 			<Menubar.Portal>
 				<Menubar.SubContent
