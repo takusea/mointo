@@ -217,7 +217,7 @@ impl MointoCore {
         color: &[u8],
         frame_index: u32,
     ) {
-        if points.len() % 3 != 0 {
+        if !points.len().is_multiple_of(3) {
             eprintln!("Point data must contain x, y, and pressure for each point.");
             return;
         }
@@ -270,7 +270,7 @@ impl MointoCore {
         let color_array = [color[0], color[1], color[2], color[3]];
 
         let mut changes = Vec::new();
-        for point in points.chunks_exact(3) {
+        for point in points.as_chunks::<3>().0 {
             let (x, y) = match transform.inverse_transform_point(
                 (point[0] as f32, point[1] as f32),
                 (width as f32 / 2.0, height as f32 / 2.0),

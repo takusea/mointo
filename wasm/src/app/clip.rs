@@ -7,22 +7,17 @@ use uuid::Uuid;
 pub type ClipId = Uuid;
 pub type AssetId = Uuid;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum BlendMode {
+    #[default]
     Normal,
     Multiply,
     Screen,
     Add,
 }
 
-impl Default for BlendMode {
-    fn default() -> Self {
-        Self::Normal
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Default)]
 pub struct ClipProperties {
     #[serde(default)]
     pub hidden: bool,
@@ -36,23 +31,6 @@ pub struct ClipProperties {
     pub blend_mode: Option<BlendMode>,
     #[serde(default)]
     pub audio_start_frame: Option<u32>,
-}
-
-fn default_opacity() -> f32 {
-    1.0
-}
-
-impl Default for ClipProperties {
-    fn default() -> Self {
-        Self {
-            hidden: false,
-            alpha_locked: None,
-            locked: false,
-            opacity: None,
-            blend_mode: None,
-            audio_start_frame: None,
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -97,6 +75,10 @@ pub enum ClipContent {
         #[serde(default)]
         start_frame: u32,
     },
+}
+
+fn default_opacity() -> f32 {
+    1.0
 }
 
 #[derive(Clone, Serialize, Deserialize)]

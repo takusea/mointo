@@ -60,3 +60,9 @@ impl MointoCore {
         }
     }
 }
+
+impl Default for MointoCore {
+    fn default() -> Self {
+        Self::new()
+    }
+}

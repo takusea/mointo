@@ -589,14 +589,13 @@ impl GpuRenderer {
             data[target_start..target_start + bytes_per_row as usize]
                 .copy_from_slice(&mapped[source_start..source_start + bytes_per_row as usize]);
         }
-        for pixel in data.chunks_exact_mut(4) {
+        for pixel in data.as_chunks_mut::<4>().0 {
             let alpha = pixel[3] as u16;
-            if alpha == 0 {
-                pixel[..3].fill(0);
-            } else {
-                for channel in &mut pixel[..3] {
-                    *channel = ((*channel as u16 * 255 + alpha / 2) / alpha).min(255) as u8;
-                }
+            for channel in &mut pixel[..3] {
+                *channel = ((*channel as u16 * 255 + alpha / 2)
+                    .checked_div(alpha)
+                    .unwrap_or(0))
+                .min(255) as u8;
             }
         }
         drop(mapped);

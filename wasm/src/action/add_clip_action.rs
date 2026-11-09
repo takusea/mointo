@@ -129,6 +129,14 @@ impl Action for AddClipAction {
     }
 }
 
+impl UndoableAction for AddClipAction {
+    fn undo(&mut self, project: &mut Project) {
+        if let Some(clip_id) = self.clip_id {
+            project.composition_mut().delete_clip(clip_id);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::AddClipAction;
@@ -187,13 +195,5 @@ mod tests {
             move_target_layer_id
         );
         assert_eq!(project.composition_mut().clips[0].metadata.start, 5);
-    }
-}
-
-impl UndoableAction for AddClipAction {
-    fn undo(&mut self, project: &mut Project) {
-        if let Some(clip_id) = self.clip_id {
-            project.composition_mut().delete_clip(clip_id);
-        }
     }
 }

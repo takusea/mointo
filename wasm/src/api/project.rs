@@ -39,7 +39,7 @@ impl MointoCore {
             project.composition().settings.width,
             project.composition().settings.height,
         );
-        for pixel in image.data.chunks_exact_mut(4) {
+        for pixel in image.data.as_chunks_mut::<4>().0 {
             pixel.copy_from_slice(&[255, 255, 255, 255]);
         }
         let start_frame = project.settings().start_frame;

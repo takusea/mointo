@@ -406,16 +406,16 @@ impl MointoCore {
 
         let changes: Vec<_> = image
             .data
-            .chunks_exact(4)
-            .zip(pixels.chunks_exact(4))
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .zip(pixels.as_chunks::<4>().0.iter())
             .enumerate()
             .filter_map(|(pixel_index, (before, after))| {
-                let before: [u8; 4] = before.try_into().unwrap();
-                let after: [u8; 4] = after.try_into().unwrap();
                 (before != after).then_some(crate::core::image::PixelChange {
                     index: pixel_index * 4,
-                    before,
-                    after,
+                    before: *before,
+                    after: *after,
                 })
             })
             .collect();

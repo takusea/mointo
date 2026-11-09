@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 
 use uuid::Uuid;
 
@@ -70,17 +70,18 @@ impl Action for DrawStrokeAction {
             return;
         }
         for change in changes {
-            if self.changes.contains_key(&change.index) {
-                let remove = {
-                    let existing = self.changes.get_mut(&change.index).unwrap();
+            match self.changes.entry(change.index) {
+                Entry::Occupied(mut entry) => {
+                    let existing = entry.get_mut();
                     existing.after = change.after;
-                    existing.before == existing.after
-                };
-                if remove {
-                    self.changes.remove(&change.index);
+                    if existing.before == existing.after {
+                        entry.remove();
+                    }
                 }
-            } else if change.before != change.after {
-                self.changes.insert(change.index, change);
+                Entry::Vacant(entry) if change.before != change.after => {
+                    entry.insert(change);
+                }
+                Entry::Vacant(_) => {}
             }
         }
     }

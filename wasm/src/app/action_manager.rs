@@ -106,12 +106,9 @@ impl ActionManager {
         }
     }
 
+    #[cfg(test)]
     pub fn begin_pixel_recording(&mut self) {
         self.recording_pixel_changes = true;
-    }
-
-    pub fn end_pixel_recording(&mut self) {
-        self.recording_pixel_changes = false;
     }
 
     pub fn record_pixel_changes(&mut self, clip_id: Uuid, changes: Vec<PixelChange>) {

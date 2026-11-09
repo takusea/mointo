@@ -225,6 +225,7 @@ impl Composition {
             .find(|clip| clip.metadata.id == clip_id)
     }
 
+    #[cfg(test)]
     pub fn layer_id_at(&mut self, layer_index: usize) -> LayerId {
         self.ensure_layer(layer_index);
         self.layers[layer_index].id
@@ -234,6 +235,7 @@ impl Composition {
         self.layers.iter().position(|layer| layer.id == layer_id)
     }
 
+    #[cfg(test)]
     pub fn insert_layer(&mut self, layer_index: usize) -> LayerId {
         let index = layer_index.min(self.layers.len());
         let layer = Layer::new(index);
@@ -283,6 +285,7 @@ impl Composition {
         Ok(())
     }
 
+    #[cfg(test)]
     fn ensure_layer(&mut self, layer_index: usize) {
         while self.layers.len() <= layer_index {
             self.layers.push(Layer::new(self.layers.len()));
