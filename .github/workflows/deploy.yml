@@ -21,7 +21,16 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
+          components: clippy, rustfmt
           targets: wasm32-unknown-unknown
+
+      - name: Check formatting
+        working-directory: wasm
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        working-directory: wasm
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
