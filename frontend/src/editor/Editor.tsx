@@ -1,4 +1,5 @@
 import { IconFilePlus, IconFolderOpen } from "@tabler/icons-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import Button from "~/components/Button";
 import Splitter from "~/components/Splitter";
@@ -10,6 +11,7 @@ import { useProject } from "~/features/project/useProject";
 import { useProjectFileLaunch } from "~/features/project/useProjectFileLaunch";
 import DrawCanvas from "./canvas/Canvas";
 import InspectorLayout from "./InspectorLayout";
+import useFileDrop from "./useFileDrop";
 
 const SPLITTER_HEIGHT = 8;
 const MIN_CANVAS_HEIGHT = 160;
@@ -22,6 +24,7 @@ const Editor = () => {
 
 	useProjectFileLaunch(project.importFile);
 
+	const isDraggingFiles = useFileDrop();
 	const [timelineHeight, setTimelineHeight] = useState<number>(160);
 	const maxTimelineHeight = Math.max(
 		MIN_TIMELINE_HEIGHT,
@@ -30,6 +33,21 @@ const Editor = () => {
 
 	return (
 		<div className="grid h-svh w-svw grid-rows-[48px_minmax(0,1fr)] overflow-hidden pb-[env(safe-area-inset-bottom,0)]">
+			{isDraggingFiles && (
+				<motion.div
+					className="pointer-events-none fixed inset-0 z-100 grid place-items-center bg-black/40 p-6"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+				>
+					<div
+						className="border-accent rounded-xl border border-dashed bg-background p-8 text-center font-medium text-foreground shadow-xl"
+						role="status"
+					>
+						{t("app.dropFiles")}
+					</div>
+				</motion.div>
+			)}
 			<GlobalHeader />
 			<main
 				className="relative grid min-h-0 min-w-0 p-2"

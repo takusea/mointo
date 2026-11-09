@@ -71,6 +71,7 @@
 	"common.cancel": "Cancel",
 	"app.newProject": "New Project",
 	"app.openProject": "Open Project",
+	"app.dropFiles": "Drop a project, image, or audio file",
 	"app.resizeTimeline": "Resize Timeline",
 	"editor.resizeToolInspector": "Resize tool inspector",
 	"editor.resizeClipInspector": "Resize clip inspector",

@@ -150,7 +150,7 @@ const GlobalMenubar = () => {
 							layerContext.selectedLayerId == null ||
 							layerContext.isLayerLocked(layerContext.selectedLayerId)
 						}
-						onSelect={importImage}
+						onSelect={() => importImage()}
 					/>
 					<MenubarItem
 						label={t("menubar.importAudio")}
@@ -159,7 +159,7 @@ const GlobalMenubar = () => {
 							layerContext.selectedLayerId == null ||
 							layerContext.isLayerLocked(layerContext.selectedLayerId)
 						}
-						onSelect={importAudio}
+						onSelect={() => importAudio()}
 					/>
 				</MenubarSub>
 				<MenubarSub label={t("menubar.export")}>
