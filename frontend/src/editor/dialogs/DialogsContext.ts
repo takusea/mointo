@@ -8,6 +8,7 @@ export type AppDialog =
 	| "inputSettings"
 	| "languageSettings"
 	| "shortcutSettings"
+	| "modifySelection"
 	| "about";
 
 export type DialogsContextValue = {

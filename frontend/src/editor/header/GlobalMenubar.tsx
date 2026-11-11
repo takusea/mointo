@@ -29,6 +29,9 @@ const GlobalMenubar = () => {
 	const selectedClip = clipContext.clips.find(
 		(clip) => clip.id === clipContext.selectedClipId,
 	);
+	const selectedLayerIndex = layerContext.layers.findIndex(
+		(layer) => layer.id === layerContext.selectedLayerId,
+	);
 	const canDeleteSelectedClips = clipContext.clips.some(
 		(clip) =>
 			(clipContext.selectedClipIds.includes(clip.id) ||
@@ -209,11 +212,6 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.paste)}
 					onSelect={clipContext.paste}
 				/>
-				<MenubarItem
-					label={t("action.select.selectAll")}
-					shortcut={formatShortcut(shortcuts.selectAll)}
-					onSelect={clipContext.selectAll}
-				/>
 				<MenubarSeparator />
 				<MenubarItem
 					label={t("action.edit.addClip")}
@@ -250,6 +248,57 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.mergeClips)}
 					onSelect={clipContext.mergeSelectedClips}
 					disabled={!clipContext.canMergeSelectedClips}
+				/>
+			</MenubarMenu>
+			<MenubarMenu label={t("action.select")}>
+				<MenubarItem
+					label={t("action.select.selectAll")}
+					shortcut={formatShortcut(shortcuts.selectAll)}
+					onSelect={clipContext.selectAll}
+				/>
+				<MenubarItem
+					label={t("action.select.clear")}
+					shortcut={formatShortcut(shortcuts.clearSelection)}
+					onSelect={() => clipContext.setSelection(undefined)}
+				/>
+				<MenubarItem
+					label={t("action.select.reselect")}
+					shortcut={formatShortcut(shortcuts.reselect)}
+					onSelect={clipContext.reselect}
+					disabled={!clipContext.canReselect}
+				/>
+				<MenubarItem
+					label={t("action.select.invert")}
+					shortcut={formatShortcut(shortcuts.invertSelection)}
+					onSelect={clipContext.invertSelection}
+					disabled={project.settings == null}
+				/>
+				<MenubarItem
+					label={t("action.select.modify")}
+					onSelect={() => dialogs.open("modifySelection")}
+					disabled={project.settings == null || clipContext.selection == null}
+				/>
+				<MenubarSeparator />
+				<MenubarItem
+					label={t("action.select.previousLayer")}
+					shortcut={formatShortcut(shortcuts.previousLayer)}
+					disabled={selectedLayerIndex <= 0}
+					onSelect={() => {
+						const layer = layerContext.layers[selectedLayerIndex - 1];
+						if (layer != null) layerContext.selectLayer(layer.id);
+					}}
+				/>
+				<MenubarItem
+					label={t("action.select.nextLayer")}
+					shortcut={formatShortcut(shortcuts.nextLayer)}
+					disabled={
+						selectedLayerIndex < 0 ||
+						selectedLayerIndex >= layerContext.layers.length - 1
+					}
+					onSelect={() => {
+						const layer = layerContext.layers[selectedLayerIndex + 1];
+						if (layer != null) layerContext.selectLayer(layer.id);
+					}}
 				/>
 			</MenubarMenu>
 			<MenubarMenu label={t("action.view")}>

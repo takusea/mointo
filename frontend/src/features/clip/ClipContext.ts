@@ -19,6 +19,10 @@ export type ClipContextValue = {
 	) => void;
 	selectClips: (ids: string[]) => void;
 	setSelection: (selection: SelectionArea | undefined) => void;
+	reselect: () => void;
+	canReselect: boolean;
+	invertSelection: () => void;
+	modifySelection: (amount: number) => void;
 	copy: () => Promise<void>;
 	cut: () => Promise<void>;
 	paste: () => Promise<void>;

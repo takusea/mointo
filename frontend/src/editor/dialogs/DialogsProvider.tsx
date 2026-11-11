@@ -1,5 +1,6 @@
 import { type JSX, useState } from "react";
 import AppearanceSettingsDialog from "~/features/appearance/AppearanceSettingDialog";
+import ModifySelectionDialog from "~/features/clip/ModifySelectionDialog";
 import LanguageSettingDialog from "~/features/i18n/LanguageSettingDialog";
 import ProjectExportDialog from "~/features/io/export/ProjectExportDialog";
 import CreateNewProjectDialog from "~/features/project/CreateNewProjectDialog";
@@ -56,6 +57,10 @@ export const DialogsProvider = ({ children }: Props) => {
 			<ShortcutSettingsDialog
 				open={activeDialog === "shortcutSettings"}
 				onOpenChange={handleOpenChange("shortcutSettings")}
+			/>
+			<ModifySelectionDialog
+				open={activeDialog === "modifySelection"}
+				onOpenChange={handleOpenChange("modifySelection")}
 			/>
 			<AboutDialog
 				open={activeDialog === "about"}

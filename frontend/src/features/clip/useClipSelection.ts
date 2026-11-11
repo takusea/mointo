@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ClipMetadata } from "~/lib/clip";
 import type { LayerId } from "~/lib/layer";
 import type { SelectionArea } from "./ClipContext";
@@ -27,7 +27,9 @@ export const useClipSelection = ({
 }: Options) => {
 	const [selectedClipId, setSelectedClipId] = useState<string>();
 	const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
-	const [selection, setSelection] = useState<SelectionArea>();
+	const [selection, setSelectionState] = useState<SelectionArea>();
+	const selectionRef = useRef<SelectionArea | undefined>(undefined);
+	const lastSelectionRef = useRef<SelectionArea | undefined>(undefined);
 	const preserveSelectionOnPlayheadChange = useRef(false);
 	const preserveEmptySelection = useRef(false);
 	const selectionAnchorId = useRef<string | undefined>(undefined);
@@ -35,6 +37,17 @@ export const useClipSelection = ({
 		layerId: currentLayerId,
 		frame: currentFrame,
 	});
+
+	const setSelection = useCallback(
+		(nextSelection: SelectionArea | undefined) => {
+			if (nextSelection == null && selectionRef.current != null) {
+				lastSelectionRef.current = selectionRef.current;
+			}
+			selectionRef.current = nextSelection;
+			setSelectionState(nextSelection);
+		},
+		[],
+	);
 
 	const markClipSelected = (
 		id: string,
@@ -171,6 +184,144 @@ export const useClipSelection = ({
 		});
 	};
 
+	const reselect = () => {
+		if (lastSelectionRef.current != null) {
+			setSelection(lastSelectionRef.current);
+		}
+	};
+
+	const invertSelection = () => {
+		if (compositionSettings == null) return;
+		const { width, height } = compositionSettings;
+		const currentSelection = selectionRef.current;
+		const mask = new Uint8Array(width * height);
+		mask.fill(1);
+
+		if (currentSelection != null) {
+			const startX = Math.max(0, currentSelection.x);
+			const startY = Math.max(0, currentSelection.y);
+			const endX = Math.min(width, currentSelection.x + currentSelection.width);
+			const endY = Math.min(
+				height,
+				currentSelection.y + currentSelection.height,
+			);
+			for (let y = startY; y < endY; y++) {
+				for (let x = startX; x < endX; x++) {
+					const index = y * width + x;
+					if (
+						currentSelection.mask == null ||
+						currentSelection.mask[index] === 1
+					) {
+						mask[index] = 0;
+					}
+				}
+			}
+		}
+
+		setSelection({ x: 0, y: 0, width, height, mask });
+	};
+
+	const modifySelection = (amount: number) => {
+		if (compositionSettings == null || selectionRef.current == null) return;
+		if (!Number.isFinite(amount) || amount === 0) return;
+
+		const { width, height } = compositionSettings;
+		const currentSelection = selectionRef.current;
+		const expand = amount > 0;
+		const radius = Math.min(
+			Math.trunc(Math.abs(amount)),
+			Math.max(width, height),
+		);
+		if (radius === 0) return;
+
+		const source = currentSelection.mask ?? new Uint8Array(width * height);
+		if (currentSelection.mask == null) {
+			const startX = Math.max(0, currentSelection.x);
+			const startY = Math.max(0, currentSelection.y);
+			const endX = Math.min(width, currentSelection.x + currentSelection.width);
+			const endY = Math.min(
+				height,
+				currentSelection.y + currentSelection.height,
+			);
+			for (let y = startY; y < endY; y++) {
+				source.fill(1, y * width + startX, y * width + endX);
+			}
+		}
+
+		const horizontal = new Uint8Array(width * height);
+		const mask = new Uint8Array(width * height);
+		let left = width;
+		let top = height;
+		let right = -1;
+		let bottom = -1;
+
+		for (let y = 0; y < height; y++) {
+			let count = 0;
+			for (let x = 0; x <= Math.min(width - 1, radius); x++) {
+				count += source[y * width + x] === 1 ? 1 : 0;
+			}
+			for (let x = 0; x < width; x++) {
+				if (
+					expand
+						? count > 0
+						: x >= radius && x + radius < width && count === radius * 2 + 1
+				) {
+					horizontal[y * width + x] = 1;
+				}
+				const leavingX = x - radius;
+				const enteringX = x + radius + 1;
+				if (leavingX >= 0) {
+					count -= source[y * width + leavingX] === 1 ? 1 : 0;
+				}
+				if (enteringX < width) {
+					count += source[y * width + enteringX] === 1 ? 1 : 0;
+				}
+			}
+		}
+
+		for (let x = 0; x < width; x++) {
+			let count = 0;
+			for (let y = 0; y <= Math.min(height - 1, radius); y++) {
+				count += horizontal[y * width + x] === 1 ? 1 : 0;
+			}
+			for (let y = 0; y < height; y++) {
+				const index = y * width + x;
+				if (
+					expand
+						? count > 0
+						: y >= radius && y + radius < height && count === radius * 2 + 1
+				) {
+					mask[index] = 1;
+					left = Math.min(left, x);
+					top = Math.min(top, y);
+					right = Math.max(right, x);
+					bottom = Math.max(bottom, y);
+				}
+				const leavingY = y - radius;
+				const enteringY = y + radius + 1;
+				if (leavingY >= 0) {
+					count -= horizontal[leavingY * width + x] === 1 ? 1 : 0;
+				}
+				if (enteringY < height) {
+					count += horizontal[enteringY * width + x] === 1 ? 1 : 0;
+				}
+			}
+		}
+
+		if (right < left || bottom < top) {
+			setSelection(undefined);
+			return;
+		}
+
+		setSelection({
+			x: left,
+			y: top,
+			width: right - left + 1,
+			height: bottom - top + 1,
+			mask,
+		});
+	};
+
 	useEffect(() => {
 		const playheadChanged =
 			selectionContext.current.layerId !== currentLayerId ||
@@ -226,6 +377,7 @@ export const useClipSelection = ({
 		currentLayerId,
 		selectedClipId,
 		selectedClipIds,
+		setSelection,
 	]);
 
 	return {
@@ -236,6 +388,10 @@ export const useClipSelection = ({
 		selectClip,
 		selectClips,
 		selectAll,
+		reselect,
+		canReselect: lastSelectionRef.current != null,
+		invertSelection,
+		modifySelection,
 		markClipSelected,
 	};
 };

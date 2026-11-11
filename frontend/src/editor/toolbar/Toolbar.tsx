@@ -117,9 +117,18 @@ const Toolbar = () => {
 		event.preventDefault();
 		clipContext.selectAll();
 	});
-	useShortcut(shortcuts.clearSelection, () =>
-		clipContext.setSelection(undefined),
-	);
+	useShortcut(shortcuts.clearSelection, (event) => {
+		event.preventDefault();
+		clipContext.setSelection(undefined);
+	});
+	useShortcut(shortcuts.reselect, (event) => {
+		event.preventDefault();
+		clipContext.reselect();
+	});
+	useShortcut(shortcuts.invertSelection, (event) => {
+		event.preventDefault();
+		clipContext.invertSelection();
+	});
 	useShortcut(shortcuts.togglePlayback, () =>
 		playbackContext.isPlaying
 			? playbackContext.pause()

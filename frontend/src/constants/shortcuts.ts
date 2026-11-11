@@ -18,7 +18,12 @@ export const shortcutDefinitions = {
 		defaultKey: "alt+d",
 	},
 	mergeClips: { label: "action.edit.mergeClips", defaultKey: "ctrl+e" },
-	clearSelection: { label: "action.select.clear", defaultKey: "escape" },
+	clearSelection: { label: "action.select.clear", defaultKey: "ctrl+shift+a" },
+	reselect: { label: "action.select.reselect", defaultKey: "ctrl+shift+d" },
+	invertSelection: {
+		label: "action.select.invert",
+		defaultKey: "ctrl+shift+i",
+	},
 	zoomIn: { label: "action.view.zoomIn", defaultKey: "ctrl+shift+equal" },
 	zoomOut: { label: "action.view.zoomOut", defaultKey: "ctrl+minus" },
 	fitView: { label: "action.view.fitView", defaultKey: "ctrl+shift+0" },
