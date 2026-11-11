@@ -22,7 +22,7 @@ const CreateNewProjectDialog = (props: Props) => {
 	const { t } = useI18n();
 	const project = useProject();
 
-	const [title, setTitle] = useState(t("nav.untitled"));
+	const [title, setTitle] = useState(t("header.untitled"));
 
 	const initSettings = useCallback(
 		() =>
@@ -46,13 +46,13 @@ const CreateNewProjectDialog = (props: Props) => {
 	return (
 		<Dialog
 			{...props}
-			title={t("project.create")}
+			title={t("dialog.project.create")}
 			cancelText={t("common.cancel")}
-			submitText={t("project.createAction")}
+			submitText={t("dialog.project.createAction")}
 			onSubmit={() => project.create(title, settings)}
 		>
 			<div className="mb-2 flex flex-col gap-2">
-				<span className="font-medium">{t("project.name")}</span>
+				<span className="font-medium">{t("dialog.project.name")}</span>
 				<TextField id="project-title" value={title} onValueChange={setTitle} />
 				<Separator />
 			</div>

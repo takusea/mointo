@@ -119,32 +119,32 @@ const GlobalMenubar = () => {
 
 	return (
 		<MenubarRoot>
-			<MenubarMenu label={t("menubar.file")}>
+			<MenubarMenu label={t("action.file")}>
 				<MenubarItem
-					label={t("menubar.new")}
+					label={t("action.file.new")}
 					shortcut={formatShortcut(shortcuts.newProject)}
 					onSelect={() => {
 						if (project.confirmDiscard()) dialogs.open("createProject");
 					}}
 				/>
 				<MenubarItem
-					label={t("menubar.open")}
+					label={t("action.file.open")}
 					shortcut={formatShortcut(shortcuts.openProject)}
 					onSelect={() => project.open()}
 				/>
 				<MenubarItem
-					label={t("menubar.save")}
+					label={t("action.file.save")}
 					shortcut={formatShortcut(shortcuts.saveProject)}
 					onSelect={() => project.save()}
 				/>
 				<MenubarItem
-					label={t("menubar.saveWith")}
+					label={t("action.file.saveWith")}
 					shortcut={formatShortcut(shortcuts.saveWith)}
 				/>
 				<MenubarSeparator />
-				<MenubarSub label={t("menubar.import")}>
+				<MenubarSub label={t("action.file.import")}>
 					<MenubarItem
-						label={t("menubar.importImage")}
+						label={t("action.file.importImage")}
 						disabled={
 							project.settings == null ||
 							layerContext.selectedLayerId == null ||
@@ -153,7 +153,7 @@ const GlobalMenubar = () => {
 						onSelect={() => importImage()}
 					/>
 					<MenubarItem
-						label={t("menubar.importAudio")}
+						label={t("action.file.importAudio")}
 						disabled={
 							project.settings == null ||
 							layerContext.selectedLayerId == null ||
@@ -162,7 +162,7 @@ const GlobalMenubar = () => {
 						onSelect={() => importAudio()}
 					/>
 				</MenubarSub>
-				<MenubarSub label={t("menubar.export")}>
+				<MenubarSub label={t("action.file.export")}>
 					{projectExporters.map((exporter) => (
 						<MenubarItem
 							key={exporter.format}
@@ -174,49 +174,49 @@ const GlobalMenubar = () => {
 				</MenubarSub>
 				<MenubarSeparator />
 				<MenubarItem
-					label={t("menubar.projectSettings")}
+					label={t("action.file.projectSettings")}
 					onSelect={() => dialogs.open("editCompositionSettings")}
 				/>
 				<MenubarSeparator />
-				<MenubarItem label={t("menubar.close")} />
+				<MenubarItem label={t("action.file.close")} />
 			</MenubarMenu>
-			<MenubarMenu label={t("menubar.edit")}>
+			<MenubarMenu label={t("action.edit")}>
 				<MenubarItem
-					label={t("menubar.undo")}
+					label={t("action.edit.undo")}
 					shortcut={formatShortcut(shortcuts.undo)}
 					onSelect={() => undoStack.undo()}
 					disabled={!undoStack.canUndo}
 				/>
 				<MenubarItem
-					label={t("menubar.redo")}
+					label={t("action.edit.redo")}
 					shortcut={formatShortcut(shortcuts.redo)}
 					onSelect={() => undoStack.redo()}
 					disabled={!undoStack.canRedo}
 				/>
 				<MenubarSeparator />
 				<MenubarItem
-					label={t("menubar.cut")}
+					label={t("action.edit.cut")}
 					shortcut={formatShortcut(shortcuts.cut)}
 					onSelect={clipContext.cut}
 				/>
 				<MenubarItem
-					label={t("menubar.copy")}
+					label={t("action.edit.copy")}
 					shortcut={formatShortcut(shortcuts.copy)}
 					onSelect={clipContext.copy}
 				/>
 				<MenubarItem
-					label={t("menubar.paste")}
+					label={t("action.edit.paste")}
 					shortcut={formatShortcut(shortcuts.paste)}
 					onSelect={clipContext.paste}
 				/>
 				<MenubarItem
-					label={t("menubar.selectAll")}
+					label={t("action.select.selectAll")}
 					shortcut={formatShortcut(shortcuts.selectAll)}
 					onSelect={clipContext.selectAll}
 				/>
 				<MenubarSeparator />
 				<MenubarItem
-					label={t("menubar.addClip")}
+					label={t("action.edit.addClip")}
 					shortcut={formatShortcut(shortcuts.addClip)}
 					disabled={
 						project.settings == null ||
@@ -226,7 +226,7 @@ const GlobalMenubar = () => {
 					onSelect={addClipAtCurrentFrame}
 				/>
 				<MenubarItem
-					label={t("menubar.deleteClip")}
+					label={t("action.edit.deleteClip")}
 					shortcut={formatShortcut(shortcuts.deleteClip)}
 					disabled={!canDeleteSelectedClips}
 					onSelect={() => {
@@ -236,73 +236,73 @@ const GlobalMenubar = () => {
 					}}
 				/>
 				<MenubarItem
-					label={t("menubar.duplicateClip")}
+					label={t("action.edit.duplicateClip")}
 					shortcut={formatShortcut(shortcuts.duplicateClip)}
 					onSelect={clipContext.duplicateSelectedClip}
 				/>
 				<MenubarItem
-					label={t("menubar.duplicateLinkedClip")}
+					label={t("action.edit.duplicateLinkedClip")}
 					shortcut={formatShortcut(shortcuts.duplicateLinkedClip)}
 					onSelect={clipContext.linkDuplicateSelectedClip}
 				/>
 				<MenubarItem
-					label={t("menubar.mergeClips")}
+					label={t("action.edit.mergeClips")}
 					shortcut={formatShortcut(shortcuts.mergeClips)}
 					onSelect={clipContext.mergeSelectedClips}
 					disabled={!clipContext.canMergeSelectedClips}
 				/>
 			</MenubarMenu>
-			<MenubarMenu label={t("menubar.view")}>
+			<MenubarMenu label={t("action.view")}>
 				<MenubarItem
-					label={t("menubar.zoomIn")}
+					label={t("action.view.zoomIn")}
 					shortcut={formatShortcut(shortcuts.zoomIn)}
 					onSelect={() => canvasView.zoom(1)}
 				/>
 				<MenubarItem
-					label={t("menubar.zoomOut")}
+					label={t("action.view.zoomOut")}
 					shortcut={formatShortcut(shortcuts.zoomOut)}
 					onSelect={() => canvasView.zoom(-1)}
 				/>
 				<MenubarItem
-					label={t("menubar.fitView")}
+					label={t("action.view.fitView")}
 					shortcut={formatShortcut(shortcuts.fitView)}
 					disabled={project.settings == null}
 					onSelect={fitToView}
 				/>
 				<MenubarItem
-					label={t("menubar.resetZoom")}
+					label={t("action.view.resetZoom")}
 					shortcut={formatShortcut(shortcuts.resetZoom)}
 					onSelect={() => canvasView.setScale(1)}
 				/>
 				<MenubarSeparator />
 				<MenubarItem
-					label={t("menubar.rotateLeft")}
+					label={t("action.view.rotateLeft")}
 					shortcut={formatShortcut(shortcuts.rotateLeft)}
 					onSelect={() => canvasView.rotate(-1)}
 				/>
 				<MenubarItem
-					label={t("menubar.rotateRight")}
+					label={t("action.view.rotateRight")}
 					shortcut={formatShortcut(shortcuts.rotateRight)}
 					onSelect={() => canvasView.rotate(1)}
 				/>
 				<MenubarItem
-					label={t("menubar.resetRotate")}
+					label={t("action.view.resetRotation")}
 					shortcut={formatShortcut(shortcuts.resetRotation)}
 					onSelect={() => canvasView.setRotation(0)}
 				/>
 				<MenubarSeparator />
 				<MenubarItem
-					label={t("menubar.flipHorizontal")}
+					label={t("action.view.flipHorizontal")}
 					shortcut={formatShortcut(shortcuts.flipHorizontal)}
 					onSelect={toggleHorizontalFlip}
 				/>
 				<MenubarItem
-					label={t("menubar.flipVertical")}
+					label={t("action.view.flipVertical")}
 					shortcut={formatShortcut(shortcuts.flipVertical)}
 					onSelect={toggleVerticalFlip}
 				/>
 				<MenubarItem
-					label={t("menubar.resetFlip")}
+					label={t("action.view.resetFlip")}
 					shortcut={formatShortcut(shortcuts.resetFlip)}
 					onSelect={resetFlip}
 				/>
@@ -310,8 +310,8 @@ const GlobalMenubar = () => {
 				<MenubarCheckboxItem
 					label={
 						canvasView.isGridVisible
-							? t("menubar.hideGrid")
-							: t("menubar.showGrid")
+							? t("action.view.hideGrid")
+							: t("action.view.showGrid")
 					}
 					shortcut={formatShortcut(shortcuts.toggleGrid)}
 					checked={canvasView.isGridVisible}
@@ -320,18 +320,20 @@ const GlobalMenubar = () => {
 				<MenubarCheckboxItem
 					label={
 						canvasView.isOnionSkin
-							? t("menubar.hideOnionSkin")
-							: t("menubar.showOnionSkin")
+							? t("action.view.hideOnionSkin")
+							: t("action.view.showOnionSkin")
 					}
 					shortcut={formatShortcut(shortcuts.toggleOnionSkin)}
 					checked={canvasView.isOnionSkin}
 					onCheckedChange={() => canvasView.setIsOnionSkin((prev) => !prev)}
 				/>
 			</MenubarMenu>
-			<MenubarMenu label={t("menubar.playback")}>
+			<MenubarMenu label={t("action.play")}>
 				<MenubarItem
 					label={
-						playbackContext.isPlaying ? t("menubar.pause") : t("menubar.play")
+						playbackContext.isPlaying
+							? t("action.play.pause")
+							: t("action.play.play")
 					}
 					shortcut={formatShortcut(shortcuts.togglePlayback)}
 					onSelect={() =>
@@ -341,13 +343,13 @@ const GlobalMenubar = () => {
 					}
 				/>
 				<MenubarItem
-					label={t("menubar.stop")}
+					label={t("action.play.stop")}
 					shortcut={formatShortcut(shortcuts.stop)}
 					onSelect={playbackContext.stop}
 				/>
 				<MenubarSeparator />
 				<MenubarCheckboxItem
-					label={t("menubar.loop")}
+					label={t("action.play.loop")}
 					shortcut={formatShortcut(shortcuts.toggleLoop)}
 					checked={playbackContext.isLoop}
 					onCheckedChange={() =>
@@ -355,7 +357,7 @@ const GlobalMenubar = () => {
 					}
 				/>
 				<MenubarCheckboxItem
-					label={t("menubar.scrollFollow")}
+					label={t("action.play.scrollFollow")}
 					checked={playbackContext.isScrollFollow}
 					onCheckedChange={() =>
 						playbackContext.setIsScrollFollow(!playbackContext.isScrollFollow)
@@ -363,55 +365,55 @@ const GlobalMenubar = () => {
 				/>
 				<MenubarSeparator />
 				<MenubarItem
-					label={t("menubar.firstFrame")}
+					label={t("action.play.firstFrame")}
 					shortcut={formatShortcut(shortcuts.firstFrame)}
 					onSelect={() =>
 						playbackContext.setCurrentFrame(playbackContext.startFrame)
 					}
 				/>
 				<MenubarItem
-					label={t("menubar.previousFrame")}
+					label={t("action.play.previousFrame")}
 					shortcut={formatShortcut(shortcuts.previousFrame)}
 					onSelect={() =>
 						playbackContext.setCurrentFrame(playbackContext.currentFrame - 1)
 					}
 				/>
 				<MenubarItem
-					label={t("menubar.nextFrame")}
+					label={t("action.play.nextFrame")}
 					shortcut={formatShortcut(shortcuts.nextFrame)}
 					onSelect={() =>
 						playbackContext.setCurrentFrame(playbackContext.currentFrame + 1)
 					}
 				/>
 				<MenubarItem
-					label={t("menubar.lastFrame")}
+					label={t("action.play.lastFrame")}
 					shortcut={formatShortcut(shortcuts.lastFrame)}
 					onSelect={() =>
 						playbackContext.setCurrentFrame(playbackContext.endFrame)
 					}
 				/>
 			</MenubarMenu>
-			<MenubarMenu label={t("menubar.settings")}>
+			<MenubarMenu label={t("action.settings")}>
 				<MenubarItem
-					label={t("menubar.appearanceSettings")}
+					label={t("action.settings.appearance")}
 					onSelect={() => dialogs.open("appearanceSettings")}
 				/>
 				<MenubarItem
-					label={t("menubar.inputSettings")}
+					label={t("action.settings.input")}
 					onSelect={() => dialogs.open("inputSettings")}
 				/>
 				<MenubarItem
-					label={t("menubar.shortcutSettings")}
+					label={t("action.settings.action")}
 					onSelect={() => dialogs.open("shortcutSettings")}
 				/>
 				<MenubarItem
-					label={t("menubar.languageSettings")}
+					label={t("action.settings.language")}
 					onSelect={() => dialogs.open("languageSettings")}
 				/>
 			</MenubarMenu>
-			<MenubarMenu label={t("menubar.help")}>
+			<MenubarMenu label={t("action.help")}>
 				<MenubarItem
-					label={t("menubar.about")}
+					label={t("action.help.about")}
 					onSelect={() => dialogs.open("about")}
 				/>
 			</MenubarMenu>

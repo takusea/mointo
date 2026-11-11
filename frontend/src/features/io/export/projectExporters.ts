@@ -219,19 +219,19 @@ export const projectExporters = [
 	{
 		format: "gif",
 		extension: "gif",
-		labelKey: "projectExport.gif",
+		labelKey: "dialog.projectExport.gif",
 		encode: encodeGif,
 	},
 	{
 		format: "apng",
 		extension: "apng",
-		labelKey: "projectExport.apng",
+		labelKey: "dialog.projectExport.apng",
 		encode: encodeApng,
 	},
 	{
 		format: "png-sequence",
 		extension: "zip",
-		labelKey: "projectExport.pngSequence",
+		labelKey: "dialog.projectExport.pngSequence",
 		encode: encodePngSequence,
 	},
 ] satisfies ProjectExporter[];

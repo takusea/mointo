@@ -69,7 +69,7 @@ const ShortcutSettingsDialog = (props: Props) => {
 				setConflict(false);
 				props.onOpenChange(nextOpen);
 			}}
-			title={t("shortcutSettings.title")}
+			title={t("dialog.shortcut.title")}
 			cancelText={t("common.close")}
 		>
 			<div className="grid grid-cols-[1fr_auto] items-center gap-2 px-2">
@@ -107,7 +107,7 @@ const ShortcutSettingsDialog = (props: Props) => {
 							}}
 							label={
 								recording === id
-									? t("shortcutSettings.pressKeys")
+									? t("dialog.shortcut.pressKeys")
 									: formatShortcut(shortcuts[id])
 							}
 						></Button>
@@ -117,12 +117,12 @@ const ShortcutSettingsDialog = (props: Props) => {
 			<div className="sticky bottom-0 mt-2 grid grid-cols-[1fr_auto] bg-background p-2 backdrop-blur-xl">
 				{conflict && (
 					<p role="alert" className="mt-2 text-warning">
-						{t("shortcutSettings.conflict")}
+						{t("dialog.shortcut.conflict")}
 					</p>
 				)}
 				<div className="col-start-2">
 					<Button
-						label={t("shortcutSettings.reset")}
+						label={t("dialog.shortcut.reset")}
 						onClick={() => {
 							resetShortcuts();
 							setRecording(null);

@@ -22,19 +22,19 @@ const ProjectExportDialog = (props: Props) => {
 	return (
 		<Dialog
 			{...props}
-			title={t("projectExport.title")}
+			title={t("dialog.projectExport.title")}
 			cancelText={t("common.cancel")}
-			submitText={t("nav.export")}
+			submitText={t("header.export")}
 			onSubmit={() => {
 				dialogs.close();
 				void exportAs(format);
 			}}
 		>
 			<div className="flex flex-col gap-2">
-				<span className="font-medium">{t("projectExport.format")}</span>
+				<span className="font-medium">{t("dialog.projectExport.format")}</span>
 				<Select
 					id="project-export-format"
-					label={t("projectExport.format")}
+					label={t("dialog.projectExport.format")}
 					value={format}
 					onValueChange={(value) => {
 						if (isProjectExportFormat(value)) {

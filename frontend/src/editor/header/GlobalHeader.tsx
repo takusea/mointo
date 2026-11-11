@@ -41,7 +41,7 @@ const GlobalHeader = () => {
 						className="grid grid-cols-[auto_1fr] data-[open=true]:col-span-3"
 					>
 						<IconButton
-							label={t("menubar.open")}
+							label={t("action.file.open")}
 							icon={isMenubarOpen ? IconX : IconMenu2}
 							onClick={() => toggleMenubarOpen()}
 						/>
@@ -63,7 +63,7 @@ const GlobalHeader = () => {
 					<>
 						<div className="flex justify-center [-webkit-app-region:no-drag]">
 							{project.settings && (
-								<Tooltip label={t("nav.projectSettings")} side="bottom">
+								<Tooltip label={t("header.projectSettings")} side="bottom">
 									<Button
 										label={
 											(project.title ?? "") +
@@ -79,8 +79,8 @@ const GlobalHeader = () => {
 								<ExportButton
 									label={
 										exportProgress
-											? t("nav.exportProgress", exportProgress)
-											: t("nav.export")
+											? t("header.exportProgress", exportProgress)
+											: t("header.export")
 									}
 									icon={IconFileExport}
 									variant="primary"

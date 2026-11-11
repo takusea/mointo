@@ -17,7 +17,9 @@ export const useProject = () => {
 	const hasUnsavedChanges = revision !== projectContext.savedRevision;
 
 	const confirmDiscard = useCallback(() => {
-		return !hasUnsavedChanges || window.confirm(t("project.unsavedChanges"));
+		return (
+			!hasUnsavedChanges || window.confirm(t("dialog.project.unsavedChanges"))
+		);
 	}, [hasUnsavedChanges, t]);
 
 	useEffect(() => {

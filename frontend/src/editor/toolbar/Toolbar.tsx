@@ -159,7 +159,7 @@ const Toolbar = () => {
 		<div
 			ref={toolbar}
 			role="toolbar"
-			aria-label={t("toolbar.label")}
+			aria-label={t("editor.toolbar")}
 			className="flex gap-2"
 			onFocusCapture={handleToolbarFocus}
 			onKeyDown={handleToolbarKeyDown}
@@ -167,28 +167,28 @@ const Toolbar = () => {
 			<Card size="small">
 				<div className="flex gap-1">
 					<IconButton
-						label={t("toolbar.pen")}
+						label={t("tool.pen")}
 						shortcut={formatShortcut(shortcuts.penTool)}
 						icon={IconPencil}
 						variant={toolContext.tool === "pen" ? "primary" : "default"}
 						onClick={() => toolContext.setTool("pen")}
 					/>
 					<IconButton
-						label={t("toolbar.eraser")}
+						label={t("tool.eraser")}
 						shortcut={formatShortcut(shortcuts.eraserTool)}
 						icon={IconEraser}
 						variant={toolContext.tool === "eraser" ? "primary" : "default"}
 						onClick={() => toolContext.setTool("eraser")}
 					/>
 					<IconButton
-						label={t("toolbar.fill")}
+						label={t("tool.fill")}
 						shortcut={formatShortcut(shortcuts.fillTool)}
 						icon={IconBucketDroplet}
 						variant={toolContext.tool === "fill" ? "primary" : "default"}
 						onClick={() => toolContext.setTool("fill")}
 					/>
 					<IconButton
-						label={t("toolbar.eyedropper")}
+						label={t("tool.eyedropper")}
 						shortcut={formatShortcut(shortcuts.eyedropperTool)}
 						icon={IconColorPicker}
 						variant={toolContext.tool === "eyedropper" ? "primary" : "default"}
@@ -198,10 +198,10 @@ const Toolbar = () => {
 						<IconButton
 							label={
 								lastSelectionTool === "lasso"
-									? t("toolbar.lasso")
+									? t("tool.select.lasso")
 									: lastSelectionTool === "wand"
-										? t("toolbar.wand")
-										: t("toolbar.rectangleSelect")
+										? t("tool.select.wand")
+										: t("tool.select.rectangle")
 							}
 							shortcut={formatShortcut(shortcuts.selectTool)}
 							icon={
@@ -226,15 +226,15 @@ const Toolbar = () => {
 									onValueChange={selectSelectionTool}
 								>
 									<DropdownMenuRadioItem
-										label={t("toolbar.rectangleSelect")}
+										label={t("tool.select.rectangle")}
 										value="select"
 									/>
 									<DropdownMenuRadioItem
-										label={t("toolbar.lasso")}
+										label={t("tool.select.lasso")}
 										value="lasso"
 									/>
 									<DropdownMenuRadioItem
-										label={t("toolbar.wand")}
+										label={t("tool.select.wand")}
 										value="wand"
 									/>
 								</DropdownMenuRadioGroup>
@@ -242,7 +242,7 @@ const Toolbar = () => {
 						>
 							<IconButton
 								size="small"
-								label={t("toolbar.select")}
+								label={t("tool.select")}
 								icon={IconChevronUp}
 								variant={
 									["select", "lasso", "wand"].includes(toolContext.tool)
@@ -253,7 +253,7 @@ const Toolbar = () => {
 						</DropdownMenu>
 					</div>
 					<IconButton
-						label={t("toolbar.transform")}
+						label={t("tool.move")}
 						shortcut={formatShortcut(shortcuts.transformTool)}
 						icon={IconTransformPoint}
 						variant={toolContext.tool === "move" ? "primary" : "default"}
@@ -264,33 +264,33 @@ const Toolbar = () => {
 			<Card size="small">
 				<div className="flex gap-1">
 					<IconButton
-						label={t("toolbar.undo")}
+						label={t("action.edit.undo")}
 						shortcut={formatShortcut(shortcuts.undo)}
 						icon={IconArrowBackUp}
 						onClick={undoStack.undo}
 						disabled={!undoStack.canUndo}
 					/>
 					<IconButton
-						label={t("toolbar.redo")}
+						label={t("action.edit.redo")}
 						shortcut={formatShortcut(shortcuts.redo)}
 						icon={IconArrowForwardUp}
 						onClick={undoStack.redo}
 						disabled={!undoStack.canRedo}
 					/>
 					<IconButton
-						label={t("toolbar.cut")}
+						label={t("action.edit.cut")}
 						shortcut={formatShortcut(shortcuts.cut)}
 						icon={IconScissors}
 						onClick={clipContext.cut}
 					/>
 					<IconButton
-						label={t("toolbar.copy")}
+						label={t("action.edit.copy")}
 						shortcut={formatShortcut(shortcuts.copy)}
 						icon={IconCopy}
 						onClick={clipContext.copy}
 					/>
 					<IconButton
-						label={t("toolbar.paste")}
+						label={t("action.edit.paste")}
 						shortcut={formatShortcut(shortcuts.paste)}
 						icon={IconClipboard}
 						onClick={clipContext.paste}
@@ -300,7 +300,7 @@ const Toolbar = () => {
 			<Card size="small">
 				<div className="flex gap-1">
 					<IconButton
-						label={t("toolbar.play")}
+						label={t("action.play.play")}
 						shortcut={formatShortcut(shortcuts.togglePlayback)}
 						icon={playbackContext.isPlaying ? IconPlayerPause : IconPlayerPlay}
 						variant={playbackContext.isPlaying ? "primary" : "default"}
@@ -311,20 +311,20 @@ const Toolbar = () => {
 						}
 					/>
 					<IconButton
-						label={t("toolbar.stop")}
+						label={t("action.play.stop")}
 						shortcut={formatShortcut(shortcuts.stop)}
 						icon={IconPlayerStop}
 						onClick={playbackContext.stop}
 					/>
 					<IconButton
-						label={t("toolbar.loop")}
+						label={t("action.play.loop")}
 						shortcut={formatShortcut(shortcuts.toggleLoop)}
 						icon={IconRefresh}
 						variant={playbackContext.isLoop ? "primary" : "default"}
 						onClick={() => playbackContext.setIsLoop(!playbackContext.isLoop)}
 					/>
 					<IconButton
-						label={t("toolbar.scrollFollow")}
+						label={t("action.play.scrollFollow")}
 						icon={IconArrowBarRight}
 						variant={playbackContext.isScrollFollow ? "primary" : "default"}
 						aria-pressed={playbackContext.isScrollFollow}
@@ -333,7 +333,7 @@ const Toolbar = () => {
 						}
 					/>
 					<IconButton
-						label={t("toolbar.onionSkin")}
+						label={t("action.view.onionSkin")}
 						shortcut={formatShortcut(shortcuts.toggleOnionSkin)}
 						icon={IconLayersDifference}
 						variant={canvasView.isOnionSkin ? "primary" : "default"}
@@ -344,7 +344,7 @@ const Toolbar = () => {
 			<Card size="small">
 				<div className="flex gap-1">
 					<IconButton
-						label={t("toolbar.rewind")}
+						label={t("action.play.firstFrame")}
 						shortcut={formatShortcut(shortcuts.firstFrame)}
 						icon={IconPlayerSkipBack}
 						onClick={() =>
@@ -352,7 +352,7 @@ const Toolbar = () => {
 						}
 					/>
 					<IconButton
-						label={t("toolbar.prev")}
+						label={t("action.play.previousFrame")}
 						shortcut={formatShortcut(shortcuts.previousFrame)}
 						icon={IconPlayerTrackPrev}
 						onClick={() =>
@@ -360,7 +360,7 @@ const Toolbar = () => {
 						}
 					/>
 					<IconButton
-						label={t("toolbar.next")}
+						label={t("action.play.nextFrame")}
 						shortcut={formatShortcut(shortcuts.nextFrame)}
 						icon={IconPlayerTrackNext}
 						onClick={() =>
@@ -368,7 +368,7 @@ const Toolbar = () => {
 						}
 					/>
 					<IconButton
-						label={t("toolbar.forward")}
+						label={t("action.play.lastFrame")}
 						shortcut={formatShortcut(shortcuts.lastFrame)}
 						icon={IconPlayerSkipForward}
 						onClick={() =>
@@ -381,7 +381,7 @@ const Toolbar = () => {
 				<div className="flex gap-1">
 					<div className="w-24">
 						<NumberField
-							aria-label={t("toolbar.zoom")}
+							aria-label={t("action.view.zoom")}
 							value={Number((canvasView.scale * 100).toFixed(2))}
 							max={canvasView.maxScale * 100}
 							min={canvasView.minScale * 100}
@@ -392,7 +392,7 @@ const Toolbar = () => {
 						/>
 					</div>
 					<IconButton
-						label={t("toolbar.resetZoom")}
+						label={t("action.view.resetZoom")}
 						shortcut={formatShortcut(shortcuts.resetZoom)}
 						icon={IconZoomReset}
 						onClick={() => canvasView.setScale(1)}
@@ -403,7 +403,7 @@ const Toolbar = () => {
 				<div className="flex gap-1">
 					<div className="w-24">
 						<NumberField
-							aria-label={t("toolbar.rotation")}
+							aria-label={t("action.view.rotation")}
 							value={canvasView.rotation}
 							max={180}
 							min={-180}
@@ -414,7 +414,7 @@ const Toolbar = () => {
 						/>
 					</div>
 					<IconButton
-						label={t("toolbar.resetRotate")}
+						label={t("action.view.resetRotation")}
 						shortcut={formatShortcut(shortcuts.resetRotation)}
 						icon={IconRestore}
 						onClick={() => canvasView.setRotation(0)}
@@ -424,14 +424,14 @@ const Toolbar = () => {
 			<Card size="small">
 				<div className="flex gap-1">
 					<IconButton
-						label={t("toolbar.flipHorizontal")}
+						label={t("action.view.flipHorizontal")}
 						shortcut={formatShortcut(shortcuts.flipHorizontal)}
 						icon={IconFlipHorizontal}
 						variant={canvasView.isFlippedHorizontal ? "primary" : "default"}
 						onClick={() => canvasView.setIsFlippedHorizontal((prev) => !prev)}
 					/>
 					<IconButton
-						label={t("toolbar.flipVertical")}
+						label={t("action.view.flipVertical")}
 						shortcut={formatShortcut(shortcuts.flipVertical)}
 						icon={IconFlipVertical}
 						variant={canvasView.isFlippedVertical ? "primary" : "default"}

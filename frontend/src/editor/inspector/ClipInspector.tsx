@@ -90,12 +90,14 @@ const ClipInspector = ({
 		<Card>
 			<div className="flex flex-col gap-2">
 				<h2 className="font-bold">
-					{t("inspector.propertyOf", { name: clip.name })}
+					{t("inspector.clip.propertyOf", { name: clip.name })}
 				</h2>
 				<div className="flex gap-1">
 					<IconButton
 						icon={clip.hidden ? IconEyeOff : IconEye}
-						label={clip.hidden ? t("inspector.show") : t("inspector.hide")}
+						label={
+							clip.hidden ? t("inspector.clip.show") : t("inspector.clip.hide")
+						}
 						variant={clip.hidden ? "primary" : undefined}
 						aria-pressed={clip.hidden}
 						disabled={isLocked}
@@ -104,7 +106,7 @@ const ClipInspector = ({
 					{clip.clip_type === "image" && (
 						<IconButton
 							icon={IconAlpha}
-							label={t("inspector.lockAlpha")}
+							label={t("inspector.clip.lockAlpha")}
 							variant={clip.alpha_locked ? "primary" : undefined}
 							aria-pressed={clip.alpha_locked}
 							disabled={isLocked}
@@ -117,7 +119,9 @@ const ClipInspector = ({
 					)}
 					<IconButton
 						icon={isLocked ? IconLock : IconLockOpen}
-						label={isLocked ? t("inspector.unlock") : t("inspector.lock")}
+						label={
+							isLocked ? t("inspector.clip.unlock") : t("inspector.clip.lock")
+						}
 						variant={isLocked ? "primary" : undefined}
 						aria-pressed={isLocked}
 						onClick={() => onPropertiesChange({ locked: !isLocked })}
@@ -130,22 +134,22 @@ const ClipInspector = ({
 					) && (
 						<IconButton
 							icon={IconUnlink}
-							label={t("inspector.unlinkClip")}
+							label={t("inspector.clip.unlinkClip")}
 							onClick={onUnlink}
 						/>
 					)}
 					<IconButton
 						icon={IconCopy}
-						label={t("menubar.duplicateClip")}
+						label={t("action.edit.duplicateClip")}
 						onClick={onDuplicate}
 					/>
 					<IconButton
 						icon={IconTrash}
-						label={t("menubar.deleteClip")}
+						label={t("action.edit.deleteClip")}
 						onClick={onDelete}
 					/>
 				</div>
-				<span className="font-medium">{t("inspector.name")}</span>
+				<span className="font-medium">{t("inspector.clip.name")}</span>
 				<TextField
 					key={`${clip.id}:${clip.name}`}
 					id="clipName"
@@ -164,11 +168,11 @@ const ClipInspector = ({
 					}}
 				/>
 				<Separator />
-				<span className="font-medium">{t("inspector.framePosition")}</span>
+				<span className="font-medium">{t("inspector.clip.framePosition")}</span>
 				<div className="grid grid-cols-2 gap-2">
 					<NumberField
 						id="clipStart"
-						aria-label={t("inspector.start")}
+						aria-label={t("inspector.clip.start")}
 						min={0}
 						value={clip.start}
 						disabled={isLocked}
@@ -180,7 +184,7 @@ const ClipInspector = ({
 					/>
 					<NumberField
 						id="clipLength"
-						aria-label={t("inspector.length")}
+						aria-label={t("inspector.clip.length")}
 						min={1}
 						value={clip.duration}
 						disabled={isLocked}
@@ -194,10 +198,12 @@ const ClipInspector = ({
 				<Separator />
 				{clip.clip_type === "audio" ? (
 					<>
-						<span className="font-medium">{t("inspector.playbackOffset")}</span>
+						<span className="font-medium">
+							{t("inspector.clip.playbackOffset")}
+						</span>
 						<NumberField
 							id="clipAudioStartFrame"
-							aria-label={t("inspector.playbackOffset")}
+							aria-label={t("inspector.clip.playbackOffset")}
 							min={0}
 							step={1}
 							value={clip.audio_start_frame}
@@ -213,11 +219,11 @@ const ClipInspector = ({
 					</>
 				) : (
 					<>
-						<span className="font-medium">{t("inspector.size")}</span>
+						<span className="font-medium">{t("inspector.clip.size")}</span>
 						<div className="grid grid-cols-2 gap-2">
 							<NumberField
 								id="clipWidth"
-								aria-label={t("inspector.width")}
+								aria-label={t("inspector.clip.width")}
 								min={1}
 								value={clip.width}
 								disabled={isLocked}
@@ -231,7 +237,7 @@ const ClipInspector = ({
 							/>
 							<NumberField
 								id="clipHeight"
-								aria-label={t("inspector.height")}
+								aria-label={t("inspector.clip.height")}
 								min={1}
 								value={clip.height}
 								disabled={isLocked}
@@ -246,11 +252,11 @@ const ClipInspector = ({
 						</div>
 						<Separator />
 						<div className="flex items-center justify-between gap-1 font-medium">
-							{t("inspector.position")}
+							{t("inspector.clip.position")}
 							<IconButton
 								icon={IconKeyframe}
-								label={t("inspector.togglePropertyKeyframe", {
-									property: t("inspector.position"),
+								label={t("inspector.clip.togglePropertyKeyframe", {
+									property: t("inspector.clip.position"),
 								})}
 								variant={
 									keyframes.some(
@@ -267,7 +273,7 @@ const ClipInspector = ({
 						<div className="grid grid-cols-2 gap-2">
 							<NumberField
 								id="clipPosition"
-								aria-label={t("inspector.positionX")}
+								aria-label={t("inspector.clip.positionX")}
 								value={transform.position[0]}
 								disabled={isLocked}
 								leftElement={<IconArrowsMoveHorizontal />}
@@ -283,7 +289,7 @@ const ClipInspector = ({
 							/>
 							<NumberField
 								id="clipPositionY"
-								aria-label={t("inspector.positionY")}
+								aria-label={t("inspector.clip.positionY")}
 								value={transform.position[1]}
 								disabled={isLocked}
 								leftElement={<IconArrowsMoveVertical />}
@@ -299,11 +305,11 @@ const ClipInspector = ({
 							/>
 						</div>
 						<span className="flex items-center justify-between gap-1 font-medium">
-							{t("inspector.anchor")}
+							{t("inspector.clip.anchor")}
 							<IconButton
 								icon={IconKeyframe}
-								label={t("inspector.togglePropertyKeyframe", {
-									property: t("inspector.anchor"),
+								label={t("inspector.clip.togglePropertyKeyframe", {
+									property: t("inspector.clip.anchor"),
 								})}
 								variant={
 									keyframes.some(
@@ -319,7 +325,7 @@ const ClipInspector = ({
 						<div className="grid grid-cols-2 gap-2">
 							<NumberField
 								id="clipAnchor"
-								aria-label={t("inspector.anchorX")}
+								aria-label={t("inspector.clip.anchorX")}
 								min={0}
 								max={1}
 								step={0.01}
@@ -337,7 +343,7 @@ const ClipInspector = ({
 							/>
 							<NumberField
 								id="clipAnchorY"
-								aria-label={t("inspector.anchorY")}
+								aria-label={t("inspector.clip.anchorY")}
 								min={0}
 								max={1}
 								step={0.01}
@@ -355,11 +361,11 @@ const ClipInspector = ({
 							/>
 						</div>
 						<span className="flex items-center justify-between gap-1 font-medium">
-							{t("inspector.rotation")}
+							{t("inspector.clip.rotation")}
 							<IconButton
 								icon={IconKeyframe}
-								label={t("inspector.togglePropertyKeyframe", {
-									property: t("inspector.rotation"),
+								label={t("inspector.clip.togglePropertyKeyframe", {
+									property: t("inspector.clip.rotation"),
 								})}
 								variant={
 									keyframes.some(
@@ -375,7 +381,7 @@ const ClipInspector = ({
 						</span>
 						<NumberField
 							id="clipRotation"
-							aria-label={t("inspector.rotation")}
+							aria-label={t("inspector.clip.rotation")}
 							min={0}
 							max={360}
 							value={transform.rotation}
@@ -392,11 +398,11 @@ const ClipInspector = ({
 							}}
 						/>
 						<span className="flex items-center justify-between gap-1 font-medium">
-							{t("inspector.scale")}
+							{t("inspector.clip.scale")}
 							<IconButton
 								icon={IconKeyframe}
-								label={t("inspector.togglePropertyKeyframe", {
-									property: t("inspector.scale"),
+								label={t("inspector.clip.togglePropertyKeyframe", {
+									property: t("inspector.clip.scale"),
 								})}
 								variant={
 									keyframes.some(
@@ -412,7 +418,7 @@ const ClipInspector = ({
 						<div className="grid grid-cols-2 gap-2">
 							<NumberField
 								id="clipScale"
-								aria-label={t("inspector.scaleX")}
+								aria-label={t("inspector.clip.scaleX")}
 								min={0}
 								max={1000}
 								value={transform.scale[0] * 100}
@@ -430,7 +436,7 @@ const ClipInspector = ({
 							/>
 							<NumberField
 								id="clipScaleY"
-								aria-label={t("inspector.scaleY")}
+								aria-label={t("inspector.clip.scaleY")}
 								min={0}
 								max={1000}
 								value={transform.scale[1] * 100}
@@ -449,11 +455,11 @@ const ClipInspector = ({
 						</div>
 						<Separator />
 						<span className="flex items-center justify-between gap-1 font-medium">
-							{t("inspector.opacity")}
+							{t("inspector.clip.opacity")}
 							<IconButton
 								icon={IconKeyframe}
-								label={t("inspector.togglePropertyKeyframe", {
-									property: t("inspector.opacity"),
+								label={t("inspector.clip.togglePropertyKeyframe", {
+									property: t("inspector.clip.opacity"),
 								})}
 								variant={
 									keyframes.some(
@@ -468,7 +474,7 @@ const ClipInspector = ({
 						</span>
 						<NumberField
 							id="clipOpacity"
-							aria-label={t("inspector.opacity")}
+							aria-label={t("inspector.clip.opacity")}
 							min={0}
 							max={100}
 							value={clip.opacity * 100}
@@ -479,7 +485,7 @@ const ClipInspector = ({
 							onInteractionEnd={onInteractionEnd}
 							onValueChange={(value) => onOpacityChange(value / 100)}
 						/>
-						<span className="font-medium">{t("inspector.blendMode")}</span>
+						<span className="font-medium">{t("inspector.clip.blendMode")}</span>
 						<Select
 							id="clipBlendMode"
 							value={clip.blend_mode}
@@ -493,16 +499,16 @@ const ClipInspector = ({
 							}
 						>
 							<SelectItem value="normal">
-								{t("inspector.blendMode.normal")}
+								{t("inspector.clip.blendMode.normal")}
 							</SelectItem>
 							<SelectItem value="multiply">
-								{t("inspector.blendMode.multiply")}
+								{t("inspector.clip.blendMode.multiply")}
 							</SelectItem>
 							<SelectItem value="screen">
-								{t("inspector.blendMode.screen")}
+								{t("inspector.clip.blendMode.screen")}
 							</SelectItem>
 							<SelectItem value="add">
-								{t("inspector.blendMode.add")}
+								{t("inspector.clip.blendMode.add")}
 							</SelectItem>
 						</Select>
 					</>

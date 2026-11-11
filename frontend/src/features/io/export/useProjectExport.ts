@@ -43,7 +43,7 @@ export const useProjectExport = () => {
 			window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			window.alert(t("nav.exportFailed", { error: message }));
+			window.alert(t("header.exportFailed", { error: message }));
 		} finally {
 			setProgress(undefined);
 		}

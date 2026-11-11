@@ -18,12 +18,12 @@ const AppearanceSettingsDialog = (props: Props) => {
 	return (
 		<Dialog
 			{...props}
-			title={t("appearanceSettings.title")}
+			title={t("dialog.appearance.title")}
 			cancelText={t("common.close")}
 		>
 			<div className="flex flex-col gap-2">
-				<span className="font-medium">{t("appearanceSettings.theme")}</span>
-				<p>{t("appearanceSettings.themeDescription")}</p>
+				<span className="font-medium">{t("dialog.appearance.theme")}</span>
+				<p>{t("dialog.appearance.themeDescription")}</p>
 				<RadioGroup
 					value={appearance.ternaryDarkMode}
 					onValueChange={(value) => {
@@ -34,24 +34,24 @@ const AppearanceSettingsDialog = (props: Props) => {
 				>
 					<RadioGroupItem
 						value="system"
-						label={t("appearanceSettings.themeSystem")}
+						label={t("dialog.appearance.themeSystem")}
 						id="themeSystem"
 					/>
 					<RadioGroupItem
 						value="light"
-						label={t("appearanceSettings.themeLight")}
+						label={t("dialog.appearance.themeLight")}
 						id="themeLight"
 					/>
 					<RadioGroupItem
 						value="dark"
-						label={t("appearanceSettings.themeDark")}
+						label={t("dialog.appearance.themeDark")}
 						id="themeDark"
 					/>
 				</RadioGroup>
-				<span className="font-medium">{t("appearanceSettings.accent")}</span>
-				<p>{t("appearanceSettings.accentDescription")}</p>
+				<span className="font-medium">{t("dialog.appearance.accent")}</span>
+				<p>{t("dialog.appearance.accentDescription")}</p>
 				<Switch
-					label={t("appearanceSettings.monochrome")}
+					label={t("dialog.appearance.monochrome")}
 					checked={appearance.isMono}
 					onCheckedChange={appearance.setIsMono}
 				/>

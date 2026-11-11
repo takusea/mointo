@@ -84,17 +84,15 @@ const InputSettingsDialog = (props: Props) => {
 	return (
 		<Dialog
 			{...props}
-			title={t("inputSettings.title")}
+			title={t("dialog.input.title")}
 			cancelText={t("common.close")}
 		>
 			<div className="flex flex-col gap-2">
 				<div className="flex justify-between gap-1">
-					<span className="font-medium">
-						{t("inputSettings.stabilization")}
-					</span>
+					<span className="font-medium">{t("dialog.input.stabilization")}</span>
 					<span>{`${String(tool.stabilization)}%`}</span>
 				</div>
-				<p>{t("inputSettings.stabilizationHint")}</p>
+				<p>{t("dialog.input.stabilizationHint")}</p>
 				<Slider
 					id="inputStabilization"
 					min={0}
@@ -102,23 +100,23 @@ const InputSettingsDialog = (props: Props) => {
 					step={1}
 					value={[tool.stabilization]}
 					onValueChange={([value]) => tool.setStabilization(value)}
-					aria-label={t("inputSettings.stabilizationLabel")}
+					aria-label={t("dialog.input.stabilizationLabel")}
 				/>
-				<div className="font-medium">{t("inputSettings.pressure")}</div>
+				<div className="font-medium">{t("dialog.input.pressure")}</div>
 				<Switch
 					id="inputPressure"
-					label={t("inputSettings.pressureLabel")}
+					label={t("dialog.input.pressureLabel")}
 					checked={tool.pressureEnabled}
 					onCheckedChange={tool.setPressureEnabled}
 				/>
 				{tool.pressureEnabled && (
 					<>
-						<p className="font-medium">{t("inputSettings.pressureCurve")}</p>
-						<p>{t("inputSettings.curveHint")}</p>
+						<p className="font-medium">{t("dialog.input.pressureCurve")}</p>
+						<p>{t("dialog.input.curveHint")}</p>
 						<svg
 							viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}
 							role="img"
-							aria-label={t("inputSettings.pressureCurve")}
+							aria-label={t("dialog.input.pressureCurve")}
 							className="aspect-square w-full touch-none rounded-md border border-border bg-surface"
 							onPointerDown={addPoint}
 							onPointerMove={updatePoint}

@@ -21,7 +21,7 @@ const ColorInspector = ({
 	return (
 		<Card>
 			<div className="flex flex-col gap-2">
-				<h2 className="font-bold">{t("inspector.colorPicker")}</h2>
+				<h2 className="font-bold">{t("inspector.clip.colorPicker")}</h2>
 				<ColorPicker
 					currentColor={currentColor}
 					onCurrentColorChange={onCurrentColorChange}

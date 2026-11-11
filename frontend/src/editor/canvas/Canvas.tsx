@@ -258,12 +258,12 @@ const DrawCanvas = () => {
 					<Card size="small">
 						<div className="flex gap-1">
 							<Button
-								label={t("transform.apply")}
+								label={t("common.apply")}
 								variant="primary"
 								onClick={() => void canvasPointer.applyTransform()}
 							/>
 							<Button
-								label={t("transform.cancel")}
+								label={t("common.cancel")}
 								onClick={() => void canvasPointer.cancelTransform()}
 							/>
 						</div>

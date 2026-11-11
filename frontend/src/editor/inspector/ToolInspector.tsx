@@ -9,14 +9,14 @@ import type { ToolKind } from "~/features/tool/type";
 import { useTool } from "~/features/tool/useTool";
 
 const toolNameKeys = {
-	move: "tool.name.move",
-	pen: "tool.name.pen",
-	eraser: "tool.name.eraser",
-	fill: "tool.name.fill",
-	select: "tool.name.select",
-	lasso: "tool.name.lasso",
-	wand: "tool.name.wand",
-	eyedropper: "tool.name.eyedropper",
+	move: "tool.move",
+	pen: "tool.pen",
+	eraser: "tool.eraser",
+	fill: "tool.fill",
+	select: "tool.select",
+	lasso: "tool.select.lasso",
+	wand: "tool.select.wand",
+	eyedropper: "tool.eyedropper",
 } as const satisfies Record<ToolKind, MessageKey>;
 
 type Props = {
@@ -32,7 +32,7 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 		<Card>
 			<div className="flex flex-col gap-2">
 				<h2 className="font-bold">
-					{t("toolInspector.propertyOfTool", {
+					{t("inspector.tool.propertyOfTool", {
 						tool: t(toolNameKeys[toolContext.tool]),
 					})}
 				</h2>
@@ -47,7 +47,7 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 						<div key={property.name}>
 							<div className="flex justify-between gap-1">
 								<span className="font-medium">
-									{t(`toolInspector.${property.name}` as MessageKey)}
+									{t(`inspector.tool.${property.name}` as MessageKey)}
 								</span>
 								<span>{`${String(property.value)}${property.unit ?? ""}`}</span>
 							</div>
@@ -67,7 +67,7 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 					toolContext.tool,
 				) && (
 					<Switch
-						label={t("toolInspector.referenceOtherLayers")}
+						label={t("inspector.tool.referenceOtherLayers")}
 						checked={
 							toolContext.referenceOtherLayers[
 								toolContext.tool as LayerReferenceTool

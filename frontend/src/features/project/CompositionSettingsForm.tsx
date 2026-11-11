@@ -20,11 +20,11 @@ const CompositionSettingsForm = ({ settings, onSettingsChanged }: Props) => {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<span className="font-medium">{t("project.size")}</span>
+			<span className="font-medium">{t("dialog.project.size")}</span>
 			<div className="grid grid-cols-2 gap-2">
 				<NumberField
 					id="width"
-					aria-label={t("project.width")}
+					aria-label={t("dialog.project.width")}
 					value={settings.width}
 					min={0}
 					max={10000}
@@ -34,7 +34,7 @@ const CompositionSettingsForm = ({ settings, onSettingsChanged }: Props) => {
 				/>
 				<NumberField
 					id="height"
-					aria-label={t("project.height")}
+					aria-label={t("dialog.project.height")}
 					value={settings.height}
 					min={0}
 					max={10000}
@@ -44,11 +44,11 @@ const CompositionSettingsForm = ({ settings, onSettingsChanged }: Props) => {
 				/>
 			</div>
 			<Separator />
-			<span className="font-medium">{t("project.framePosition")}</span>
+			<span className="font-medium">{t("dialog.project.framePosition")}</span>
 			<div className="grid grid-cols-2 gap-2">
 				<NumberField
 					id="startFrame"
-					aria-label={t("project.startFrame")}
+					aria-label={t("dialog.project.startFrame")}
 					value={settings.startFrame}
 					min={0}
 					max={settings.endFrame}
@@ -63,7 +63,7 @@ const CompositionSettingsForm = ({ settings, onSettingsChanged }: Props) => {
 				/>
 				<NumberField
 					id="endFrame"
-					aria-label={t("project.endFrame")}
+					aria-label={t("dialog.project.endFrame")}
 					value={settings.endFrame}
 					min={settings.startFrame}
 					max={MAX_FRAME_INDEX}
@@ -77,10 +77,10 @@ const CompositionSettingsForm = ({ settings, onSettingsChanged }: Props) => {
 					}
 				/>
 			</div>
-			<span className="font-medium">{t("project.frameRate")}</span>
+			<span className="font-medium">{t("dialog.project.frameRate")}</span>
 			<NumberField
 				id="frameRate"
-				aria-label={t("project.frameRate")}
+				aria-label={t("dialog.project.frameRate")}
 				value={settings.frameRate}
 				min={0}
 				max={1000}

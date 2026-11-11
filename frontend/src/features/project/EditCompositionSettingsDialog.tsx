@@ -21,7 +21,7 @@ type Props = {
 const EditCompositionSettingsDialog = (props: Props) => {
 	const { t } = useI18n();
 	const project = useProject();
-	const [title, setTitle] = useState(project.title ?? t("nav.untitled"));
+	const [title, setTitle] = useState(project.title ?? t("header.untitled"));
 
 	const initSettings = useCallback(
 		() =>
@@ -45,16 +45,16 @@ const EditCompositionSettingsDialog = (props: Props) => {
 	return (
 		<Dialog
 			{...props}
-			title={t("project.settings")}
+			title={t("dialog.project.settings")}
 			cancelText={t("common.cancel")}
-			submitText={t("project.apply")}
+			submitText={t("dialog.project.apply")}
 			onSubmit={() => {
 				void project.setTitle(title);
 				return project.setSettings(settings);
 			}}
 		>
 			<div className="mb-2 flex flex-col gap-2">
-				<span className="font-medium">{t("project.name")}</span>
+				<span className="font-medium">{t("dialog.project.name")}</span>
 				<TextField id="project-title" value={title} onValueChange={setTitle} />
 				<Separator />
 			</div>

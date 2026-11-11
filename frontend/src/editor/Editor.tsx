@@ -44,7 +44,7 @@ const Editor = () => {
 						className="border-accent rounded-xl border border-dashed bg-background p-8 text-center font-medium text-foreground shadow-xl"
 						role="status"
 					>
-						{t("app.dropFiles")}
+						{t("editor.dropFiles")}
 					</div>
 				</motion.div>
 			)}
@@ -61,7 +61,7 @@ const Editor = () => {
 					) : (
 						<div className="absolute grid size-full place-content-center gap-2">
 							<Button
-								label={t("app.newProject")}
+								label={t("editor.newProject")}
 								icon={IconFilePlus}
 								variant="primary"
 								size="large"
@@ -70,7 +70,7 @@ const Editor = () => {
 								}}
 							/>
 							<Button
-								label={t("app.openProject")}
+								label={t("editor.openProject")}
 								icon={IconFolderOpen}
 								size="large"
 								onClick={() => project.open()}
@@ -81,7 +81,7 @@ const Editor = () => {
 				</div>
 				<Splitter
 					orientation="horizontal"
-					label={t("app.resizeTimeline")}
+					label={t("editor.resizeTimeline")}
 					value={timelineHeight}
 					min={MIN_TIMELINE_HEIGHT}
 					max={maxTimelineHeight}

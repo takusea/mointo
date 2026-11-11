@@ -10,7 +10,11 @@ const AboutDialog = (props: Props) => {
 	const { t } = useI18n();
 
 	return (
-		<Dialog {...props} title={t("about.title")} cancelText={t("common.close")}>
+		<Dialog
+			{...props}
+			title={t("dialog.about.title")}
+			cancelText={t("common.close")}
+		>
 			<div className="grid grid-cols-[auto_1fr] gap-2">
 				<img
 					src="favicon.png"
