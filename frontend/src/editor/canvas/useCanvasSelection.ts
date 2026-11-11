@@ -88,17 +88,30 @@ export const useCanvasSelection = (
 	};
 
 	const finishSelection = (event: React.PointerEvent<HTMLCanvasElement>) => {
-		if (selectionDragRef.current == null) return false;
+		const start = selectionDragRef.current;
+		if (start == null) return false;
 
 		selectionDragRef.current = null;
 		const draft = selectionDraftRef.current;
-		if (draft != null && modeRef.current === "rectangle") {
-			clipContext.setSelection({
-				x: draft.x,
-				y: draft.y,
-				width: draft.width,
-				height: draft.height,
-			});
+		if (modeRef.current === "rectangle") {
+			const canvas = canvasRef.current;
+			if (canvas != null) {
+				const point = getPointerPosition(event.clientX, event.clientY);
+				const end = {
+					x: Math.max(0, Math.min(canvas.width - 1, Math.floor(point.x))),
+					y: Math.max(0, Math.min(canvas.height - 1, Math.floor(point.y))),
+				};
+				if (end.x === start.x && end.y === start.y) {
+					clipContext.setSelection(undefined);
+				} else {
+					clipContext.setSelection({
+						x: Math.min(start.x, end.x),
+						y: Math.min(start.y, end.y),
+						width: Math.abs(end.x - start.x) + 1,
+						height: Math.abs(end.y - start.y) + 1,
+					});
+				}
+			}
 		} else if (draft != null && pointsRef.current.length >= 3) {
 			const canvas = canvasRef.current;
 			if (canvas != null) {
