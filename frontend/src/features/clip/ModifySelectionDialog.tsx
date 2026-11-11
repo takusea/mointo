@@ -27,8 +27,8 @@ const ModifySelectionDialog = (props: Props) => {
 	return (
 		<Dialog
 			{...props}
-			title={t("dialog.selection.modify.title")}
-			description={t("dialog.selection.modify.description")}
+			title={t("dialog.modifySelection.title")}
+			description={t("dialog.modifySelection.description")}
 			cancelText={t("common.cancel")}
 			submitText={t("common.apply")}
 			onSubmit={() => clip.modifySelection(amount)}
@@ -36,7 +36,7 @@ const ModifySelectionDialog = (props: Props) => {
 			<div className="flex flex-col gap-2">
 				<NumberField
 					id="selection-modify-amount"
-					aria-label={t("dialog.selection.modify.amount")}
+					aria-label={t("dialog.modifySelection.amount")}
 					value={amount}
 					min={-maxAmount}
 					max={maxAmount}

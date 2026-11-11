@@ -87,32 +87,43 @@ const InputSettingsDialog = (props: Props) => {
 			title={t("dialog.input.title")}
 			cancelText={t("common.close")}
 		>
-			<div className="flex flex-col gap-2">
-				<div className="flex justify-between gap-1">
-					<span className="font-medium">{t("dialog.input.stabilization")}</span>
-					<span>{`${String(tool.stabilization)}%`}</span>
-				</div>
-				<p>{t("dialog.input.stabilizationHint")}</p>
-				<Slider
-					id="inputStabilization"
-					min={0}
-					max={100}
-					step={1}
-					value={[tool.stabilization]}
-					onValueChange={([value]) => tool.setStabilization(value)}
-					aria-label={t("dialog.input.stabilizationLabel")}
-				/>
-				<div className="font-medium">{t("dialog.input.pressure")}</div>
-				<Switch
-					id="inputPressure"
-					label={t("dialog.input.pressureLabel")}
-					checked={tool.pressureEnabled}
-					onCheckedChange={tool.setPressureEnabled}
-				/>
+			<div className="flex flex-col gap-4">
+				<section className="flex flex-col gap-2">
+					<h3 className="font-bold">{t("dialog.input.stabilization")}</h3>
+					<p className="text-foreground-muted">
+						{t("dialog.input.stabilizationDescription")}
+					</p>
+					<div className="flex justify-between gap-1">
+						<span className="font-medium">
+							{t("dialog.input.stabilizationLabel")}
+						</span>
+						<span>{tool.stabilization}%</span>
+					</div>
+					<Slider
+						id="inputStabilization"
+						min={0}
+						max={100}
+						step={1}
+						value={[tool.stabilization]}
+						onValueChange={([value]) => tool.setStabilization(value)}
+						aria-label={t("dialog.input.stabilizationLabel")}
+					/>
+				</section>
+				<section className="flex flex-col gap-2">
+					<h3 className="font-bold">{t("dialog.input.pressure")}</h3>
+					<Switch
+						id="inputPressure"
+						label={t("dialog.input.pressureLabel")}
+						checked={tool.pressureEnabled}
+						onCheckedChange={tool.setPressureEnabled}
+					/>
+				</section>
 				{tool.pressureEnabled && (
-					<>
-						<p className="font-medium">{t("dialog.input.pressureCurve")}</p>
-						<p>{t("dialog.input.curveHint")}</p>
+					<section className="flex flex-col gap-2">
+						<h3 className="font-bold">{t("dialog.input.pressureCurve")}</h3>
+						<p className="text-foreground-muted">
+							{t("dialog.input.curveDescription")}
+						</p>
 						<svg
 							viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}
 							role="img"
@@ -157,7 +168,7 @@ const InputSettingsDialog = (props: Props) => {
 								/>
 							))}
 						</svg>
-					</>
+					</section>
 				)}
 			</div>
 		</Dialog>

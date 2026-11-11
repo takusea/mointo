@@ -15,30 +15,28 @@ const LanguageSettingDialog = (props: Props) => {
 		<Dialog
 			{...props}
 			title={t("dialog.language.title")}
+			description={t("dialog.language.description")}
 			cancelText={t("common.close")}
 		>
-			<div className="flex flex-col gap-2">
-				<p>{t("dialog.language.languageDescription")}</p>
-				<RadioGroup
-					value={locale}
-					onValueChange={(value) => {
-						if (value === "en" || value === "ja") {
-							setLocale(value);
-						}
-					}}
-				>
-					<RadioGroupItem
-						value="en"
-						label={t("dialog.language.english")}
-						id="langEn"
-					/>
-					<RadioGroupItem
-						value="ja"
-						label={t("dialog.language.japanese")}
-						id="langJa"
-					/>
-				</RadioGroup>
-			</div>
+			<RadioGroup
+				value={locale}
+				onValueChange={(value) => {
+					if (value === "en" || value === "ja") {
+						setLocale(value);
+					}
+				}}
+			>
+				<RadioGroupItem
+					value="en"
+					label={t("dialog.language.english")}
+					id="langEn"
+				/>
+				<RadioGroupItem
+					value="ja"
+					label={t("dialog.language.japanese")}
+					id="langJa"
+				/>
+			</RadioGroup>
 		</Dialog>
 	);
 };
