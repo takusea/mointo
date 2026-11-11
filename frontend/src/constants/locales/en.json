@@ -193,5 +193,6 @@
 	"tool.select": "Select",
 	"tool.select.lasso": "Free Select",
 	"tool.select.rectangle": "Rectangular Select",
-	"tool.select.wand": "Magic Wand"
+	"tool.select.wand": "Magic Wand",
+	"tool": "Tool"
 }

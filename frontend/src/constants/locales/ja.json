@@ -193,5 +193,6 @@
 	"tool.select": "選択",
 	"tool.select.lasso": "自由選択",
 	"tool.select.rectangle": "矩形選択",
-	"tool.select.wand": "自動選択"
+	"tool.select.wand": "自動選択",
+	"tool": "ツール"
 }
