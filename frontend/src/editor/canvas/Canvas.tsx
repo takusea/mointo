@@ -254,17 +254,17 @@ const DrawCanvas = () => {
 				isGridVisible={canvasView.isGridVisible}
 			/>
 			{canvasPointer.transformSession != null && (
-				<div className="absolute top-2 left-1/2 z-20 -translate-x-1/2">
+				<div className="absolute bottom-16 left-1/2 z-20 -translate-x-1/2">
 					<Card size="small">
 						<div className="flex gap-1">
+							<Button
+								label={t("common.cancel")}
+								onClick={() => void canvasPointer.cancelTransform()}
+							/>
 							<Button
 								label={t("common.apply")}
 								variant="primary"
 								onClick={() => void canvasPointer.applyTransform()}
-							/>
-							<Button
-								label={t("common.cancel")}
-								onClick={() => void canvasPointer.cancelTransform()}
 							/>
 						</div>
 					</Card>
