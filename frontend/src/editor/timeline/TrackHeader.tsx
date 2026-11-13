@@ -132,7 +132,7 @@ const TrackHeader = ({
 
 	return (
 		<div
-			className="h-full border-b border-border"
+			className="h-full"
 			style={{
 				translate: `-${scrollX}px 0`,
 				width: `${totalFrames * frameWidth}px`,

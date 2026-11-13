@@ -184,6 +184,8 @@
 	"inspector.tool.size": "サイズ",
 	"inspector.tool.tolerance": "許容値",
 	"timeline.endFrame": "終了フレーム {frame}",
+	"timeline.collapseTracks": "レイヤー一覧を折り畳む",
+	"timeline.expandTracks": "レイヤー一覧を展開",
 	"timeline.hideLayer": "レイヤー {index} を非表示",
 	"timeline.layer": "レイヤー {index}",
 	"timeline.lockLayer": "レイヤー {index} をロック",

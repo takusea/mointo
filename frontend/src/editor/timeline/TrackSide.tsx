@@ -14,6 +14,7 @@ type Props = {
 	layerHeight: number;
 	scrollY: number;
 	selectedLayerId: LayerId | null;
+	isCollapsed: boolean;
 	onLayerSelect: (id: LayerId) => void;
 	onLayerShow: (id: LayerId) => void;
 	onLayerHide: (id: LayerId) => void;
@@ -36,6 +37,7 @@ const TrackSide = ({
 	layerHeight,
 	scrollY,
 	selectedLayerId,
+	isCollapsed,
 	onLayerSelect,
 	onLayerShow,
 	onLayerHide,
@@ -140,7 +142,6 @@ const TrackSide = ({
 	return (
 		<div
 			ref={sideRef}
-			className="border-r border-border"
 			style={{
 				translate: `0 -${scrollY}px`,
 				height: `${layers.length * layerHeight}px`,
@@ -154,9 +155,10 @@ const TrackSide = ({
 					<div
 						key={layer.id}
 						data-hidden={isHidden}
+						data-selected={selectedLayerId === layer.id}
 						data-dragged={draggedLayerId === layer.id}
 						data-drop-target={dropTargetIndex === i}
-						className="flex items-center justify-between gap-1 overflow-hidden border-b border-border data-[dragged=true]:opacity-40 data-[drop-target=true]:bg-primary/10 data-[hidden=true]:opacity-50"
+						className="relative flex items-center justify-between gap-1 overflow-hidden border-b border-border data-[dragged=true]:opacity-40 data-[drop-target=true]:bg-primary/10 data-[hidden=true]:opacity-50 data-[selected=true]:bg-primary/10"
 						style={{ height: `${layerHeight}px` }}
 					>
 						{selectedLayerId === layer.id && (
@@ -164,7 +166,14 @@ const TrackSide = ({
 						)}
 						<button
 							type="button"
-							className="h-full flex-1 cursor-grab pr-2 pl-3 text-left font-medium active:cursor-grabbing"
+							className={
+								isCollapsed
+									? "h-full w-full cursor-grab text-center font-medium active:cursor-grabbing"
+									: "h-full flex-1 cursor-grab pr-2 pl-3 text-left font-medium active:cursor-grabbing"
+							}
+							aria-label={
+								isCollapsed ? t("timeline.layer", { index: i }) : undefined
+							}
 							tabIndex={i === 0 ? 0 : -1}
 							data-layer-index={i}
 							data-control-index={0}
@@ -178,37 +187,44 @@ const TrackSide = ({
 							onPointerUp={finishLayerDrag}
 							onPointerCancel={finishLayerDrag}
 						>
-							{t("timeline.layer", { index: i })}
+							{isCollapsed ? i : t("timeline.layer", { index: i })}
 						</button>
-						<IconButton
-							label={t(isHidden ? "timeline.showLayer" : "timeline.hideLayer", {
-								index: i,
-							})}
-							icon={isHidden ? IconEyeOff : IconEye}
-							variant={isHidden ? "primary" : "default"}
-							aria-pressed={isHidden}
-							tabIndex={-1}
-							data-layer-index={i}
-							data-control-index={1}
-							onKeyDown={(event) => handleControlKeyDown(event, i, 1)}
-							onClick={() =>
-								isHidden ? onLayerShow(layer.id) : onLayerHide(layer.id)
-							}
-						/>
-						<IconButton
-							label={t(
-								isLocked ? "timeline.unlockLayer" : "timeline.lockLayer",
-								{ index: i },
-							)}
-							icon={isLocked ? IconLock : IconLockOpen}
-							aria-pressed={isLocked}
-							tabIndex={-1}
-							data-layer-index={i}
-							data-control-index={2}
-							onKeyDown={(event) => handleControlKeyDown(event, i, 2)}
-							variant={isLocked ? "primary" : "default"}
-							onClick={() => onLayerLockToggle(layer.id)}
-						/>
+						{!isCollapsed && (
+							<>
+								<IconButton
+									label={t(
+										isHidden ? "timeline.showLayer" : "timeline.hideLayer",
+										{
+											index: i,
+										},
+									)}
+									icon={isHidden ? IconEyeOff : IconEye}
+									variant={isHidden ? "primary" : "default"}
+									aria-pressed={isHidden}
+									tabIndex={-1}
+									data-layer-index={i}
+									data-control-index={1}
+									onKeyDown={(event) => handleControlKeyDown(event, i, 1)}
+									onClick={() =>
+										isHidden ? onLayerShow(layer.id) : onLayerHide(layer.id)
+									}
+								/>
+								<IconButton
+									label={t(
+										isLocked ? "timeline.unlockLayer" : "timeline.lockLayer",
+										{ index: i },
+									)}
+									icon={isLocked ? IconLock : IconLockOpen}
+									aria-pressed={isLocked}
+									tabIndex={-1}
+									data-layer-index={i}
+									data-control-index={2}
+									onKeyDown={(event) => handleControlKeyDown(event, i, 2)}
+									variant={isLocked ? "primary" : "default"}
+									onClick={() => onLayerLockToggle(layer.id)}
+								/>
+							</>
+						)}
 					</div>
 				);
 			})}

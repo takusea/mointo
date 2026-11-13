@@ -184,6 +184,8 @@
 	"inspector.tool.size": "Size",
 	"inspector.tool.tolerance": "Tolerance",
 	"timeline.endFrame": "End frame {frame}",
+	"timeline.collapseTracks": "Collapse layer list",
+	"timeline.expandTracks": "Expand layer list",
 	"timeline.hideLayer": "Hide layer {index}",
 	"timeline.layer": "Layer {index}",
 	"timeline.lockLayer": "Lock layer {index}",

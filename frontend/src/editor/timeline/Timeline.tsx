@@ -1,4 +1,6 @@
+import { motion } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
+import { useMediaQuery } from "usehooks-ts";
 import Card from "~/components/Card";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
@@ -9,6 +11,7 @@ import { useProject } from "~/features/project/useProject";
 import { useShortcut } from "~/features/shortcuts/useShortcut";
 import { useShortcutSettings } from "~/features/shortcuts/useShortcuts";
 import TrackBody from "./TrackBody";
+import TrackCorner from "./TrackCorner";
 import TrackHeader from "./TrackHeader";
 import TrackSide from "./TrackSide";
 
@@ -19,6 +22,8 @@ const MAX_FRAME_WIDTH = 64;
 const WHEEL_ZOOM_SENSITIVITY = 0.0015;
 
 const Timeline = () => {
+	const isDesktop = useMediaQuery("(min-width: 720px)");
+	const [isTrackSideCollapsed, setIsTrackSideCollapsed] = useState(false);
 	const core = useCore();
 	const coreSnapshot = useCoreSnapshot();
 	const clipContext = useClip();
@@ -319,14 +324,18 @@ const Timeline = () => {
 				}}
 				onPointerMoveCapture={updateAutoScrollPointer}
 			>
-				<div className="flex size-full items-center justify-between border-r border-b border-border px-2">
-					<span>{playbackContext.startFrame}</span>
-					<span>-</span>
-					<span>{playbackContext.currentFrame}</span>
-					<span>-</span>
-					<span>{playbackContext.endFrame}</span>
+				<div className="border-r border-b border-border">
+					{projectContext.settings && (
+						<TrackCorner
+							startFrame={playbackContext.startFrame}
+							currentFrame={playbackContext.currentFrame}
+							endFrame={playbackContext.endFrame}
+							isCollapsed={isTrackSideCollapsed}
+							onCollapsedChange={setIsTrackSideCollapsed}
+						/>
+					)}
 				</div>
-				<div className="overflow-hidden">
+				<motion.div layout className="overflow-hidden border-b border-border">
 					<TrackHeader
 						frameWidth={frameWidth}
 						totalFrames={playbackContext.maxFrameCount}
@@ -340,13 +349,14 @@ const Timeline = () => {
 						onFrameFocus={handleFrameFocus}
 						onWheel={handleHorizontalZoom}
 					/>
-				</div>
-				<div className="overflow-hidden">
+				</motion.div>
+				<div className="overflow-hidden border-r border-border">
 					<TrackSide
 						layers={layerContext.layers}
 						layerHeight={layerHeight}
 						scrollY={scrollPosition.y}
 						selectedLayerId={layerContext.selectedLayerId}
+						isCollapsed={!isDesktop && isTrackSideCollapsed}
 						onLayerSelect={layerContext.selectLayer}
 						onLayerShow={layerContext.showLayer}
 						onLayerHide={layerContext.hideLayer}
@@ -356,35 +366,37 @@ const Timeline = () => {
 						onWheel={handleVerticalZoom}
 					/>
 				</div>
-				<TrackBody
-					ref={timelineViewportRef}
-					layers={layerContext.layers}
-					clips={clipContext.clips}
-					clipKeyframes={coreSnapshot.clipKeyframes}
-					layerHeight={layerHeight}
-					frameWidth={frameWidth}
-					scrollX={scrollPosition.x}
-					scrollY={scrollPosition.y}
-					maxFrameCount={playbackContext.maxFrameCount}
-					currentFrame={playbackContext.currentFrame}
-					startFrame={playbackContext.startFrame}
-					endFrame={playbackContext.endFrame}
-					selectedClipId={clipContext.selectedClipId}
-					selectedClipIds={clipContext.selectedClipIds}
-					isLayerHidden={layerContext.isLayerHidden}
-					isLayerLocked={layerContext.isLayerLocked}
-					onPointerDown={handlePointerDown}
-					onScroll={handleScroll}
-					onClipSelect={clipContext.selectClip}
-					onClipsSelect={clipContext.selectClips}
-					onClipMove={clipContext.moveClip}
-					onClipDurationChange={clipContext.changeClipDuration}
-					onKeyframeMove={(id, property, fromFrame, toFrame) => {
-						void core.moveClipKeyframe(id, fromFrame, toFrame, property);
-					}}
-					onInteractionStart={() => void core.beginActionGroup()}
-					onInteractionEnd={() => void core.endActionGroup()}
-				/>
+				<motion.div layout>
+					<TrackBody
+						ref={timelineViewportRef}
+						layers={layerContext.layers}
+						clips={clipContext.clips}
+						clipKeyframes={coreSnapshot.clipKeyframes}
+						layerHeight={layerHeight}
+						frameWidth={frameWidth}
+						scrollX={scrollPosition.x}
+						scrollY={scrollPosition.y}
+						maxFrameCount={playbackContext.maxFrameCount}
+						currentFrame={playbackContext.currentFrame}
+						startFrame={playbackContext.startFrame}
+						endFrame={playbackContext.endFrame}
+						selectedClipId={clipContext.selectedClipId}
+						selectedClipIds={clipContext.selectedClipIds}
+						isLayerHidden={layerContext.isLayerHidden}
+						isLayerLocked={layerContext.isLayerLocked}
+						onPointerDown={handlePointerDown}
+						onScroll={handleScroll}
+						onClipSelect={clipContext.selectClip}
+						onClipsSelect={clipContext.selectClips}
+						onClipMove={clipContext.moveClip}
+						onClipDurationChange={clipContext.changeClipDuration}
+						onKeyframeMove={(id, property, fromFrame, toFrame) => {
+							void core.moveClipKeyframe(id, fromFrame, toFrame, property);
+						}}
+						onInteractionStart={() => void core.beginActionGroup()}
+						onInteractionEnd={() => void core.endActionGroup()}
+					/>
+				</motion.div>
 			</div>
 		</Card>
 	);
