@@ -32,6 +32,21 @@ export type ClipContextValue = {
 	canMergeSelectedClips: boolean;
 	mergeSelectedClips: () => Promise<void>;
 	addClip: (start: number, layerId: LayerId) => Promise<void>;
+	addImageClip: (
+		start: number,
+		layerId: LayerId,
+		width: number,
+		height: number,
+		pixels: Uint8ClampedArray,
+	) => Promise<void>;
+	addAudioClip: (
+		start: number,
+		layerId: LayerId,
+		duration: number,
+		data: Uint8Array,
+		mimeType: string,
+		name: string,
+	) => Promise<void>;
 	addGroupClip: (start: number, layerId: LayerId) => Promise<void>;
 	deleteClip: (id: string) => Promise<void>;
 	moveClip: (

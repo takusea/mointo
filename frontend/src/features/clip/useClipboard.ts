@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCore } from "~/core/useCore";
 import type { ClipMetadata } from "~/lib/clip";
-import type { LayerId, LayerState } from "~/lib/layer";
+import type { LayerId } from "~/lib/layer";
 import type { SelectionArea } from "./ClipContext";
 
 type CompositionSettings = {
@@ -21,26 +21,26 @@ type Options = {
 	currentClip: ClipMetadata | undefined;
 	selection: SelectionArea | undefined;
 	selectedLayerId: LayerId | null;
-	layers: LayerState[];
 	currentFrame: number;
 	compositionSettings: CompositionSettings | undefined;
 	isLayerLocked: (layerId: LayerId) => boolean;
-	onClipSelected: (
-		id: string,
+	addImageClip: (
+		start: number,
 		layerId: LayerId,
-		shouldSelectLayer?: boolean,
-	) => void;
+		width: number,
+		height: number,
+		pixels: Uint8ClampedArray,
+	) => Promise<void>;
 };
 
 export const useClipboard = ({
 	currentClip,
 	selection,
 	selectedLayerId,
-	layers,
 	currentFrame,
 	compositionSettings,
 	isLayerLocked,
-	onClipSelected,
+	addImageClip,
 }: Options) => {
 	const core = useCore();
 	const [clipboard, setClipboard] = useState<ClipboardImage>();
@@ -145,72 +145,32 @@ export const useClipboard = ({
 		const settings = compositionSettings;
 		if (clipboard == null || settings == null || selectedLayerId == null)
 			return;
-		const selectedLayerIndex = layers.findIndex(
-			(layer) => layer.id === selectedLayerId,
-		);
-		if (selectedLayerIndex < 0) return;
-		const existingClips = await core.getClips();
-		const destinationLayer = layers
-			.slice(selectedLayerIndex)
-			.find(
-				(layer) =>
-					!isLayerLocked(layer.id) &&
-					!existingClips.some(
-						(clip) =>
-							clip.layer_id === layer.id &&
-							clip.start <= currentFrame &&
-							currentFrame < clip.start + clip.duration,
-					),
-			);
-		if (destinationLayer == null) return;
+		const pixels = new Uint8ClampedArray(settings.width * settings.height * 4);
+		for (let row = 0; row < clipboard.height; row++) {
+			const targetY = clipboard.y + row;
+			if (targetY < 0 || targetY >= settings.height) continue;
+			for (let column = 0; column < clipboard.width; column++) {
+				const targetX = clipboard.x + column;
+				if (targetX < 0 || targetX >= settings.width) continue;
+				const sourceIndex = (row * clipboard.width + column) * 4;
+				if (clipboard.pixels[sourceIndex + 3] === 0) continue;
+				const targetIndex = (targetY * settings.width + targetX) * 4;
+				pixels.set(
+					clipboard.pixels.subarray(sourceIndex, sourceIndex + 4),
+					targetIndex,
+				);
+			}
+		}
 
-		const existingClipIds = new Set(existingClips.map((clip) => clip.id));
 		await core.beginActionGroup();
 		try {
-			const nextClips = await core.addClip(currentFrame, destinationLayer.id);
-			const clip = nextClips.find(
-				(candidate) =>
-					!existingClipIds.has(candidate.id) &&
-					candidate.layer_id === destinationLayer.id &&
-					candidate.start === currentFrame,
+			await addImageClip(
+				currentFrame,
+				selectedLayerId,
+				settings.width,
+				settings.height,
+				pixels,
 			);
-			if (clip == null || clip.locked) return;
-			onClipSelected(clip.id, destinationLayer.id, true);
-
-			const pixels = await core.getClipPixels(clip.id);
-			if (pixels == null) {
-				throw new Error(`Clip pixel data is unavailable for clip ${clip.id}.`);
-			}
-			if (pixels.length !== settings.width * settings.height * 4) {
-				throw new Error("Clip pixel dimensions do not match project settings.");
-			}
-
-			for (let row = 0; row < clipboard.height; row++) {
-				const targetY = clipboard.y + row;
-				if (targetY < 0 || targetY >= settings.height) continue;
-				for (let column = 0; column < clipboard.width; column++) {
-					const targetX = clipboard.x + column;
-					if (targetX < 0 || targetX >= settings.width) continue;
-					const sourceIndex = (row * clipboard.width + column) * 4;
-					const targetIndex = (targetY * settings.width + targetX) * 4;
-					const sourceAlpha = clipboard.pixels[sourceIndex + 3] / 255;
-					if (sourceAlpha === 0) continue;
-					const targetAlpha = pixels[targetIndex + 3] / 255;
-					const outputAlpha = sourceAlpha + targetAlpha * (1 - sourceAlpha);
-					for (let channel = 0; channel < 3; channel++) {
-						pixels[targetIndex + channel] = Math.round(
-							(clipboard.pixels[sourceIndex + channel] * sourceAlpha +
-								pixels[targetIndex + channel] *
-									targetAlpha *
-									(1 - sourceAlpha)) /
-								outputAlpha,
-						);
-					}
-					pixels[targetIndex + 3] = Math.round(outputAlpha * 255);
-				}
-			}
-
-			await core.replaceClipPixels(clip.id, pixels);
 		} finally {
 			await core.endActionGroup();
 		}

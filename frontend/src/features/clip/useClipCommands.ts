@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useCore } from "~/core/useCore";
-import type { ClipMetadata, ClipProperties } from "~/lib/clip";
+import type { ClipMetadata, ClipProperties, ClipType } from "~/lib/clip";
 import type { LayerId, LayerState } from "~/lib/layer";
 
 type Options = {
@@ -39,30 +39,102 @@ export const useClipCommands = ({
 		});
 	};
 
-	const addClip = async (start: number, layerId: LayerId) => {
-		if (isLayerLocked(layerId)) return;
-		const nextClips = await core.addClip(start, layerId);
-		const clip = nextClips.find(
-			(candidate) =>
-				candidate.clip_type === "image" &&
-				candidate.start === start &&
-				candidate.layer_id === layerId,
+	const findAvailableLayer = (
+		startingLayerId: LayerId,
+		start: number,
+		duration: number,
+	) => {
+		const startingLayerIndex = layers.findIndex(
+			(layer) => layer.id === startingLayerId,
 		);
-		if (clip != null) onClipSelected(clip.id, layerId, true);
+		if (startingLayerIndex < 0) return undefined;
+
+		const end = start + duration;
+		return layers
+			.slice(startingLayerIndex)
+			.find(
+				(layer) =>
+					!layer.locked &&
+					!clips.some(
+						(clip) =>
+							clip.layer_id === layer.id &&
+							clip.start < end &&
+							start < clip.start + clip.duration,
+					),
+			);
 	};
 
-	const addGroupClip = async (start: number, layerId: LayerId) => {
-		if (isLayerLocked(layerId)) return;
+	const addClipAtFrame = async (
+		start: number,
+		startingLayerId: LayerId,
+		duration: number,
+		clipType: ClipType,
+		createClip: (layerId: LayerId) => Promise<ClipMetadata[]>,
+		afterCreate?: (clip: ClipMetadata) => Promise<void>,
+	) => {
+		const destinationLayer = findAvailableLayer(
+			startingLayerId,
+			start,
+			duration,
+		);
+		if (destinationLayer == null) return undefined;
+
 		const existingIds = new Set(clips.map((clip) => clip.id));
-		const nextClips = await core.addGroupClip(start, layerId);
+		const nextClips = await createClip(destinationLayer.id);
 		const clip = nextClips.find(
 			(candidate) =>
 				!existingIds.has(candidate.id) &&
-				candidate.clip_type === "group" &&
+				candidate.clip_type === clipType &&
 				candidate.start === start &&
-				candidate.layer_id === layerId,
+				candidate.layer_id === destinationLayer.id,
 		);
-		if (clip != null) onClipSelected(clip.id, layerId, true);
+		if (clip == null) return undefined;
+		await afterCreate?.(clip);
+		onClipSelected(clip.id, destinationLayer.id, true);
+		return clip;
+	};
+
+	const addClip = async (start: number, layerId: LayerId) => {
+		await addClipAtFrame(start, layerId, 1, "image", (targetLayerId) =>
+			core.addClip(start, targetLayerId),
+		);
+	};
+
+	const addImageClip = async (
+		start: number,
+		layerId: LayerId,
+		width: number,
+		height: number,
+		pixels: Uint8ClampedArray,
+	) => {
+		await addClipAtFrame(
+			start,
+			layerId,
+			1,
+			"image",
+			(targetLayerId) =>
+				core.addClipWithSize(start, targetLayerId, width, height),
+			(clip) => core.replaceClipPixels(clip.id, pixels),
+		);
+	};
+
+	const addAudioClip = async (
+		start: number,
+		layerId: LayerId,
+		duration: number,
+		data: Uint8Array,
+		mimeType: string,
+		name: string,
+	) => {
+		await addClipAtFrame(start, layerId, duration, "audio", (targetLayerId) =>
+			core.addAudioClip(start, targetLayerId, duration, data, mimeType, name),
+		);
+	};
+
+	const addGroupClip = async (start: number, layerId: LayerId) => {
+		await addClipAtFrame(start, layerId, 1, "group", (targetLayerId) =>
+			core.addGroupClip(start, targetLayerId),
+		);
 	};
 
 	const ensureClipAt = async (frame: number, layerId: LayerId | null) => {
@@ -80,36 +152,14 @@ export const useClipCommands = ({
 			return existingClip.id;
 		}
 
-		const selectedLayerIndex = layers.findIndex(
-			(layer) => layer.id === layerId,
+		const newClip = await addClipAtFrame(
+			frame,
+			layerId,
+			1,
+			"image",
+			(targetId) => core.addClip(frame, targetId),
 		);
-		if (selectedLayerIndex < 0) return undefined;
-		const destinationLayer = layers
-			.slice(selectedLayerIndex)
-			.find(
-				(layer) =>
-					!isLayerLocked(layer.id) &&
-					!clips.some(
-						(clip) =>
-							clip.layer_id === layer.id &&
-							clip.start <= frame &&
-							frame < clip.start + clip.duration,
-					),
-			);
-		if (destinationLayer == null) return undefined;
-
-		const existingIds = new Set(clips.map((clip) => clip.id));
-		const nextClips = await core.addClip(frame, destinationLayer.id);
-		const newClip = nextClips.find(
-			(clip) =>
-				clip.clip_type === "image" &&
-				clip.start === frame &&
-				clip.layer_id === destinationLayer.id &&
-				!existingIds.has(clip.id),
-		);
-		if (newClip == null) return undefined;
-		onClipSelected(newClip.id, destinationLayer.id, true);
-		return newClip.id;
+		return newClip?.id;
 	};
 
 	const duplicateClip = async (id: string | undefined, linkAsset = false) => {
@@ -544,6 +594,8 @@ export const useClipCommands = ({
 
 	return {
 		addClip,
+		addImageClip,
+		addAudioClip,
 		addGroupClip,
 		deleteClip,
 		moveClip,

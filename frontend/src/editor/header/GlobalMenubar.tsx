@@ -75,37 +75,14 @@ const GlobalMenubar = () => {
 		if (project.settings == null || layerContext.selectedLayerId == null)
 			return;
 
-		const selectedLayerIndex = layerContext.layers.findIndex(
-			(layer) => layer.id === layerContext.selectedLayerId,
-		);
-		if (selectedLayerIndex < 0) return;
-
 		const currentFrame = playbackContext.currentFrame;
-		const targetLayer = layerContext.layers
-			.slice(selectedLayerIndex)
-			.find(
-				(layer) =>
-					!layerContext.isLayerLocked(layer.id) &&
-					!clipContext.clips.some(
-						(clip) =>
-							clip.layer_id === layer.id &&
-							clip.start <= currentFrame &&
-							currentFrame < clip.start + clip.duration,
-					),
-			);
-
-		if (targetLayer != null) {
-			void clipContext.addClip(currentFrame, targetLayer.id);
-		}
+		void clipContext.addClip(currentFrame, layerContext.selectedLayerId);
 	};
 	const addGroupClipAtCurrentFrame = () => {
 		if (project.settings == null || layerContext.selectedLayerId == null)
 			return;
-		if (layerContext.isLayerLocked(layerContext.selectedLayerId)) return;
-		void clipContext.addGroupClip(
-			playbackContext.currentFrame,
-			layerContext.selectedLayerId,
-		);
+		const currentFrame = playbackContext.currentFrame;
+		void clipContext.addGroupClip(currentFrame, layerContext.selectedLayerId);
 	};
 	useShortcut(shortcuts.addClip, addClipAtCurrentFrame);
 	useShortcut(shortcuts.addGroupClip, addGroupClipAtCurrentFrame);

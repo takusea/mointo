@@ -60,11 +60,10 @@ export const ClipProvider = ({ children }: Props) => {
 		currentClip: currentImageClip,
 		selection: selectionState.selection,
 		selectedLayerId: layerContext.selectedLayerId,
-		layers: layerContext.layers,
 		currentFrame: playbackContext.currentFrame,
 		compositionSettings: projectContext.settings,
 		isLayerLocked: layerContext.isLayerLocked,
-		onClipSelected: selectionState.markClipSelected,
+		addImageClip: commands.addImageClip,
 	});
 	const clipTransform = useClipTransform({
 		clips,
