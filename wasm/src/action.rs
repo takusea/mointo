@@ -10,3 +10,4 @@ pub mod set_clip_size_action;
 pub mod set_clip_transform_action;
 pub mod set_layer_lock_action;
 pub mod set_layer_visibility_action;
+pub mod swap_layers_action;

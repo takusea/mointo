@@ -374,6 +374,13 @@ export class CoreService {
 		return this.enqueue((core) => core.lock_layer(layerId), true);
 	}
 
+	swapLayers(firstLayerId: LayerId, secondLayerId: LayerId) {
+		return this.enqueue(
+			(core) => core.swap_layers(firstLayerId, secondLayerId),
+			true,
+		);
+	}
+
 	undo() {
 		return this.enqueue((core) => core.undo(), true);
 	}

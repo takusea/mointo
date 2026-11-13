@@ -2,6 +2,7 @@ use super::MointoCore;
 use crate::action::draw_stroke_action::DrawStrokeAction;
 use crate::action::set_layer_lock_action::SetLayerLockAction;
 use crate::action::set_layer_visibility_action::SetLayerVisibilityAction;
+use crate::action::swap_layers_action::SwapLayersAction;
 use crate::app::layer::LayerId;
 use crate::core::image::Image;
 use crate::core::tool::{ToolId, ToolPropertyValue};
@@ -413,6 +414,34 @@ impl MointoCore {
 
     pub fn lock_layer(&mut self, layer_id_str: String) -> Result<(), JsValue> {
         self.set_layer_lock(layer_id_str, true)
+    }
+
+    pub fn swap_layers(
+        &mut self,
+        first_layer_id_str: String,
+        second_layer_id_str: String,
+    ) -> Result<(), JsValue> {
+        let first_layer_id = first_layer_id_str
+            .parse::<LayerId>()
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        let second_layer_id = second_layer_id_str
+            .parse::<LayerId>()
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        let project = self
+            .project
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        let composition = project.composition();
+        if composition.layer_index(first_layer_id).is_none()
+            || composition.layer_index(second_layer_id).is_none()
+        {
+            return Err(JsValue::from_str("Layer does not exist"));
+        }
+        self.action_manager.do_action(
+            Box::new(SwapLayersAction::new(first_layer_id, second_layer_id)),
+            project,
+        );
+        Ok(())
     }
 
     fn set_layer_visibility(&mut self, layer_id_str: String, hidden: bool) -> Result<(), JsValue> {

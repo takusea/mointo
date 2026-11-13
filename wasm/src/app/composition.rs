@@ -292,6 +292,16 @@ impl Composition {
         self.layers.iter().position(|layer| layer.id == layer_id)
     }
 
+    pub fn swap_layer_order_by_id(&mut self, first_layer_id: LayerId, second_layer_id: LayerId) {
+        let Some(first_index) = self.layer_index(first_layer_id) else {
+            return;
+        };
+        let Some(second_index) = self.layer_index(second_layer_id) else {
+            return;
+        };
+        self.layers.swap(first_index, second_index);
+    }
+
     #[cfg(test)]
     pub fn insert_layer(&mut self, layer_index: usize) -> LayerId {
         let index = layer_index.min(self.layers.len());

@@ -351,6 +351,7 @@ const Timeline = () => {
 						onLayerShow={layerContext.showLayer}
 						onLayerHide={layerContext.hideLayer}
 						onLayerLockToggle={layerContext.toggleLayerLock}
+						onLayersSwap={layerContext.swapLayers}
 						onLayerFocus={handleLayerFocus}
 						onWheel={handleVerticalZoom}
 					/>

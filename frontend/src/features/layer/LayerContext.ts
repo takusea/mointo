@@ -10,6 +10,7 @@ export type LayerContextValue = {
 	showLayer: (layerId: LayerId) => void;
 	hideLayer: (layerId: LayerId) => void;
 	toggleLayerLock: (layerId: LayerId) => void;
+	swapLayers: (sourceId: LayerId, targetId: LayerId) => void;
 };
 
 export const LayerContext = createContext<LayerContextValue | null>(null);

@@ -4,7 +4,7 @@ import {
 	IconLock,
 	IconLockOpen,
 } from "@tabler/icons-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import IconButton from "~/components/IconButton";
 import { useI18n } from "~/features/i18n/useI18n";
 import type { LayerId, LayerState } from "~/lib/layer";
@@ -18,8 +18,17 @@ type Props = {
 	onLayerShow: (id: LayerId) => void;
 	onLayerHide: (id: LayerId) => void;
 	onLayerLockToggle: (id: LayerId) => void;
+	onLayersSwap: (sourceId: LayerId, targetId: LayerId) => void;
 	onLayerFocus: (index: number) => void;
 	onWheel: (event: React.WheelEvent<HTMLDivElement>) => void;
+};
+
+type LayerDrag = {
+	pointerId: number;
+	layerId: LayerId;
+	sourceIndex: number;
+	startY: number;
+	isDragging: boolean;
 };
 
 const TrackSide = ({
@@ -31,11 +40,67 @@ const TrackSide = ({
 	onLayerShow,
 	onLayerHide,
 	onLayerLockToggle,
+	onLayersSwap,
 	onLayerFocus,
 	onWheel,
 }: Props) => {
 	const { t } = useI18n();
 	const sideRef = useRef<HTMLDivElement | null>(null);
+	const layerDragRef = useRef<LayerDrag | null>(null);
+	const [draggedLayerId, setDraggedLayerId] = useState<LayerId | null>(null);
+	const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+
+	function getLayerIndexAtPointer(clientY: number) {
+		const side = sideRef.current;
+		if (side == null) return -1;
+		const index = Math.floor(
+			(clientY - side.getBoundingClientRect().top) / layerHeight,
+		);
+		return index >= 0 && index < layers.length ? index : -1;
+	}
+
+	function handleLayerDragStart(
+		event: React.PointerEvent<HTMLSpanElement>,
+		layerId: LayerId,
+		layerIndex: number,
+	) {
+		if (event.button !== 0) return;
+		event.preventDefault();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		layerDragRef.current = {
+			pointerId: event.pointerId,
+			layerId,
+			sourceIndex: layerIndex,
+			startY: event.clientY,
+			isDragging: false,
+		};
+	}
+
+	function handleLayerDragMove(event: React.PointerEvent<HTMLSpanElement>) {
+		const drag = layerDragRef.current;
+		if (drag == null || drag.pointerId !== event.pointerId) return;
+		if (!drag.isDragging) {
+			drag.isDragging = Math.abs(event.clientY - drag.startY) >= 3;
+		}
+		if (!drag.isDragging) return;
+		setDraggedLayerId(drag.layerId);
+		setDropTargetIndex(getLayerIndexAtPointer(event.clientY));
+	}
+
+	function finishLayerDrag(event: React.PointerEvent<HTMLSpanElement>) {
+		const drag = layerDragRef.current;
+		if (drag == null || drag.pointerId !== event.pointerId) return;
+		layerDragRef.current = null;
+		setDraggedLayerId(null);
+		setDropTargetIndex(null);
+		if (!drag.isDragging || event.type === "pointercancel") return;
+
+		const targetIndex = getLayerIndexAtPointer(event.clientY);
+		const targetLayer = layers[targetIndex];
+		if (targetLayer != null && targetIndex !== drag.sourceIndex) {
+			onLayersSwap(drag.layerId, targetLayer.id);
+		}
+	}
 
 	function handleControlKeyDown(
 		event: React.KeyboardEvent<HTMLButtonElement>,
@@ -89,7 +154,9 @@ const TrackSide = ({
 					<div
 						key={layer.id}
 						data-hidden={isHidden}
-						className="flex items-center justify-between gap-1 overflow-hidden border-b border-border data-[hidden=true]:opacity-50"
+						data-dragged={draggedLayerId === layer.id}
+						data-drop-target={dropTargetIndex === i}
+						className="flex items-center justify-between gap-1 overflow-hidden border-b border-border data-[dragged=true]:opacity-40 data-[drop-target=true]:bg-primary/10 data-[hidden=true]:opacity-50"
 						style={{ height: `${layerHeight}px` }}
 					>
 						{selectedLayerId === layer.id && (
@@ -97,13 +164,19 @@ const TrackSide = ({
 						)}
 						<button
 							type="button"
-							className="h-full flex-1 pr-2 pl-3 text-left font-medium"
+							className="h-full flex-1 cursor-grab pr-2 pl-3 text-left font-medium active:cursor-grabbing"
 							tabIndex={i === 0 ? 0 : -1}
 							data-layer-index={i}
 							data-control-index={0}
 							onClick={() => onLayerSelect(layer.id)}
 							onFocus={() => onLayerFocus(i)}
 							onKeyDown={(event) => handleControlKeyDown(event, i, 0)}
+							onPointerDown={(event) =>
+								handleLayerDragStart(event, layer.id, i)
+							}
+							onPointerMove={handleLayerDragMove}
+							onPointerUp={finishLayerDrag}
+							onPointerCancel={finishLayerDrag}
 						>
 							{t("timeline.layer", { index: i })}
 						</button>

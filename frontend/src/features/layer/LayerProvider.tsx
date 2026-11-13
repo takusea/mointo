@@ -44,6 +44,10 @@ export const LayerProvider = ({ children }: Props) => {
 		await core.lockLayer(layerId);
 	};
 
+	const swapLayers = async (sourceId: LayerId, targetId: LayerId) => {
+		await core.swapLayers(sourceId, targetId);
+	};
+
 	return (
 		<LayerContext
 			value={{
@@ -57,6 +61,7 @@ export const LayerProvider = ({ children }: Props) => {
 				showLayer,
 				hideLayer,
 				toggleLayerLock,
+				swapLayers,
 			}}
 		>
 			{children}
