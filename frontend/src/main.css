@@ -48,8 +48,9 @@
 		oklch(60% 0.15 var(--hue)),
 		oklch(80% 0.15 var(--hue))
 	);
-	--color-clip-audio: oklch(60% 0.2 20);
+	--color-clip-audio: oklch(60% 0.2 0);
 	--color-clip-image: oklch(60% 0.2 240);
+	--color-clip-group: oklch(60% 0.2 160);
 
 	overscroll-behavior-y: none;
 	color-scheme: light dark;

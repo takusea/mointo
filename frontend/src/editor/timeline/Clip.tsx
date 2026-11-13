@@ -364,7 +364,7 @@ const Clip = ({
 			data-selected={isSelected}
 			data-hidden={isHidden}
 			data-locked={isLocked}
-			className="group bg-clip/25 absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-clip font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[type=audio]:[--color-clip:var(--color-clip-audio)] data-[type=group]:[--color-clip:var(--color-primary)] data-[type=image]:[--color-clip:var(--color-clip-image)]"
+			className="group bg-clip/25 absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-clip font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[type=audio]:[--color-clip:var(--color-clip-audio)] data-[type=group]:[--color-clip:var(--color-clip-group)] data-[type=image]:[--color-clip:var(--color-clip-image)]"
 			style={{
 				left: `${startFrame * frameWidth}px`,
 				top: `${layerIndex * layerHeight}px`,
