@@ -128,6 +128,7 @@ const ClipInspector = ({
 					/>
 					{clips.some(
 						(candidate) =>
+							(clip.clip_type === "image" || clip.clip_type === "audio") &&
 							candidate.clip_type === clip.clip_type &&
 							candidate.id !== clip.id &&
 							candidate.asset_id === clip.asset_id,
@@ -195,6 +196,25 @@ const ClipInspector = ({
 						onValueChange={onDurationChange}
 					/>
 				</div>
+				{clip.clip_type === "group" && (
+					<>
+						<span className="font-medium">
+							{t("inspector.clip.groupDepth")}
+						</span>
+						<NumberField
+							id="groupClipDepth"
+							aria-label={t("inspector.clip.groupDepth")}
+							min={1}
+							value={clip.depth}
+							disabled={isLocked}
+							onValueChange={(group_depth) =>
+								onPropertiesChange({
+									group_depth: Math.max(1, Math.floor(group_depth)),
+								})
+							}
+						/>
+					</>
+				)}
 				<Separator />
 				{clip.clip_type === "audio" ? (
 					<>
@@ -219,38 +239,42 @@ const ClipInspector = ({
 					</>
 				) : (
 					<>
-						<span className="font-medium">{t("inspector.clip.size")}</span>
-						<div className="grid grid-cols-2 gap-2">
-							<NumberField
-								id="clipWidth"
-								aria-label={t("inspector.clip.width")}
-								min={1}
-								value={clip.width}
-								disabled={isLocked}
-								leftElement={<IconArrowAutofitWidth />}
-								rightElement="px"
-								onInteractionStart={onInteractionStart}
-								onInteractionEnd={onInteractionEnd}
-								onValueChange={(width) =>
-									onSizeChange(width, clip.height, "width")
-								}
-							/>
-							<NumberField
-								id="clipHeight"
-								aria-label={t("inspector.clip.height")}
-								min={1}
-								value={clip.height}
-								disabled={isLocked}
-								leftElement={<IconArrowAutofitHeight />}
-								rightElement="px"
-								onInteractionStart={onInteractionStart}
-								onInteractionEnd={onInteractionEnd}
-								onValueChange={(height) =>
-									onSizeChange(clip.width, height, "height")
-								}
-							/>
-						</div>
-						<Separator />
+						{clip.clip_type === "image" && (
+							<>
+								<span className="font-medium">{t("inspector.clip.size")}</span>
+								<div className="grid grid-cols-2 gap-2">
+									<NumberField
+										id="clipWidth"
+										aria-label={t("inspector.clip.width")}
+										min={1}
+										value={clip.width}
+										disabled={isLocked}
+										leftElement={<IconArrowAutofitWidth />}
+										rightElement="px"
+										onInteractionStart={onInteractionStart}
+										onInteractionEnd={onInteractionEnd}
+										onValueChange={(width) =>
+											onSizeChange(width, clip.height, "width")
+										}
+									/>
+									<NumberField
+										id="clipHeight"
+										aria-label={t("inspector.clip.height")}
+										min={1}
+										value={clip.height}
+										disabled={isLocked}
+										leftElement={<IconArrowAutofitHeight />}
+										rightElement="px"
+										onInteractionStart={onInteractionStart}
+										onInteractionEnd={onInteractionEnd}
+										onValueChange={(height) =>
+											onSizeChange(clip.width, height, "height")
+										}
+									/>
+								</div>
+								<Separator />
+							</>
+						)}
 						<div className="flex items-center justify-between gap-1 font-medium">
 							{t("inspector.clip.position")}
 							<IconButton
@@ -454,63 +478,70 @@ const ClipInspector = ({
 							/>
 						</div>
 						<Separator />
-						<span className="flex items-center justify-between gap-1 font-medium">
-							{t("inspector.clip.opacity")}
-							<IconButton
-								icon={IconKeyframe}
-								label={t("inspector.clip.togglePropertyKeyframe", {
-									property: t("inspector.clip.opacity"),
-								})}
-								variant={
-									keyframes.some(
-										(k) => k.frame === currentFrame && k.property === "opacity",
-									)
-										? "primary"
-										: undefined
-								}
-								disabled={isLocked}
-								onClick={() => onKeyframeToggle("opacity", clip.opacity)}
-							/>
-						</span>
-						<NumberField
-							id="clipOpacity"
-							aria-label={t("inspector.clip.opacity")}
-							min={0}
-							max={100}
-							value={clip.opacity * 100}
-							disabled={isLocked}
-							leftElement={<IconAlpha />}
-							rightElement="%"
-							onInteractionStart={onInteractionStart}
-							onInteractionEnd={onInteractionEnd}
-							onValueChange={(value) => onOpacityChange(value / 100)}
-						/>
-						<span className="font-medium">{t("inspector.clip.blendMode")}</span>
-						<Select
-							id="clipBlendMode"
-							value={clip.blend_mode}
-							disabled={isLocked}
-							onValueChange={(blend_mode) =>
-								(blend_mode === "normal" ||
-									blend_mode === "multiply" ||
-									blend_mode === "screen" ||
-									blend_mode === "add") &&
-								onPropertiesChange({ blend_mode })
-							}
-						>
-							<SelectItem value="normal">
-								{t("inspector.clip.blendMode.normal")}
-							</SelectItem>
-							<SelectItem value="multiply">
-								{t("inspector.clip.blendMode.multiply")}
-							</SelectItem>
-							<SelectItem value="screen">
-								{t("inspector.clip.blendMode.screen")}
-							</SelectItem>
-							<SelectItem value="add">
-								{t("inspector.clip.blendMode.add")}
-							</SelectItem>
-						</Select>
+						{clip.clip_type === "image" && (
+							<>
+								<span className="flex items-center justify-between gap-1 font-medium">
+									{t("inspector.clip.opacity")}
+									<IconButton
+										icon={IconKeyframe}
+										label={t("inspector.clip.togglePropertyKeyframe", {
+											property: t("inspector.clip.opacity"),
+										})}
+										variant={
+											keyframes.some(
+												(k) =>
+													k.frame === currentFrame && k.property === "opacity",
+											)
+												? "primary"
+												: undefined
+										}
+										disabled={isLocked}
+										onClick={() => onKeyframeToggle("opacity", clip.opacity)}
+									/>
+								</span>
+								<NumberField
+									id="clipOpacity"
+									aria-label={t("inspector.clip.opacity")}
+									min={0}
+									max={100}
+									value={clip.opacity * 100}
+									disabled={isLocked}
+									leftElement={<IconAlpha />}
+									rightElement="%"
+									onInteractionStart={onInteractionStart}
+									onInteractionEnd={onInteractionEnd}
+									onValueChange={(value) => onOpacityChange(value / 100)}
+								/>
+								<span className="font-medium">
+									{t("inspector.clip.blendMode")}
+								</span>
+								<Select
+									id="clipBlendMode"
+									value={clip.blend_mode}
+									disabled={isLocked}
+									onValueChange={(blend_mode) =>
+										(blend_mode === "normal" ||
+											blend_mode === "multiply" ||
+											blend_mode === "screen" ||
+											blend_mode === "add") &&
+										onPropertiesChange({ blend_mode })
+									}
+								>
+									<SelectItem value="normal">
+										{t("inspector.clip.blendMode.normal")}
+									</SelectItem>
+									<SelectItem value="multiply">
+										{t("inspector.clip.blendMode.multiply")}
+									</SelectItem>
+									<SelectItem value="screen">
+										{t("inspector.clip.blendMode.screen")}
+									</SelectItem>
+									<SelectItem value="add">
+										{t("inspector.clip.blendMode.add")}
+									</SelectItem>
+								</Select>
+							</>
+						)}
 					</>
 				)}
 			</div>

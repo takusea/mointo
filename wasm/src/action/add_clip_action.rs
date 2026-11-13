@@ -27,6 +27,9 @@ enum AddClipContent {
         data: Vec<u8>,
         mime_type: String,
     },
+    Group {
+        depth: u32,
+    },
 }
 
 impl AddClipAction {
@@ -75,6 +78,17 @@ impl AddClipAction {
             duration: duration.max(1),
         }
     }
+
+    pub fn group(start_frame: u32, layer_id: LayerId) -> Self {
+        Self {
+            start_frame,
+            layer_id,
+            content: AddClipContent::Group { depth: 1 },
+            clip_id: None,
+            name: None,
+            duration: 1,
+        }
+    }
 }
 
 impl Action for AddClipAction {
@@ -82,7 +96,14 @@ impl Action for AddClipAction {
         let clip_id = *self.clip_id.get_or_insert_with(Uuid::new_v4);
         let name = self
             .name
-            .get_or_insert_with(|| format!("Clip {}", project.composition_mut().clips.len() + 1))
+            .get_or_insert_with(|| {
+                let clip_number = project.composition_mut().clips.len() + 1;
+                if matches!(&self.content, AddClipContent::Group { .. }) {
+                    format!("Group {clip_number}")
+                } else {
+                    format!("Clip {clip_number}")
+                }
+            })
             .clone();
         let metadata = ClipMetadata {
             id: clip_id,
@@ -123,6 +144,9 @@ impl Action for AddClipAction {
                     Transform::default(),
                     Vec::new(),
                 )
+            }
+            AddClipContent::Group { depth } => {
+                Clip::new_group(metadata, *depth, Transform::default(), Vec::new())
             }
         };
         project.composition_mut().add_clip(clip);

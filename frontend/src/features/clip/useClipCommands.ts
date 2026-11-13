@@ -51,6 +51,20 @@ export const useClipCommands = ({
 		if (clip != null) onClipSelected(clip.id, layerId, true);
 	};
 
+	const addGroupClip = async (start: number, layerId: LayerId) => {
+		if (isLayerLocked(layerId)) return;
+		const existingIds = new Set(clips.map((clip) => clip.id));
+		const nextClips = await core.addGroupClip(start, layerId);
+		const clip = nextClips.find(
+			(candidate) =>
+				!existingIds.has(candidate.id) &&
+				candidate.clip_type === "group" &&
+				candidate.start === start &&
+				candidate.layer_id === layerId,
+		);
+		if (clip != null) onClipSelected(clip.id, layerId, true);
+	};
+
 	const ensureClipAt = async (frame: number, layerId: LayerId | null) => {
 		if (layerId == null || isLayerLocked(layerId)) return undefined;
 
@@ -152,6 +166,8 @@ export const useClipCommands = ({
 						source.audio_mime_type,
 						source.name,
 					);
+				} else if (source.clip_type === "group") {
+					nextClips = await core.addGroupClip(start, source.layer_id);
 				} else {
 					nextClips = await core.addClip(start, source.layer_id);
 				}
@@ -169,7 +185,7 @@ export const useClipCommands = ({
 					await core.changeClipDuration(duplicate.id, source.duration);
 				}
 				await core.changeClipName(duplicate.id, source.name);
-				if (source.clip_type !== "audio") {
+				if (source.clip_type === "image") {
 					await core.changeClipSize(duplicate.id, source.width, source.height);
 				}
 				const properties: ClipProperties = {
@@ -181,10 +197,25 @@ export const useClipCommands = ({
 					properties.opacity = source.opacity;
 					properties.blend_mode = source.blend_mode;
 				} else {
-					properties.audio_start_frame = source.audio_start_frame;
+					if (source.clip_type === "audio")
+						properties.audio_start_frame = source.audio_start_frame;
+					else properties.group_depth = source.depth;
 				}
 				await core.changeClipProperties(duplicate.id, properties);
-				if (linkAsset) {
+				if (source.clip_type === "group") {
+					const transform = core.getSnapshot().clipTransforms[source.id];
+					if (transform != null)
+						await core.updateClipTransform(duplicate.id, transform);
+					for (const key of core.getSnapshot().clipKeyframes[source.id] ?? []) {
+						await core.setClipKeyframe(
+							duplicate.id,
+							key.frame + offset,
+							key.property,
+							key.value,
+						);
+					}
+				}
+				if (linkAsset && source.clip_type !== "group") {
 					await core.linkClips(source.id, duplicate.id);
 				} else if (source.clip_type === "image") {
 					const pixels = await core.getClipPixels(source.id);
@@ -212,7 +243,7 @@ export const useClipCommands = ({
 		if (sources.some((clip) => clip.locked || isLayerLocked(clip.layer_id))) {
 			return [];
 		}
-		if (sources.some((clip) => clip.clip_type === "audio")) return [];
+		if (sources.some((clip) => clip.clip_type !== "image")) return [];
 
 		return sources;
 	};
@@ -495,7 +526,13 @@ export const useClipCommands = ({
 							opacity: clip.opacity,
 							blend_mode: clip.blend_mode,
 						}
-					: { hidden: clip.hidden, locked: clip.locked };
+					: clip.clip_type === "group"
+						? {
+								hidden: clip.hidden,
+								locked: clip.locked,
+								group_depth: clip.depth,
+							}
+						: { hidden: clip.hidden, locked: clip.locked };
 			await core.changeClipProperties(clip.id, {
 				...currentProperties,
 				...properties,
@@ -507,6 +544,7 @@ export const useClipCommands = ({
 
 	return {
 		addClip,
+		addGroupClip,
 		deleteClip,
 		moveClip,
 		changeClipDuration,

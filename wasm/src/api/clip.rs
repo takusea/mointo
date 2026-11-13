@@ -53,6 +53,11 @@ enum ClipMetadataView<'a> {
         audio_mime_type: &'a str,
         audio_start_frame: u32,
     },
+    Group {
+        #[serde(flatten)]
+        common: ClipMetadataCommon<'a>,
+        depth: u32,
+    },
 }
 
 #[wasm_bindgen]
@@ -78,8 +83,12 @@ impl MointoCore {
                     "Clips must have the same content type to share assets",
                 ));
             }
-            let source_asset_id = source_clip.asset_id();
-            let target_asset_id = target_clip.asset_id();
+            let source_asset_id = source_clip
+                .asset_id()
+                .ok_or_else(|| JsValue::from_str("Group clips do not have assets"))?;
+            let target_asset_id = target_clip
+                .asset_id()
+                .ok_or_else(|| JsValue::from_str("Group clips do not have assets"))?;
             if source_asset_id == target_asset_id {
                 return Ok(());
             }
@@ -170,6 +179,10 @@ impl MointoCore {
                         audio_mime_type: mime_type,
                         audio_start_frame: *start_frame,
                     },
+                    ClipContent::Group { depth } => ClipMetadataView::Group {
+                        common,
+                        depth: *depth,
+                    },
                 }
             })
             .collect();
@@ -198,6 +211,28 @@ impl MointoCore {
         }
         self.action_manager
             .do_action(Box::new(AddClipAction::new(start_frame, layer_id)), project);
+        Ok(())
+    }
+
+    pub fn add_group_clip(
+        &mut self,
+        start_frame: u32,
+        layer_id_str: String,
+    ) -> Result<(), JsValue> {
+        let layer_id = layer_id_str
+            .parse::<LayerId>()
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        let project = self
+            .project
+            .as_mut()
+            .ok_or_else(|| JsValue::from_str("Project is not initialized"))?;
+        if project.composition_mut().layer_index(layer_id).is_none() {
+            return Err(JsValue::from_str("Layer does not exist"));
+        }
+        self.action_manager.do_action(
+            Box::new(AddClipAction::group(start_frame, layer_id)),
+            project,
+        );
         Ok(())
     }
 
@@ -352,6 +387,8 @@ impl MointoCore {
                 let (transform, opacity) = clip.values_at(frame_index);
                 clip.transform = transform;
                 clip.set_image_opacity(opacity);
+                clip.render_parent_transform =
+                    composition.parent_transform_for(clip.metadata.layer_id, frame_index);
                 clip
             })
             .collect();

@@ -98,7 +98,17 @@ const GlobalMenubar = () => {
 			void clipContext.addClip(currentFrame, targetLayer.id);
 		}
 	};
+	const addGroupClipAtCurrentFrame = () => {
+		if (project.settings == null || layerContext.selectedLayerId == null)
+			return;
+		if (layerContext.isLayerLocked(layerContext.selectedLayerId)) return;
+		void clipContext.addGroupClip(
+			playbackContext.currentFrame,
+			layerContext.selectedLayerId,
+		);
+	};
 	useShortcut(shortcuts.addClip, addClipAtCurrentFrame);
+	useShortcut(shortcuts.addGroupClip, addGroupClipAtCurrentFrame);
 
 	useShortcut(shortcuts.newProject, () => {
 		if (project.confirmDiscard()) dialogs.open("createProject");
@@ -213,16 +223,37 @@ const GlobalMenubar = () => {
 					onSelect={clipContext.paste}
 				/>
 				<MenubarSeparator />
-				<MenubarItem
-					label={t("action.edit.addClip")}
-					shortcut={formatShortcut(shortcuts.addClip)}
-					disabled={
-						project.settings == null ||
-						layerContext.selectedLayerId == null ||
-						layerContext.isLayerLocked(layerContext.selectedLayerId)
-					}
-					onSelect={addClipAtCurrentFrame}
-				/>
+				<MenubarSub label={t("action.edit.addClip")}>
+					<MenubarItem
+						label={t("action.edit.addImageClip")}
+						shortcut={formatShortcut(shortcuts.addClip)}
+						disabled={
+							project.settings == null ||
+							layerContext.selectedLayerId == null ||
+							layerContext.isLayerLocked(layerContext.selectedLayerId)
+						}
+						onSelect={addClipAtCurrentFrame}
+					/>
+					<MenubarItem
+						label={t("action.edit.addAudioClip")}
+						disabled={
+							project.settings == null ||
+							layerContext.selectedLayerId == null ||
+							layerContext.isLayerLocked(layerContext.selectedLayerId)
+						}
+						onSelect={() => void importAudio()}
+					/>
+					<MenubarItem
+						label={t("action.edit.addGroupClip")}
+						shortcut={formatShortcut(shortcuts.addGroupClip)}
+						disabled={
+							project.settings == null ||
+							layerContext.selectedLayerId == null ||
+							layerContext.isLayerLocked(layerContext.selectedLayerId)
+						}
+						onSelect={addGroupClipAtCurrentFrame}
+					/>
+				</MenubarSub>
 				<MenubarItem
 					label={t("action.edit.deleteClip")}
 					shortcut={formatShortcut(shortcuts.deleteClip)}

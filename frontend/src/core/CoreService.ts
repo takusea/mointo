@@ -251,6 +251,13 @@ export class CoreService {
 		}, true);
 	}
 
+	addGroupClip(start: number, layerId: LayerId) {
+		return this.enqueue((core) => {
+			core.add_group_clip(start, layerId);
+			return (core.get_clips() as ClipMetadata[] | undefined) ?? [];
+		}, true);
+	}
+
 	addClipWithSize(
 		start: number,
 		layerId: LayerId,
@@ -343,6 +350,8 @@ export class CoreService {
 			wasmProperties.blend_mode = properties.blend_mode;
 		if (properties.audio_start_frame !== undefined)
 			wasmProperties.audio_start_frame = properties.audio_start_frame;
+		if (properties.group_depth !== undefined)
+			wasmProperties.group_depth = properties.group_depth;
 		return this.enqueue(
 			(core) => core.set_clip_properties(id, wasmProperties),
 			true,

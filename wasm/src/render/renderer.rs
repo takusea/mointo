@@ -450,8 +450,7 @@ impl GpuRenderer {
                 .image()
                 .ok_or_else(|| "Audio clip reached image renderer".to_string())?;
             let inverse = clip
-                .transform
-                .to_inverse_matrix3((image.width as f32 / 2.0, image.height as f32 / 2.0))
+                .inverse_transform_matrix3((image.width as f32 / 2.0, image.height as f32 / 2.0))
                 .ok_or_else(|| "Clip transform is not invertible".to_string())?;
             let uniforms = ClipUniforms {
                 inverse_transform: [

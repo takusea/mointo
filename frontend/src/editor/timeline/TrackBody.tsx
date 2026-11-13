@@ -172,13 +172,24 @@ const TrackBody = ({
 		const right = Math.max(drag.startX, drag.currentX);
 		const top = Math.min(drag.startY, drag.currentY);
 		const bottom = Math.max(drag.startY, drag.currentY);
+		const clipElements = new Map(
+			Array.from(
+				event.currentTarget.querySelectorAll<HTMLElement>("[data-clip-id]"),
+				(element) => [element.dataset.clipId, element] as const,
+			),
+		);
 		onClipsSelect(
 			clips
 				.filter((clip) => {
-					const clipLeft = clip.start * frameWidth;
-					const clipRight = (clip.start + clip.duration) * frameWidth;
-					const clipTop = clip.layer_index * layerHeight;
-					const clipBottom = clipTop + layerHeight;
+					const element = clipElements.get(clip.id);
+					if (element == null) return false;
+					const clipRect = element.getBoundingClientRect();
+					const clipLeft =
+						clipRect.left - rect.left + event.currentTarget.scrollLeft;
+					const clipRight = clipLeft + clipRect.width;
+					const clipTop =
+						clipRect.top - rect.top + event.currentTarget.scrollTop;
+					const clipBottom = clipTop + clipRect.height;
 					return (
 						clipLeft <= right &&
 						clipRight >= left &&
@@ -201,10 +212,11 @@ const TrackBody = ({
 			ref={ref}
 		>
 			<div
-				className="absolute top-0 z-50 w-px bg-primary"
+				className="absolute top-0 w-px bg-primary"
 				style={{
 					height: `${bodyHeight}px`,
 					translate: `${currentFrame * frameWidth}px 0`,
+					zIndex: layers.length * 2 + 20,
 				}}
 			/>
 			<div
@@ -228,12 +240,13 @@ const TrackBody = ({
 			{selectionRect != null && (
 				<div
 					aria-hidden="true"
-					className="pointer-events-none absolute z-40 border border-primary bg-primary/15"
+					className="pointer-events-none absolute border border-primary bg-primary/15"
 					style={{
 						left: `${selectionRect.left}px`,
 						top: `${selectionRect.top}px`,
 						width: `${selectionRect.width}px`,
 						height: `${selectionRect.height}px`,
+						zIndex: layers.length * 2 + 10,
 					}}
 				/>
 			)}
@@ -244,7 +257,9 @@ const TrackBody = ({
 					keyframes={clipKeyframes[clip.id] ?? []}
 					name={clip.name}
 					type={clip.clip_type}
+					depth={clip.clip_type === "group" ? clip.depth : undefined}
 					layerHeight={layerHeight}
+					layerCount={layers.length}
 					frameWidth={frameWidth}
 					scrollX={scrollX}
 					scrollY={scrollY}

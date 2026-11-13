@@ -15,6 +15,7 @@ import { useClip } from "~/features/clip/useClip";
 import { useI18n } from "~/features/i18n/useI18n";
 import { useLayer } from "~/features/layer/useLayer";
 import { usePlayback } from "~/features/playback/usePlayback";
+import { useProject } from "~/features/project/useProject";
 import { useTool } from "~/features/tool/useTool";
 
 const MIN_INSPECTOR_WIDTH = 200;
@@ -92,6 +93,7 @@ const InspectorLayout = () => {
 	const layerContext = useLayer();
 	const playback = usePlayback();
 	const snapshot = useCoreSnapshot();
+	const project = useProject();
 	const selectedClip = clipContext.clips.find(
 		(clip) => clip.id === clipContext.selectedClipId,
 	);
@@ -125,7 +127,8 @@ const InspectorLayout = () => {
 		MIN_INSPECTOR_WIDTH,
 		Math.floor(document.documentElement.clientWidth / 2),
 	);
-	const showToolInspector = isDesktop || isToolInspectorOpen;
+	const showToolInspector =
+		project.settings && (isDesktop || isToolInspectorOpen);
 	const showClipInspector = Boolean(
 		selectedClip && clipContext.transform && (isDesktop || isClipInspectorOpen),
 	);

@@ -6,7 +6,9 @@ type Props = {
 	keyframes: { frame: number; property: string }[];
 	name: string;
 	type: ClipType;
+	depth?: number;
 	layerHeight: number;
+	layerCount: number;
 	frameWidth: number;
 	scrollX: number;
 	scrollY: number;
@@ -61,12 +63,25 @@ type Drag = {
 	kind: "move" | "resize";
 };
 
+const getClipDisplayHeight = (
+	type: ClipType,
+	depth: number | undefined,
+	layerIndex: number,
+	layerCount: number,
+	layerHeight: number,
+) => {
+	const coveredLayerCount = type === "group" ? (depth ?? 1) + 1 : 1;
+	return Math.min(coveredLayerCount, layerCount - layerIndex) * layerHeight;
+};
+
 const Clip = ({
 	id,
 	keyframes,
 	name,
 	type,
+	depth,
 	layerHeight,
+	layerCount,
 	frameWidth,
 	scrollX,
 	scrollY,
@@ -83,6 +98,13 @@ const Clip = ({
 	onInteractionStart,
 	onInteractionEnd,
 }: Props) => {
+	const displayHeight = getClipDisplayHeight(
+		type,
+		depth,
+		layerIndex,
+		layerCount,
+		layerHeight,
+	);
 	const dragRef = useRef<Drag | null>(null);
 	const isInteracting = useRef(false);
 	const [keyframePreview, setKeyframePreview] = useState<{
@@ -135,7 +157,12 @@ const Clip = ({
 			startScrollX: scrollX,
 			startScrollY: scrollY,
 			grabOffsetY:
-				event.clientY - event.currentTarget.getBoundingClientRect().top,
+				type === "group"
+					? Math.min(
+							event.clientY - event.currentTarget.getBoundingClientRect().top,
+							layerHeight - 1,
+						)
+					: event.clientY - event.currentTarget.getBoundingClientRect().top,
 			startFrame,
 			duration,
 			layerIndex,
@@ -332,22 +359,24 @@ const Clip = ({
 		<div
 			key={id}
 			data-clip="true"
+			data-clip-id={id}
 			data-type={type}
 			data-selected={isSelected}
 			data-hidden={isHidden}
 			data-locked={isLocked}
-			className="group data-[selected=true]:bg-clip bg-clip/25 absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-clip font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[type=audio]:[--color-clip:var(--color-clip-audio)] data-[type=image]:[--color-clip:var(--color-clip-image)]"
+			className="group bg-clip/25 absolute grid touch-none grid-cols-[1fr_8px] items-stretch overflow-hidden rounded border border-clip font-medium data-[hidden=true]:opacity-40 data-[locked=true]:cursor-not-allowed data-[type=audio]:[--color-clip:var(--color-clip-audio)] data-[type=group]:[--color-clip:var(--color-primary)] data-[type=image]:[--color-clip:var(--color-clip-image)]"
 			style={{
 				left: `${startFrame * frameWidth}px`,
 				top: `${layerIndex * layerHeight}px`,
 				width: `${duration * frameWidth}px`,
-				height: `${layerHeight}px`,
+				height: `${displayHeight}px`,
+				zIndex: layerIndex * 2 + (type === "group" ? 0 : 1),
 			}}
 			onPointerUp={handlePointerUp}
 			onPointerCancel={handlePointerUp}
 			onLostPointerCapture={handlePointerUp}
 		>
-			<div className="pointer-events-none absolute flex h-full items-center gap-1 px-1 text-nowrap">
+			<div className="pointer-events-none absolute flex h-full items-center gap-1 px-1 text-nowrap group-data-[type=group]:items-start group-data-[type=group]:pt-1">
 				{name}
 			</div>
 			{[...keysByFrame.entries()].flatMap(([frame, keys]) =>
@@ -368,7 +397,10 @@ const Clip = ({
 							className="absolute z-20 flex size-4 -translate-x-1/2 -translate-y-1/2 cursor-grab items-center justify-center group-data-[locked=true]:cursor-not-allowed active:cursor-grabbing"
 							style={{
 								left: `${(displayedFrame - startFrame + 0.5) * frameWidth}px`,
-								top: `calc(50% + ${offset}px)`,
+								top:
+									type === "group"
+										? `calc(${layerHeight / 2}px + ${offset}px)`
+										: `calc(50% + ${offset}px)`,
 							}}
 							onPointerDown={(event) =>
 								handleKeyframePointerDown(event, frame, key.property)
@@ -384,12 +416,13 @@ const Clip = ({
 				}),
 			)}
 			<div
-				className="group-data-[locked=false]:cursor-move"
+				className="group-data-[selected=true]:bg-clip group-data-[locked=false]:cursor-move"
+				style={{ height: `${layerHeight}px` }}
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handlePointerMove}
 			/>
 			<div
-				className="bg-clip grid place-items-center group-data-[locked=false]:cursor-w-resize"
+				className="bg-clip grid place-items-center group-data-[locked=false]:cursor-w-resize group-data-[type=group]:items-start group-data-[type=group]:pt-2"
 				data-resize="true"
 				onPointerDown={isLocked ? undefined : handlePointerDown}
 				onPointerMove={isLocked ? undefined : handleRightPointerMove}

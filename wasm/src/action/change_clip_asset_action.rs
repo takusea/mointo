@@ -36,7 +36,7 @@ impl ChangeClipAssetAction {
             .composition()
             .clips
             .iter()
-            .any(|clip| clip.asset_id() == asset_id)
+            .any(|clip| clip.asset_id() == Some(asset_id))
         {
             project.composition_mut().assets.remove(&asset_id);
         }
@@ -56,7 +56,9 @@ impl Action for ChangeClipAssetAction {
         let Some(current) = project.composition().get_clip(self.clip_id) else {
             return;
         };
-        let previous_asset_id = current.asset_id();
+        let Some(previous_asset_id) = current.asset_id() else {
+            return;
+        };
         let Some(previous_asset) = project
             .composition()
             .assets
@@ -99,7 +101,9 @@ impl Action for ChangeClipAssetAction {
         let Some(clip) = project.composition_mut().find_clip(self.clip_id) else {
             return;
         };
-        clip.set_asset_id(next_asset_id);
+        if clip.set_asset_id(next_asset_id).is_none() {
+            return;
+        }
         if let (Asset::Image(image), ClipContent::Image { .. }) = (&next_asset, &content) {
             clip.set_image(image.clone());
         }
@@ -119,7 +123,9 @@ impl UndoableAction for ChangeClipAssetAction {
         let Some(clip) = project.composition_mut().find_clip(self.clip_id) else {
             return;
         };
-        let current_asset_id = clip.set_asset_id(*previous_asset_id);
+        let Some(current_asset_id) = clip.set_asset_id(*previous_asset_id) else {
+            return;
+        };
         if let Asset::Image(image) = previous_asset {
             clip.set_image(image.clone());
         }
@@ -189,7 +195,7 @@ mod tests {
             &mut project,
         );
         assert_eq!(
-            project.get_clip(target_id).unwrap().asset_id(),
+            project.get_clip(target_id).unwrap().asset_id().unwrap(),
             source_asset_id
         );
         assert_eq!(
@@ -201,7 +207,7 @@ mod tests {
 
         manager.undo(&mut project);
         assert_eq!(
-            project.get_clip(target_id).unwrap().asset_id(),
+            project.get_clip(target_id).unwrap().asset_id().unwrap(),
             target_asset_id
         );
         assert_eq!(
@@ -217,7 +223,7 @@ mod tests {
             &mut project,
         );
         assert_ne!(
-            project.get_clip(target_id).unwrap().asset_id(),
+            project.get_clip(target_id).unwrap().asset_id().unwrap(),
             source_asset_id
         );
         assert_eq!(
@@ -228,8 +234,8 @@ mod tests {
         );
         manager.undo(&mut project);
         assert_eq!(
-            project.get_clip(source_id).unwrap().asset_id(),
-            project.get_clip(target_id).unwrap().asset_id()
+            project.get_clip(source_id).unwrap().asset_id().unwrap(),
+            project.get_clip(target_id).unwrap().asset_id().unwrap()
         );
     }
 }

@@ -1,5 +1,6 @@
 use crate::app::layer::LayerId;
 use crate::core::{image::Image, transform::Transform};
+use cgmath::{Matrix3, SquareMatrix};
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use uuid::Uuid;
@@ -31,6 +32,8 @@ pub struct ClipProperties {
     pub blend_mode: Option<BlendMode>,
     #[serde(default)]
     pub audio_start_frame: Option<u32>,
+    #[serde(default)]
+    pub group_depth: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -75,6 +78,14 @@ pub enum ClipContent {
         #[serde(default)]
         start_frame: u32,
     },
+    Group {
+        #[serde(default = "default_group_depth")]
+        depth: u32,
+    },
+}
+
+fn default_group_depth() -> u32 {
+    1
 }
 
 fn default_opacity() -> f32 {
@@ -88,6 +99,8 @@ pub struct Clip {
     pub transform: Transform,
     #[serde(serialize_with = "serialize_committed_keyframes")]
     pub keyframes: Vec<ClipKeyframe>,
+    #[serde(skip)]
+    pub render_parent_transform: Option<Matrix3<f32>>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -202,6 +215,7 @@ impl Clip {
             },
             transform,
             keyframes,
+            render_parent_transform: None,
         }
     }
 
@@ -221,6 +235,24 @@ impl Clip {
             },
             transform,
             keyframes,
+            render_parent_transform: None,
+        }
+    }
+
+    pub fn new_group(
+        metadata: ClipMetadata,
+        depth: u32,
+        transform: Transform,
+        keyframes: Vec<ClipKeyframe>,
+    ) -> Self {
+        Self {
+            metadata,
+            content: ClipContent::Group {
+                depth: depth.max(1),
+            },
+            transform,
+            keyframes,
+            render_parent_transform: None,
         }
     }
 
@@ -228,73 +260,88 @@ impl Clip {
         matches!(self.content, ClipContent::Image { .. })
     }
 
-    pub fn asset_id(&self) -> AssetId {
+    pub fn is_group(&self) -> bool {
+        matches!(self.content, ClipContent::Group { .. })
+    }
+
+    pub fn group_depth(&self) -> Option<u32> {
         match &self.content {
-            ClipContent::Image { asset_id, .. } => *asset_id,
-            ClipContent::Audio { asset_id, .. } => *asset_id,
+            ClipContent::Group { depth } => Some(*depth),
+            _ => None,
         }
     }
 
-    pub fn set_asset_id(&mut self, next: AssetId) -> AssetId {
+    pub fn asset_id(&self) -> Option<AssetId> {
+        match &self.content {
+            ClipContent::Image { asset_id, .. } | ClipContent::Audio { asset_id, .. } => {
+                Some(*asset_id)
+            }
+            ClipContent::Group { .. } => None,
+        }
+    }
+
+    pub fn set_asset_id(&mut self, next: AssetId) -> Option<AssetId> {
         match &mut self.content {
-            ClipContent::Image { asset_id, .. } => std::mem::replace(asset_id, next),
-            ClipContent::Audio { asset_id, .. } => std::mem::replace(asset_id, next),
+            ClipContent::Image { asset_id, .. } | ClipContent::Audio { asset_id, .. } => {
+                Some(std::mem::replace(asset_id, next))
+            }
+            ClipContent::Group { .. } => None,
         }
     }
 
     pub fn image(&self) -> Option<&Image> {
         match &self.content {
             ClipContent::Image { image, .. } => Some(image),
-            ClipContent::Audio { .. } => None,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn image_mut(&mut self) -> Option<&mut Image> {
         match &mut self.content {
             ClipContent::Image { image, .. } => Some(image),
-            ClipContent::Audio { .. } => None,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn image_revision(&self) -> Option<u64> {
         match &self.content {
             ClipContent::Image { image_revision, .. } => Some(*image_revision),
-            ClipContent::Audio { .. } => None,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn dirty_rect(&self) -> Option<&Cell<Option<[u32; 4]>>> {
         match &self.content {
             ClipContent::Image { dirty_rect, .. } => Some(dirty_rect),
-            ClipContent::Audio { .. } => None,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn image_opacity(&self) -> Option<f32> {
         match &self.content {
             ClipContent::Image { opacity, .. } => Some(*opacity),
-            ClipContent::Audio { .. } => None,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn image_blend_mode(&self) -> Option<BlendMode> {
         match &self.content {
             ClipContent::Image { blend_mode, .. } => Some(*blend_mode),
-            ClipContent::Audio { .. } => None,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn audio_start_frame(&self) -> Option<u32> {
         match &self.content {
             ClipContent::Audio { start_frame, .. } => Some(*start_frame),
-            ClipContent::Image { .. } => None,
+            ClipContent::Image { .. } | ClipContent::Group { .. } => None,
         }
     }
 
     pub fn alpha_locked(&self) -> bool {
         match &self.content {
             ClipContent::Image { alpha_locked, .. } => *alpha_locked,
-            ClipContent::Audio { .. } => false,
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => false,
         }
     }
 
@@ -306,7 +353,7 @@ impl Clip {
                 blend_mode,
                 ..
             } => (Some(*alpha_locked), Some(*opacity), Some(*blend_mode)),
-            ClipContent::Audio { .. } => (None, None, None),
+            ClipContent::Audio { .. } | ClipContent::Group { .. } => (None, None, None),
         };
         ClipProperties {
             hidden: self.metadata.hidden,
@@ -315,6 +362,7 @@ impl Clip {
             opacity,
             blend_mode,
             audio_start_frame: self.audio_start_frame(),
+            group_depth: self.group_depth(),
         }
     }
 
@@ -346,6 +394,11 @@ impl Clip {
                 *start_frame = next;
             }
         }
+        if let ClipContent::Group { depth } = &mut self.content {
+            if let Some(next) = properties.group_depth {
+                *depth = next.max(1);
+            }
+        }
         self.metadata.locked = properties.locked;
     }
 
@@ -363,6 +416,14 @@ impl Clip {
         let is_after_start = self.metadata.start <= frame_index;
         let is_before_end = frame_index < self.metadata.start + self.metadata.duration;
         is_after_start && is_before_end
+    }
+
+    pub fn inverse_transform_matrix3(&self, center: (f32, f32)) -> Option<Matrix3<f32>> {
+        let inverse = self.transform.to_inverse_matrix3(center)?;
+        match self.render_parent_transform {
+            Some(parent) => Some(inverse * parent.invert()?),
+            None => Some(inverse),
+        }
     }
 
     pub fn set_image(&mut self, image: Image) {
@@ -435,6 +496,7 @@ mod tests {
             opacity: Some(0.4),
             blend_mode: Some(BlendMode::Multiply),
             audio_start_frame: None,
+            group_depth: None,
         });
         clip.transform.anchor = (0.25, 0.75);
 
@@ -470,12 +532,13 @@ mod tests {
         );
         clip.set_properties(super::ClipProperties {
             audio_start_frame: Some(12),
+            group_depth: None,
             ..Default::default()
         });
         let bytes = rmp_serde::to_vec(&clip).unwrap();
         let restored: Clip = rmp_serde::from_slice(&bytes).unwrap();
 
-        assert_eq!(restored.asset_id(), asset_id);
+        assert_eq!(restored.asset_id(), Some(asset_id));
         assert!(matches!(
             &restored.content,
             ClipContent::Audio {
@@ -485,5 +548,56 @@ mod tests {
         ));
         assert_eq!(restored.audio_start_frame(), Some(12));
         assert_eq!(restored.metadata.duration, 72);
+    }
+
+    #[test]
+    fn group_clip_depth_survives_serialization_without_an_asset() {
+        let clip = Clip::new_group(
+            ClipMetadata {
+                id: Uuid::new_v4(),
+                name: "Group".to_string(),
+                start: 0,
+                layer_id: Uuid::new_v4(),
+                duration: 12,
+                hidden: false,
+                locked: false,
+            },
+            3,
+            Transform::default(),
+            Vec::new(),
+        );
+
+        let bytes = rmp_serde::to_vec(&clip).unwrap();
+        let restored: Clip = rmp_serde::from_slice(&bytes).unwrap();
+
+        assert!(restored.is_group());
+        assert_eq!(restored.group_depth(), Some(3));
+        assert_eq!(restored.asset_id(), None);
+    }
+
+    #[test]
+    fn group_depth_property_is_clamped_to_at_least_one() {
+        let mut clip = Clip::new_group(
+            ClipMetadata {
+                id: Uuid::new_v4(),
+                name: "Group".to_string(),
+                start: 0,
+                layer_id: Uuid::new_v4(),
+                duration: 1,
+                hidden: false,
+                locked: false,
+            },
+            2,
+            Transform::default(),
+            Vec::new(),
+        );
+
+        assert_eq!(clip.properties().group_depth, Some(2));
+        clip.set_properties(super::ClipProperties {
+            group_depth: Some(0),
+            ..Default::default()
+        });
+
+        assert_eq!(clip.group_depth(), Some(1));
     }
 }

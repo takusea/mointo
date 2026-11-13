@@ -28,6 +28,7 @@ impl MointoCore {
             .as_array()
             .ok_or_else(|| js_error("Composition clips are invalid"))?
             .iter()
+            .filter(|clip| clip["content"]["type"].as_str() != Some("group"))
             .map(|clip| {
                 let asset_id = clip["content"]["asset_id"]
                     .as_str()
@@ -300,6 +301,9 @@ impl MointoCore {
                         serde_json::json!({"type": "audio", "data": audio_data}),
                     );
                 }
+                continue;
+            }
+            if clip["content"]["type"].as_str() == Some("group") {
                 continue;
             }
             let metadata = clip

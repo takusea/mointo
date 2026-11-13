@@ -11,7 +11,11 @@ export const shortcutDefinitions = {
 	copy: { label: "action.edit.copy", defaultKey: "ctrl+c" },
 	paste: { label: "action.edit.paste", defaultKey: "ctrl+v" },
 	selectAll: { label: "action.select.selectAll", defaultKey: "ctrl+a" },
-	addClip: { label: "action.edit.addClip", defaultKey: "insert" },
+	addClip: { label: "action.edit.addImageClip", defaultKey: "insert" },
+	addGroupClip: {
+		label: "action.edit.addGroupClip",
+		defaultKey: "shift+insert",
+	},
 	duplicateClip: { label: "action.edit.duplicateClip", defaultKey: "ctrl+d" },
 	duplicateLinkedClip: {
 		label: "action.edit.duplicateLinkedClip",

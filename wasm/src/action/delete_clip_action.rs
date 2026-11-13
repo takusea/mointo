@@ -37,6 +37,7 @@ impl Action for DeleteClipAction {
             .get_clip(self.clip_id)
             .and_then(|clip| {
                 let asset_id = clip.asset_id();
+                let asset_id = asset_id?;
                 project
                     .composition()
                     .assets

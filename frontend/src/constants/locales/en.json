@@ -1,5 +1,8 @@
 {
 	"action.edit.addClip": "Add Clip",
+	"action.edit.addAudioClip": "Add Audio Clip",
+	"action.edit.addGroupClip": "Add Group Clip",
+	"action.edit.addImageClip": "Add Image Clip",
 	"action.edit.copy": "Copy",
 	"action.edit.cut": "Cut",
 	"action.edit.deleteClip": "Delete Clip",
@@ -146,6 +149,7 @@
 	"inspector.clip.blendMode": "Blend Mode",
 	"inspector.clip.colorPicker": "Color Picker",
 	"inspector.clip.framePosition": "Frame Position",
+	"inspector.clip.groupDepth": "Target Layer Count",
 	"inspector.clip.goToKeyframe": "Go to frame {frame}",
 	"inspector.clip.height": "Height",
 	"inspector.clip.hide": "Hide",

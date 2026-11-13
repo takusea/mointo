@@ -1,5 +1,8 @@
 {
 	"action.edit.addClip": "クリップを追加",
+	"action.edit.addAudioClip": "音声クリップを追加",
+	"action.edit.addGroupClip": "グループクリップを追加",
+	"action.edit.addImageClip": "画像クリップを追加",
 	"action.edit.copy": "コピー",
 	"action.edit.cut": "切り取り",
 	"action.edit.deleteClip": "クリップを削除",
@@ -146,6 +149,7 @@
 	"inspector.clip.blendMode": "合成モード",
 	"inspector.clip.colorPicker": "カラーピッカー",
 	"inspector.clip.framePosition": "フレーム位置",
+	"inspector.clip.groupDepth": "対象レイヤー数",
 	"inspector.clip.goToKeyframe": "フレーム {frame} へ移動",
 	"inspector.clip.height": "高さ",
 	"inspector.clip.hide": "非表示",

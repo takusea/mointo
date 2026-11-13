@@ -28,9 +28,17 @@ export type AudioClipMetadata = ClipMetadataCommon & {
 	audio_start_frame: number;
 };
 
-export type ClipType = "audio" | "image";
+export type GroupClipMetadata = ClipMetadataCommon & {
+	clip_type: "group";
+	depth: number;
+};
 
-export type ClipMetadata = ImageClipMetadata | AudioClipMetadata;
+export type ClipType = "audio" | "group" | "image";
+
+export type ClipMetadata =
+	| AudioClipMetadata
+	| GroupClipMetadata
+	| ImageClipMetadata;
 
 export type BlendMode = "normal" | "multiply" | "screen" | "add";
 
@@ -41,4 +49,5 @@ export type ClipProperties = {
 	opacity?: number;
 	blend_mode?: BlendMode;
 	audio_start_frame?: number;
+	group_depth?: number;
 };

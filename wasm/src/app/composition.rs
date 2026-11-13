@@ -5,6 +5,7 @@ use crate::app::composition_settings::CompositionSettings;
 use crate::app::layer::{Layer, LayerId};
 use crate::core::image::Image;
 use crate::render::GpuRenderer;
+use cgmath::{Matrix3, SquareMatrix};
 use std::collections::{HashMap, HashSet};
 
 const DEFAULT_LAYER_COUNT: usize = 100;
@@ -37,15 +38,62 @@ impl Composition {
         width: u32,
         height: u32,
     ) -> Result<Image, String> {
-        let mut clips: Vec<Clip> = self
+        let mut clips = self.rendered_image_clips_at(frame_index, Some(layer_id));
+        clips.sort_by_key(|clip| clip.metadata.start);
+        let refs: Vec<_> = clips.iter().collect();
+        renderer.render_frame(&refs, width, height).await
+    }
+
+    pub(crate) fn parent_transform_for(
+        &self,
+        layer_id: LayerId,
+        frame_index: u32,
+    ) -> Option<Matrix3<f32>> {
+        let layer_index = self.layer_index(layer_id)?;
+        let center = (
+            self.settings.width as f32 / 2.0,
+            self.settings.height as f32 / 2.0,
+        );
+        let mut parent_transform = Matrix3::identity();
+        let mut has_parent = false;
+        let mut groups: Vec<_> = self
             .clips
             .iter()
-            .filter(|clip| {
-                clip.is_image() && clip.contains_frame(frame_index) && !clip.metadata.hidden
+            .filter(|clip| clip.is_group() && clip.contains_frame(frame_index))
+            .filter(|clip| !clip.metadata.hidden)
+            .filter_map(|clip| {
+                let group_layer_index = self.layer_index(clip.metadata.layer_id)?;
+                let depth = clip.group_depth()?;
+                (group_layer_index < layer_index
+                    && layer_index - group_layer_index <= depth as usize
+                    && !self.is_layer_hidden(group_layer_index))
+                .then_some((group_layer_index, clip))
             })
-            .filter(|clip| clip.metadata.layer_id == layer_id)
-            .filter(|_| {
-                self.layer_index(layer_id)
+            .collect();
+        groups.sort_by_key(|(index, _)| *index);
+
+        for (_, group) in groups {
+            let transform = group.values_at(frame_index).0;
+            parent_transform = parent_transform * transform.to_matrix3(center);
+            has_parent = true;
+        }
+
+        has_parent.then_some(parent_transform)
+    }
+
+    fn apply_parent_transform(&self, clip: &mut Clip, frame_index: u32) {
+        clip.render_parent_transform =
+            self.parent_transform_for(clip.metadata.layer_id, frame_index);
+    }
+
+    fn rendered_image_clips_at(&self, frame_index: u32, layer_id: Option<LayerId>) -> Vec<Clip> {
+        self.clips
+            .iter()
+            .filter(|clip| clip.is_image() && clip.contains_frame(frame_index))
+            .filter(|clip| !clip.metadata.hidden)
+            .filter(|clip| layer_id.is_none_or(|id| clip.metadata.layer_id == id))
+            .filter(|clip| {
+                self.layer_index(clip.metadata.layer_id)
                     .is_some_and(|index| !self.is_layer_hidden(index))
             })
             .map(|clip| {
@@ -53,12 +101,10 @@ impl Composition {
                 let (transform, opacity) = clip.values_at(frame_index);
                 clip.transform = transform;
                 clip.set_image_opacity(opacity);
+                self.apply_parent_transform(&mut clip, frame_index);
                 clip
             })
-            .collect();
-        clips.sort_by_key(|clip| clip.metadata.start);
-        let refs: Vec<_> = clips.iter().collect();
-        renderer.render_frame(&refs, width, height).await
+            .collect()
     }
 
     pub fn new() -> Self {
@@ -76,7 +122,9 @@ impl Composition {
         let clip_id = clip.metadata.id;
         let image_revision = clip.image_revision();
         let image_matches_asset = if let Some(image) = clip.image() {
-            let asset_id = clip.asset_id();
+            let asset_id = clip
+                .asset_id()
+                .expect("image clips always have an asset ID");
             match self.assets.get(&asset_id) {
                 Some(Asset::Image(asset)) => {
                     asset.data == image.data
@@ -120,12 +168,14 @@ impl Composition {
         let Some(image) = clip.image().cloned() else {
             return;
         };
-        let asset_id = clip.asset_id();
+        let asset_id = clip
+            .asset_id()
+            .expect("image clips always have an asset ID");
         self.assets.insert(asset_id, Asset::Image(image.clone()));
         for linked in self
             .clips
             .iter_mut()
-            .filter(|c| c.is_image() && c.asset_id() == asset_id)
+            .filter(|c| c.is_image() && c.asset_id() == Some(asset_id))
         {
             if linked.metadata.id != clip_id {
                 linked.set_image(image.clone());
@@ -145,7 +195,7 @@ impl Composition {
             .filter_map(|clip| {
                 let revision = clip.image_revision()?;
                 let clip_id = clip.metadata.id;
-                let asset_id = clip.asset_id();
+                let asset_id = clip.asset_id()?;
                 (self.reconciled_image_revisions.get(&clip_id) != Some(&revision)
                     && changed_assets.insert(asset_id))
                 .then_some(clip_id)
@@ -161,7 +211,9 @@ impl Composition {
             if !clip.is_image() {
                 continue;
             }
-            let asset_id = clip.asset_id();
+            let asset_id = clip
+                .asset_id()
+                .expect("image clips always have an asset ID");
             let Some(Asset::Image(image)) = self.assets.get(&asset_id) else {
                 return Err(format!(
                     "Clip {} references a missing or invalid image asset",
@@ -186,9 +238,14 @@ impl Composition {
         {
             let removed = self.clips.remove(pos);
             self.reconciled_image_revisions.remove(&clip_id);
-            let asset_id = removed.asset_id();
-            if !self.clips.iter().any(|clip| clip.asset_id() == asset_id) {
-                self.assets.remove(&asset_id);
+            if let Some(asset_id) = removed.asset_id() {
+                if !self
+                    .clips
+                    .iter()
+                    .any(|clip| clip.asset_id() == Some(asset_id))
+                {
+                    self.assets.remove(&asset_id);
+                }
             }
             Some(removed)
         } else {
@@ -264,6 +321,7 @@ impl Composition {
                 ClipContent::Audio { asset_id, .. } => {
                     !matches!(self.assets.get(asset_id), Some(Asset::Audio(_)))
                 }
+                ClipContent::Group { .. } => false,
             };
             if missing_asset {
                 return Err(format!(
@@ -333,23 +391,7 @@ impl Composition {
         width: u32,
         height: u32,
     ) -> Result<Image, String> {
-        let mut clips: Vec<Clip> = self
-            .clips
-            .iter()
-            .filter(|clip| clip.is_image() && clip.contains_frame(frame_index))
-            .filter(|clip| !clip.metadata.hidden)
-            .filter(|clip| {
-                self.layer_index(clip.metadata.layer_id)
-                    .is_some_and(|index| !self.is_layer_hidden(index))
-            })
-            .map(|clip| {
-                let mut clip = clip.clone();
-                let (transform, opacity) = clip.values_at(frame_index);
-                clip.transform = transform;
-                clip.set_image_opacity(opacity);
-                clip
-            })
-            .collect();
+        let mut clips = self.rendered_image_clips_at(frame_index, None);
         clips.sort_by_key(|clip| self.layer_index(clip.metadata.layer_id).unwrap());
         let refs: Vec<_> = clips.iter().collect();
         renderer.render_frame(&refs, width, height).await
@@ -362,23 +404,7 @@ impl Composition {
         width: u32,
         height: u32,
     ) -> Result<(), String> {
-        let mut clips: Vec<Clip> = self
-            .clips
-            .iter()
-            .filter(|clip| clip.is_image() && clip.contains_frame(frame_index))
-            .filter(|clip| !clip.metadata.hidden)
-            .filter(|clip| {
-                self.layer_index(clip.metadata.layer_id)
-                    .is_some_and(|index| !self.is_layer_hidden(index))
-            })
-            .map(|clip| {
-                let mut clip = clip.clone();
-                let (transform, opacity) = clip.values_at(frame_index);
-                clip.transform = transform;
-                clip.set_image_opacity(opacity);
-                clip
-            })
-            .collect();
+        let mut clips = self.rendered_image_clips_at(frame_index, None);
         clips.sort_by_key(|clip| self.layer_index(clip.metadata.layer_id).unwrap());
         let refs: Vec<_> = clips.iter().collect();
         renderer.render_frame_to_canvas(&refs, width, height).await
@@ -397,21 +423,12 @@ impl Composition {
                 .render_frame_gpu_to_canvas(renderer, frame_index, width, height)
                 .await;
         };
-        let visible = |clip: &&Clip| {
-            clip.is_image()
-                && !clip.metadata.hidden
-                && self
-                    .layer_index(clip.metadata.layer_id)
-                    .is_some_and(|index| !self.is_layer_hidden(index))
-        };
-        let mut current: Vec<_> = self
-            .clips
+        let mut current_clips = self.rendered_image_clips_at(frame_index, None);
+        current_clips.sort_by_key(|clip| self.layer_index(clip.metadata.layer_id).unwrap());
+        let current: Vec<_> = current_clips
             .iter()
-            .filter(|clip| clip.contains_frame(frame_index))
-            .filter(visible)
             .map(|clip| (clip, self.layer_index(clip.metadata.layer_id).unwrap()))
             .collect();
-        current.sort_by_key(|(_, layer_index)| *layer_index);
         let current_clip = self.clips.iter().find(|clip| {
             clip.is_image()
                 && clip.metadata.layer_id == layer_id
@@ -453,6 +470,7 @@ impl Composition {
             let (transform, opacity) = clip.values_at(sample_frame);
             clip.transform = transform;
             clip.set_image_opacity(opacity);
+            self.apply_parent_transform(clip, sample_frame);
         }
         let mut next = next_clip
             .filter(|clip| {
@@ -465,6 +483,7 @@ impl Composition {
             let (transform, opacity) = clip.values_at(clip.metadata.start);
             clip.transform = transform;
             clip.set_image_opacity(opacity);
+            self.apply_parent_transform(clip, clip.metadata.start);
         }
         let previous: Vec<_> = previous.iter().collect();
         let next: Vec<_> = next.iter().collect();
@@ -488,6 +507,9 @@ fn default_composition_name() -> String {
 #[cfg(test)]
 mod tests {
     use super::{Asset, Composition};
+    use crate::app::clip::{Clip, ClipMetadata};
+    use crate::core::transform::Transform;
+    use cgmath::Vector3;
     use uuid::Uuid;
 
     #[test]
@@ -542,6 +564,55 @@ mod tests {
         assert_eq!(composition.layer_index(layer_id), Some(3));
         assert_eq!(composition.is_layer_hidden_by_id(layer_id), Some(true));
         assert_eq!(composition.is_layer_locked_by_id(layer_id), Some(true));
+    }
+
+    #[test]
+    fn group_transforms_only_reach_overlapping_clips_within_depth() {
+        let mut composition = Composition::new();
+        let group_layer = composition.layer_id_at(0);
+        let direct_child_layer = composition.layer_id_at(1);
+        let second_child_layer = composition.layer_id_at(2);
+        let outside_depth_layer = composition.layer_id_at(3);
+        composition.add_clip(Clip::new_group(
+            ClipMetadata {
+                id: Uuid::new_v4(),
+                name: "Group".to_string(),
+                start: 5,
+                layer_id: group_layer,
+                duration: 4,
+                hidden: false,
+                locked: false,
+            },
+            2,
+            Transform {
+                position: (30.0, -15.0),
+                ..Transform::default()
+            },
+            Vec::new(),
+        ));
+
+        let parent = composition
+            .parent_transform_for(direct_child_layer, 5)
+            .unwrap();
+        let center = Vector3::new(
+            composition.settings.width as f32 / 2.0,
+            composition.settings.height as f32 / 2.0,
+            1.0,
+        );
+        let transformed_center = parent * center;
+        assert_eq!(
+            (transformed_center.x, transformed_center.y),
+            (center.x + 30.0, center.y - 15.0)
+        );
+        assert!(composition
+            .parent_transform_for(second_child_layer, 8)
+            .is_some());
+        assert!(composition
+            .parent_transform_for(outside_depth_layer, 5)
+            .is_none());
+        assert!(composition
+            .parent_transform_for(direct_child_layer, 9)
+            .is_none());
     }
 
     #[test]

@@ -1,6 +1,6 @@
 import { IconFileExport, IconMenu2, IconX } from "@tabler/icons-react";
-import { type RefObject, useRef } from "react";
-import { useMediaQuery, useOnClickOutside, useToggle } from "usehooks-ts";
+import { AnimatePresence, motion } from "motion/react";
+import { useMediaQuery, useToggle } from "usehooks-ts";
 import Button from "~/components/Button";
 import IconButton from "~/components/IconButton";
 import Tooltip from "~/components/Tooltip";
@@ -20,48 +20,43 @@ const GlobalHeader = () => {
 	const ExportButton = isDesktop ? Button : IconButton;
 
 	const [isMenubarOpen, toggleMenubarOpen] = useToggle(false);
-	const menubarRef = useRef<HTMLDivElement>(null);
-	useOnClickOutside(menubarRef as RefObject<HTMLDivElement>, (event) => {
-		if (
-			(event.target instanceof HTMLElement &&
-				event.target.closest("[data-radix-menu-content]")) ||
-			isDesktop
-		) {
-			return;
-		}
-		toggleMenubarOpen();
-	});
 
 	return (
 		<header className="relative z-10 border-b border-border bg-background pt-[env(safe-area-inset-top,0)] backdrop-blur-xl [-webkit-app-region:drag]">
 			<div className="ml-[env(titlebar-area-x,0)] grid h-full w-[env(titlebar-area-width,100%)] grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
-				{!isDesktop && (
+				{isDesktop ? (
+					<div className="flex">
+						<div className="[-webkit-app-region:no-drag]">
+							<GlobalMenubar />
+						</div>
+					</div>
+				) : (
 					<div
 						data-open={isMenubarOpen}
-						className="grid grid-cols-[auto_1fr] data-[open=true]:col-span-3"
+						className="grid grid-cols-[auto_1fr] items-center data-[open=true]:col-span-3"
 					>
 						<IconButton
 							label={t("action.file.open")}
 							icon={isMenubarOpen ? IconX : IconMenu2}
 							onClick={() => toggleMenubarOpen()}
 						/>
-						{isMenubarOpen && (
-							<div className="overflow-scroll" ref={menubarRef}>
-								<GlobalMenubar />
-							</div>
-						)}
-					</div>
-				)}
-				{isDesktop && (
-					<div className="flex">
-						<div className="[-webkit-app-region:no-drag]">
-							<GlobalMenubar />
-						</div>
+						<AnimatePresence>
+							{isMenubarOpen && (
+								<motion.div
+									className="overflow-x-auto"
+									initial={{ opacity: 0, x: -64 }}
+									animate={{ opacity: 1, x: 0 }}
+									exit={{ opacity: 0, x: -64 }}
+								>
+									<GlobalMenubar />
+								</motion.div>
+							)}
+						</AnimatePresence>
 					</div>
 				)}
 				{(!isMenubarOpen || isDesktop) && (
 					<>
-						<div className="flex justify-center [-webkit-app-region:no-drag]">
+						<div className="col-start-2 flex justify-center [-webkit-app-region:no-drag]">
 							{project.settings && (
 								<Tooltip label={t("header.projectSettings")} side="bottom">
 									<Button
@@ -74,7 +69,7 @@ const GlobalHeader = () => {
 								</Tooltip>
 							)}
 						</div>
-						<div className="flex min-w-max justify-end">
+						<div className="col-start-3 flex min-w-max justify-end">
 							<div className="contents [-webkit-app-region:no-drag]">
 								<ExportButton
 									label={
