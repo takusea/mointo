@@ -34,6 +34,11 @@
 		var(--color-zinc-500) 20%,
 		transparent 80%
 	);
+	--color-clear-active: color-mix(
+		in oklch,
+		var(--color-primary) 10%,
+		transparent 90%
+	);
 	--color-border: color-mix(
 		in oklch,
 		var(--color-zinc-500) 40%,

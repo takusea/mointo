@@ -16,14 +16,13 @@ const Select = ({ children, placeholder, ...props }: Props) => {
 				id={props.id}
 			>
 				<SelectPrimitive.Value placeholder={placeholder} />
-				<SelectPrimitive.Icon className="SelectIcon">
+				<SelectPrimitive.Icon asChild>
 					<IconChevronDown size={16} />
 				</SelectPrimitive.Icon>
 			</SelectPrimitive.Trigger>
 			<SelectPrimitive.Portal>
 				<SelectPrimitive.Content
 					position="popper"
-					sideOffset={5}
 					className="z-50 max-h-(--radix-select-content-available-height) w-(--radix-select-trigger-width) overflow-hidden rounded-xl border border-border bg-background p-2 shadow-lg backdrop-blur-xl"
 				>
 					<SelectPrimitive.ScrollUpButton className="flex h-6 cursor-default items-center justify-center">
@@ -33,6 +32,7 @@ const Select = ({ children, placeholder, ...props }: Props) => {
 					<SelectPrimitive.ScrollDownButton className="flex h-6 cursor-default items-center justify-center">
 						<IconChevronDown />
 					</SelectPrimitive.ScrollDownButton>
+					<SelectPrimitive.Arrow className="-mt-px border-border fill-background drop-shadow-[0_1px_0] drop-shadow-border" />
 				</SelectPrimitive.Content>
 			</SelectPrimitive.Portal>
 		</SelectPrimitive.Root>

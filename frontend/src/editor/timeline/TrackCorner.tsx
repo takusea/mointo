@@ -33,7 +33,7 @@ const TrackCorner = ({
 					onClick={() => onCollapsedChange(!isCollapsed)}
 				/>
 			)}
-			{!isCollapsed && (
+			{(!isCollapsed || isDesktop) && (
 				<div className="flex size-full items-center justify-between px-1">
 					<span>{startFrame}</span>
 					<span>-</span>

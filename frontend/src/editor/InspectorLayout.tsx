@@ -162,7 +162,7 @@ const InspectorLayout = () => {
 					></motion.div>
 				)}
 			</AnimatePresence>
-			{!isDesktop && (
+			{!isDesktop && project.settings && (
 				<>
 					<AnimatePresence>
 						{!isToolInspectorOpen && (

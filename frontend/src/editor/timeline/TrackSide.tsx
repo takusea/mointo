@@ -158,7 +158,7 @@ const TrackSide = ({
 						data-selected={selectedLayerId === layer.id}
 						data-dragged={draggedLayerId === layer.id}
 						data-drop-target={dropTargetIndex === i}
-						className="relative flex items-center justify-between gap-1 overflow-hidden border-b border-border data-[dragged=true]:opacity-40 data-[drop-target=true]:bg-primary/10 data-[hidden=true]:opacity-50 data-[selected=true]:bg-primary/10"
+						className="relative flex items-center justify-between gap-1 overflow-hidden border-b border-border data-[dragged=true]:opacity-40 data-[drop-target=true]:bg-clear-hover data-[hidden=true]:opacity-50 data-[selected=true]:bg-clear-active"
 						style={{ height: `${layerHeight}px` }}
 					>
 						{selectedLayerId === layer.id && (
