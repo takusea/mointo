@@ -4,6 +4,7 @@ export const shortcutDefinitions = {
 	newProject: { label: "action.file.new", defaultKey: "ctrl+n" },
 	openProject: { label: "action.file.open", defaultKey: "ctrl+o" },
 	saveProject: { label: "action.file.save", defaultKey: "ctrl+s" },
+	closeProject: { label: "action.file.close", defaultKey: "ctrl+w" },
 	saveWith: { label: "action.file.saveWith", defaultKey: "ctrl+shift+s" },
 	undo: { label: "action.edit.undo", defaultKey: "ctrl+z" },
 	redo: { label: "action.edit.redo", defaultKey: "ctrl+shift+z" },

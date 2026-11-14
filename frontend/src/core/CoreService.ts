@@ -210,6 +210,10 @@ export class CoreService {
 		return this.enqueue((core) => core.set_project_title(title), true);
 	}
 
+	closeProject() {
+		return this.enqueue((core) => core.close_project(), true);
+	}
+
 	importProject(data: Uint8Array) {
 		return this.enqueue((core) => core.import_project(data), true);
 	}

@@ -79,6 +79,12 @@ export const useProject = () => {
 		projectContext.setSavedRevision(core.getSnapshot().revision);
 	};
 
+	const close = async () => {
+		if (compositionSettings == null || !confirmDiscard()) return;
+		await core.closeProject();
+		projectContext.setSavedRevision(core.getSnapshot().revision);
+	};
+
 	return {
 		create,
 		settings: compositionSettings,
@@ -88,6 +94,7 @@ export const useProject = () => {
 		open,
 		importFile,
 		save,
+		close,
 		hasUnsavedChanges,
 		confirmDiscard,
 	};

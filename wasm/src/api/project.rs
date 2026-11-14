@@ -1,4 +1,5 @@
 use super::MointoCore;
+use crate::app::action_manager::ActionManager;
 use crate::app::clip::{Clip, ClipMetadata};
 use crate::app::composition_settings::CompositionSettings;
 use crate::app::project::Project;
@@ -66,6 +67,12 @@ impl MointoCore {
         ));
         self.project = Some(project);
         Ok(())
+    }
+
+    pub fn close_project(&mut self) {
+        self.project = None;
+        self.action_manager = ActionManager::new();
+        self.gpu_renderer = None;
     }
 
     pub fn set_composition_settings(&mut self, settings: JsValue) -> Result<(), JsValue> {

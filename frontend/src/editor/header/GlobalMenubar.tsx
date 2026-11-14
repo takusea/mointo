@@ -92,6 +92,7 @@ const GlobalMenubar = () => {
 	});
 	useShortcut(shortcuts.openProject, () => project.open());
 	useShortcut(shortcuts.saveProject, () => project.save());
+	useShortcut(shortcuts.closeProject, () => void project.close());
 	useShortcut(shortcuts.zoomIn, () => canvasView.zoom(1));
 	useShortcut(shortcuts.zoomOut, () => canvasView.zoom(-1));
 	useShortcut(shortcuts.resetZoom, () => canvasView.setScale(1));
@@ -168,7 +169,12 @@ const GlobalMenubar = () => {
 					onSelect={() => dialogs.open("editCompositionSettings")}
 				/>
 				<MenubarSeparator />
-				<MenubarItem label={t("action.file.close")} />
+				<MenubarItem
+					label={t("action.file.close")}
+					shortcut={formatShortcut(shortcuts.closeProject)}
+					disabled={project.settings == null}
+					onSelect={() => void project.close()}
+				/>
 			</MenubarMenu>
 			<MenubarMenu label={t("action.edit")}>
 				<MenubarItem
