@@ -85,6 +85,8 @@ const Editor = () => {
 					value={timelineHeight}
 					min={MIN_TIMELINE_HEIGHT}
 					max={maxTimelineHeight}
+					collapseDirection="positive"
+					onCollapse={() => setTimelineHeight(0)}
 					onResize={(delta) => {
 						setTimelineHeight((height) =>
 							Math.min(
@@ -94,7 +96,15 @@ const Editor = () => {
 						);
 					}}
 				/>
-				<Timeline />
+				<div
+					className="grid overflow-hidden"
+					style={{
+						visibility: timelineHeight === 0 ? "hidden" : undefined,
+					}}
+					inert={timelineHeight === 0}
+				>
+					<Timeline />
+				</div>
 			</main>
 		</div>
 	);

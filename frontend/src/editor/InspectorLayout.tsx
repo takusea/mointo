@@ -207,6 +207,10 @@ const InspectorLayout = () => {
 					<motion.div
 						data-full-width={!isDesktop}
 						className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-1 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-start"
+						style={{
+							visibility: toolInspectorWidth === 0 ? "hidden" : undefined,
+						}}
+						inert={toolInspectorWidth === 0}
 						ref={toolInspectorRef}
 						initial={{ opacity: 0, x: "-100%" }}
 						animate={{ opacity: 1, x: 0 }}
@@ -236,6 +240,8 @@ const InspectorLayout = () => {
 						value={toolInspectorWidth}
 						min={MIN_INSPECTOR_WIDTH}
 						max={maxInspectorWidth}
+						collapseDirection="negative"
+						onCollapse={() => setToolInspectorWidth(0)}
 						onResize={(delta) =>
 							setToolInspectorWidth((width) =>
 								Math.min(
@@ -255,6 +261,8 @@ const InspectorLayout = () => {
 						value={clipInspectorWidth}
 						min={MIN_INSPECTOR_WIDTH}
 						max={maxInspectorWidth}
+						collapseDirection="positive"
+						onCollapse={() => setClipInspectorWidth(0)}
 						onResize={(delta) =>
 							setClipInspectorWidth((width) =>
 								Math.min(
@@ -271,6 +279,10 @@ const InspectorLayout = () => {
 					<motion.div
 						data-full-width={!isDesktop}
 						className="pointer-events-none z-10 h-full min-h-0 min-w-0 overflow-y-auto rounded-2xl data-[full-width=false]:col-start-5 data-[full-width=true]:w-[min(85vw,320px)] data-[full-width=true]:justify-self-end"
+						style={{
+							visibility: clipInspectorWidth === 0 ? "hidden" : undefined,
+						}}
+						inert={clipInspectorWidth === 0}
 						ref={clipInspectorRef}
 						initial={{ opacity: 0, x: "100%" }}
 						animate={{ opacity: 1, x: 0 }}
