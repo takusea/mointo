@@ -84,7 +84,18 @@ const GlobalMenubar = () => {
 		const currentFrame = playbackContext.currentFrame;
 		void clipContext.addGroupClip(currentFrame, layerContext.selectedLayerId);
 	};
+	const addAudioClip = () => {
+		if (
+			project.settings == null ||
+			layerContext.selectedLayerId == null ||
+			layerContext.isLayerLocked(layerContext.selectedLayerId)
+		) {
+			return;
+		}
+		void importAudio();
+	};
 	useShortcut(shortcuts.addClip, addClipAtCurrentFrame);
+	useShortcut(shortcuts.addAudioClip, addAudioClip);
 	useShortcut(shortcuts.addGroupClip, addGroupClipAtCurrentFrame);
 
 	useShortcut(shortcuts.newProject, () => {
@@ -93,6 +104,10 @@ const GlobalMenubar = () => {
 	useShortcut(shortcuts.openProject, () => project.open());
 	useShortcut(shortcuts.saveProject, () => project.save());
 	useShortcut(shortcuts.closeProject, () => void project.close());
+	useShortcut(shortcuts.projectSettings, (event) => {
+		event.preventDefault();
+		dialogs.open("editCompositionSettings");
+	});
 	useShortcut(shortcuts.zoomIn, () => canvasView.zoom(1));
 	useShortcut(shortcuts.zoomOut, () => canvasView.zoom(-1));
 	useShortcut(shortcuts.resetZoom, () => canvasView.setScale(1));
@@ -103,6 +118,9 @@ const GlobalMenubar = () => {
 	useShortcut(shortcuts.flipHorizontal, toggleHorizontalFlip);
 	useShortcut(shortcuts.flipVertical, toggleVerticalFlip);
 	useShortcut(shortcuts.resetFlip, resetFlip);
+	useShortcut(shortcuts.scrollFollow, () =>
+		playbackContext.setIsScrollFollow(!playbackContext.isScrollFollow),
+	);
 	useShortcut(shortcuts.toggleGrid, toggleGrid);
 	useShortcut(shortcuts.toggleOnionSkin, () =>
 		canvasView.setIsOnionSkin((prev) => !prev),
@@ -166,6 +184,7 @@ const GlobalMenubar = () => {
 				<MenubarSeparator />
 				<MenubarItem
 					label={t("action.file.projectSettings")}
+					shortcut={formatShortcut(shortcuts.projectSettings)}
 					onSelect={() => dialogs.open("editCompositionSettings")}
 				/>
 				<MenubarSeparator />
@@ -219,12 +238,13 @@ const GlobalMenubar = () => {
 					/>
 					<MenubarItem
 						label={t("action.edit.addAudioClip")}
+						shortcut={formatShortcut(shortcuts.addAudioClip)}
 						disabled={
 							project.settings == null ||
 							layerContext.selectedLayerId == null ||
 							layerContext.isLayerLocked(layerContext.selectedLayerId)
 						}
-						onSelect={() => void importAudio()}
+						onSelect={addAudioClip}
 					/>
 					<MenubarItem
 						label={t("action.edit.addGroupClip")}
@@ -421,6 +441,7 @@ const GlobalMenubar = () => {
 				/>
 				<MenubarCheckboxItem
 					label={t("action.play.scrollFollow")}
+					shortcut={formatShortcut(shortcuts.scrollFollow)}
 					checked={playbackContext.isScrollFollow}
 					onCheckedChange={() =>
 						playbackContext.setIsScrollFollow(!playbackContext.isScrollFollow)

@@ -6,6 +6,10 @@ export const shortcutDefinitions = {
 	saveProject: { label: "action.file.save", defaultKey: "ctrl+s" },
 	closeProject: { label: "action.file.close", defaultKey: "ctrl+w" },
 	saveWith: { label: "action.file.saveWith", defaultKey: "ctrl+shift+s" },
+	projectSettings: {
+		label: "action.file.projectSettings",
+		defaultKey: "ctrl+p",
+	},
 	undo: { label: "action.edit.undo", defaultKey: "ctrl+z" },
 	redo: { label: "action.edit.redo", defaultKey: "ctrl+shift+z" },
 	cut: { label: "action.edit.cut", defaultKey: "ctrl+x" },
@@ -13,6 +17,10 @@ export const shortcutDefinitions = {
 	paste: { label: "action.edit.paste", defaultKey: "ctrl+v" },
 	selectAll: { label: "action.select.selectAll", defaultKey: "ctrl+a" },
 	addClip: { label: "action.edit.addImageClip", defaultKey: "insert" },
+	addAudioClip: {
+		label: "action.edit.addAudioClip",
+		defaultKey: "alt+insert",
+	},
 	addGroupClip: {
 		label: "action.edit.addGroupClip",
 		defaultKey: "shift+insert",
@@ -50,7 +58,7 @@ export const shortcutDefinitions = {
 		defaultKey: "h",
 	},
 	flipVertical: { label: "action.view.flipVertical", defaultKey: "v" },
-	resetFlip: { label: "action.view.resetFlip", defaultKey: "f" },
+	resetFlip: { label: "action.view.resetFlip", defaultKey: "r" },
 	toggleGrid: { label: "action.view.toggleGrid", defaultKey: "g" },
 	toggleOnionSkin: {
 		label: "action.view.toggleOnionSkin",
@@ -59,6 +67,10 @@ export const shortcutDefinitions = {
 	togglePlayback: { label: "action.play.togglePlayback", defaultKey: "space" },
 	stop: { label: "action.play.stop", defaultKey: "shift+space" },
 	toggleLoop: { label: "action.play.toggleLoop", defaultKey: "l" },
+	scrollFollow: {
+		label: "action.play.scrollFollow",
+		defaultKey: "f",
+	},
 	firstFrame: {
 		label: "action.play.firstFrame",
 		defaultKey: "shift+ArrowLeft",

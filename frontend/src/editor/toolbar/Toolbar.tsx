@@ -334,6 +334,7 @@ const Toolbar = () => {
 					/>
 					<IconButton
 						label={t("action.play.scrollFollow")}
+						shortcut={formatShortcut(shortcuts.scrollFollow)}
 						icon={IconArrowBarRight}
 						variant={playbackContext.isScrollFollow ? "primary" : "default"}
 						aria-pressed={playbackContext.isScrollFollow}
