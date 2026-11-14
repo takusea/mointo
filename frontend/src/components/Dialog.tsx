@@ -42,7 +42,7 @@ const Dialog = ({
 						</DialogPrimitive.Overlay>
 						<DialogPrimitive.Content asChild>
 							<motion.div
-								className="fixed top-1/2 left-1/2 z-50 grid max-h-[85vh] w-[90vw] max-w-120 -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_1fr_auto] rounded-xl border border-border bg-background shadow-2xl backdrop-blur-xl"
+								className="fixed inset-0 z-50 m-auto grid h-fit max-h-[80vh] w-[90vw] max-w-120 grid-rows-[auto_1fr_auto] rounded-xl border border-border bg-background shadow-2xl backdrop-blur-xl"
 								initial={{ opacity: 0, scale: 0.9 }}
 								exit={{ opacity: 0, scale: 0.9 }}
 								animate={{ opacity: 1, scale: 1 }}
