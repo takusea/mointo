@@ -14,7 +14,7 @@ import InspectorLayout from "./InspectorLayout";
 import useFileDrop from "./useFileDrop";
 
 const SPLITTER_HEIGHT = 8;
-const MIN_CANVAS_HEIGHT = 160;
+const MIN_CANVAS_HEIGHT = 320;
 const MIN_TIMELINE_HEIGHT = 96;
 
 const Editor = () => {
@@ -52,7 +52,7 @@ const Editor = () => {
 			<main
 				className="relative grid min-h-0 min-w-0 p-2"
 				style={{
-					gridTemplateRows: `minmax(0, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
+					gridTemplateRows: `minmax(${MIN_CANVAS_HEIGHT}px, 1fr) ${SPLITTER_HEIGHT}px ${timelineHeight}px`,
 				}}
 			>
 				<div className="relative">
@@ -97,7 +97,7 @@ const Editor = () => {
 					}}
 				/>
 				<div
-					className="grid overflow-hidden"
+					className="z-10 grid overflow-hidden"
 					style={{
 						visibility: timelineHeight === 0 ? "hidden" : undefined,
 					}}
