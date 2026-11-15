@@ -18,7 +18,7 @@ const MenubarSub = ({ label, children, ...props }: Props) => {
 			</Menubar.SubTrigger>
 			<Menubar.Portal>
 				<Menubar.SubContent
-					className="z-50 min-w-55 rounded-xl border border-border bg-background p-2 shadow-lg backdrop-blur-xl"
+					className="z-50 min-w-55 rounded-xl border border-border bg-background p-2 shadow-lg backdrop-blur-xl data-[side=left]:translate-x-[max(0px,calc((-1*var(--radix-popper-available-width))+var(--radix-popper-anchor-width)))] data-[side=right]:translate-x-[min(0px,calc(var(--radix-popper-available-width)+(-1*var(--radix-popper-anchor-width))))]"
 					align="start"
 					alignOffset={-8}
 				>
