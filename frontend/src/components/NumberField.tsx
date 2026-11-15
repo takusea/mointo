@@ -40,6 +40,17 @@ const NumberField = ({
 		return Math.max(min, Math.min(Math.round(value / step) * step, max));
 	};
 
+	const commitValue = (target: HTMLInputElement) => {
+		if (props.disabled) return;
+
+		const value = target.valueAsNumber;
+		if (!Number.isFinite(value) || value === lastCommittedValue.current) return;
+
+		const nextValue = clamp(value);
+		lastCommittedValue.current = nextValue;
+		onValueChange?.(nextValue);
+	};
+
 	const finishInteraction = () => {
 		dragValue.current = null;
 		if (interactionStarted.current) {
@@ -49,7 +60,7 @@ const NumberField = ({
 	};
 
 	const handlePointerDown = (event: React.PointerEvent) => {
-		if (props.disabled || event.button !== 0 || event.pointerType === "touch") {
+		if (props.disabled || event.button !== 0) {
 			return;
 		}
 
@@ -64,8 +75,7 @@ const NumberField = ({
 			props.disabled ||
 			document.activeElement === input.current ||
 			!(event.buttons & 1) ||
-			props.value == null ||
-			event.pointerType === "touch"
+			props.value == null
 		)
 			return;
 
@@ -79,8 +89,7 @@ const NumberField = ({
 		onValueChange?.(nextValue);
 	};
 
-	const handlePointerUp = (event: React.PointerEvent) => {
-		if (event.pointerType === "touch") return;
+	const handlePointerUp = () => {
 		finishInteraction();
 		if (props.disabled) {
 			setIsMoved(false);
@@ -96,6 +105,11 @@ const NumberField = ({
 		setIsMoved(false);
 	};
 
+	const handlePointerCancel = () => {
+		finishInteraction();
+		setIsMoved(false);
+	};
+
 	const handleChange = (event: React.ChangeEvent) => {
 		if (props.disabled) return;
 		if (!(event.currentTarget instanceof HTMLInputElement)) {
@@ -104,17 +118,6 @@ const NumberField = ({
 
 		setInnerValue(event.currentTarget.value);
 		lastCommittedValue.current = null;
-	};
-
-	const commitValue = (target: HTMLInputElement) => {
-		if (props.disabled) return;
-
-		const value = target.valueAsNumber;
-		if (!Number.isFinite(value) || value === lastCommittedValue.current) return;
-
-		const nextValue = clamp(value);
-		lastCommittedValue.current = nextValue;
-		onValueChange?.(nextValue);
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -137,21 +140,18 @@ const NumberField = ({
 	return (
 		<div
 			data-moved={isMoved}
-			className="flex h-8 gap-1 rounded-md border border-border bg-surface pr-2 pl-1 -outline-offset-2 not-[aria-disabled]:cursor-text focus-within:outline-2 aria-disabled:opacity-50 not-[aria-disabled]:data-[moved=true]:cursor-ew-resize"
+			className="flex h-8 touch-none gap-1 rounded-md border border-border bg-surface pr-2 pl-1 -outline-offset-2 not-[aria-disabled]:cursor-text focus-within:outline-2 aria-disabled:opacity-50 not-[aria-disabled]:data-[moved=true]:cursor-ew-resize"
 			aria-disabled={props.disabled}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
-			onPointerCancel={() => {
-				finishInteraction();
-				setIsMoved(false);
-			}}
+			onPointerCancel={handlePointerCancel}
 		>
 			{leftElement && (
 				<div className="flex h-full cursor-ew-resize items-center text-foreground-muted">
 					{props["aria-label"] ? (
 						<Tooltip label={props["aria-label"]} side="top">
-							<span className="flex h-full items-center">{leftElement}</span>
+							{leftElement}
 						</Tooltip>
 					) : (
 						leftElement

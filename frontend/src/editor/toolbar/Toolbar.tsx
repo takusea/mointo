@@ -395,7 +395,6 @@ const Toolbar = () => {
 							value={Number((canvasView.scale * 100).toFixed(2))}
 							max={canvasView.maxScale * 100}
 							min={canvasView.minScale * 100}
-							step={10}
 							leftElement={<IconZoom />}
 							rightElement="%"
 							onValueChange={(value) => canvasView.setScale(value / 100)}

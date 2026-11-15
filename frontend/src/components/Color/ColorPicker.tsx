@@ -8,12 +8,10 @@ type Props = {
 const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 	const rgbaColor = hsvaToRgba(currentColor);
 
-	const handleHueMove = (event: React.PointerEvent) => {
+	const updateHue = (event: React.PointerEvent) => {
 		if (event.buttons === 0) return;
 
-		event.currentTarget.setPointerCapture(event.pointerId);
-
-		const rect = event?.currentTarget.getBoundingClientRect();
+		const rect = event.currentTarget.getBoundingClientRect();
 		const x = event.clientX - rect.left - event.currentTarget.clientWidth / 2;
 		const y = event.clientY - rect.top - event.currentTarget.clientHeight / 2;
 		const angle = (Math.atan2(y, x) * 180) / Math.PI;
@@ -24,10 +22,14 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 		});
 	};
 
-	const handleSLMove = (event: React.PointerEvent) => {
-		if (event.buttons === 0) return;
-
+	const handleHuePointerDown = (event: React.PointerEvent) => {
+		if (event.button !== 0) return;
 		event.currentTarget.setPointerCapture(event.pointerId);
+		updateHue(event);
+	};
+
+	const updateSL = (event: React.PointerEvent) => {
+		if (event.buttons === 0) return;
 
 		const rect = event.currentTarget.getBoundingClientRect();
 		const x = event.clientX - rect.left;
@@ -46,11 +48,18 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 		});
 	};
 
+	const handleSLPointerDown = (event: React.PointerEvent) => {
+		if (event.button !== 0) return;
+		event.currentTarget.setPointerCapture(event.pointerId);
+		updateSL(event);
+	};
+
 	return (
 		<div className="relative mx-auto flex w-full max-w-64 flex-col gap-1">
 			<div
-				className="absolute inset-0 rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))] mask-[radial-gradient(transparent,transparent_60%,white_61%,white)]"
-				onPointerMove={handleHueMove}
+				className="absolute inset-0 touch-none rounded-full bg-[conic-gradient(in_hsl,hsl(60_100%_50%),hsl(180_100%_50%),hsl(300_100%_50%),hsl(420_100%_50%))] mask-[radial-gradient(transparent,transparent_60%,white_61%,white)]"
+				onPointerDown={handleHuePointerDown}
+				onPointerMove={updateHue}
 			>
 				<div
 					style={{
@@ -66,7 +75,8 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 			>
 				<div
 					className="relative size-full bg-[linear-gradient(to_bottom,#fff0_0%,#000_100%),linear-gradient(to_right,#fff_0%,hsl(var(--hue)_100%_50%)_100%)]"
-					onPointerMove={handleSLMove}
+					onPointerDown={handleSLPointerDown}
+					onPointerMove={updateSL}
 				>
 					<div
 						style={{

@@ -203,7 +203,7 @@ const TrackBody = ({
 
 	return (
 		<div
-			className="relative size-full overflow-scroll"
+			className="relative size-full touch-none overflow-scroll"
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={finishSelectionDrag}
