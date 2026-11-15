@@ -131,7 +131,7 @@ const Splitter = ({
 				}
 			}}
 		>
-			<div className="size-full rounded-full group-hover:not-disabled:bg-primary" />
+			<div className="size-full rounded-full group-hover:not-disabled:bg-primary group-active:not-disabled:bg-primary" />
 		</Separator>
 	);
 };
