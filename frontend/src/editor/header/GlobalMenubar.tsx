@@ -94,9 +94,52 @@ const GlobalMenubar = () => {
 		}
 		void importAudio();
 	};
+	const hasEditableSelectedClip = clipContext.clips.some(
+		(clip) =>
+			(clipContext.selectedClipIds.includes(clip.id) ||
+				clip.id === clipContext.selectedClipId) &&
+			!clip.locked &&
+			!layerContext.isLayerLocked(clip.layer_id),
+	);
+	const moveSelectedClip = (frameDelta: number, layerDelta: number) => {
+		if (selectedClip == null) return;
+		void clipContext.moveClip(
+			selectedClip.id,
+			selectedClip.start + frameDelta,
+			selectedClip.layer_id,
+			frameDelta,
+			layerDelta,
+		);
+	};
+	const adjustSelectedClipDuration = (delta: number) => {
+		if (selectedClip == null) return;
+		void clipContext.changeClipDuration(
+			selectedClip.id,
+			selectedClip.duration + delta,
+			delta,
+		);
+	};
+	const swapSelectedLayer = (offset: number) => {
+		const sourceLayer = layerContext.layers[selectedLayerIndex];
+		const targetLayer = layerContext.layers[selectedLayerIndex + offset];
+		if (sourceLayer == null || targetLayer == null) return;
+		layerContext.swapLayers(sourceLayer.id, targetLayer.id);
+	};
 	useShortcut(shortcuts.addClip, addClipAtCurrentFrame);
 	useShortcut(shortcuts.addAudioClip, addAudioClip);
 	useShortcut(shortcuts.addGroupClip, addGroupClipAtCurrentFrame);
+	useShortcut(shortcuts.moveClipLeft, () => moveSelectedClip(-1, 0));
+	useShortcut(shortcuts.moveClipRight, () => moveSelectedClip(1, 0));
+	useShortcut(shortcuts.moveClipUp, () => moveSelectedClip(0, -1));
+	useShortcut(shortcuts.moveClipDown, () => moveSelectedClip(0, 1));
+	useShortcut(shortcuts.decreaseClipDuration, () =>
+		adjustSelectedClipDuration(-1),
+	);
+	useShortcut(shortcuts.increaseClipDuration, () =>
+		adjustSelectedClipDuration(1),
+	);
+	useShortcut(shortcuts.swapLayerUp, () => swapSelectedLayer(-1));
+	useShortcut(shortcuts.swapLayerDown, () => swapSelectedLayer(1));
 
 	useShortcut(shortcuts.newProject, () => {
 		if (project.confirmDiscard()) dialogs.open("createProject");
@@ -225,6 +268,22 @@ const GlobalMenubar = () => {
 					onSelect={clipContext.paste}
 				/>
 				<MenubarSeparator />
+				<MenubarItem
+					label={t("action.edit.swapLayerUp")}
+					shortcut={formatShortcut(shortcuts.swapLayerUp)}
+					onSelect={() => swapSelectedLayer(-1)}
+					disabled={selectedLayerIndex <= 0}
+				/>
+				<MenubarItem
+					label={t("action.edit.swapLayerDown")}
+					shortcut={formatShortcut(shortcuts.swapLayerDown)}
+					onSelect={() => swapSelectedLayer(1)}
+					disabled={
+						selectedLayerIndex < 0 ||
+						selectedLayerIndex >= layerContext.layers.length - 1
+					}
+				/>
+				<MenubarSeparator />
 				<MenubarSub label={t("action.edit.addClip")}>
 					<MenubarItem
 						label={t("action.edit.addImageClip")}
@@ -257,16 +316,46 @@ const GlobalMenubar = () => {
 						onSelect={addGroupClipAtCurrentFrame}
 					/>
 				</MenubarSub>
-				<MenubarItem
-					label={t("action.edit.deleteClip")}
-					shortcut={formatShortcut(shortcuts.deleteClip)}
-					disabled={!canDeleteSelectedClips}
-					onSelect={() => {
-						if (selectedClip != null) {
-							void clipContext.deleteClip(selectedClip.id);
-						}
-					}}
-				/>
+				<MenubarSub label={t("action.edit.moveClip")}>
+					<MenubarItem
+						label={t("action.edit.moveClipLeft")}
+						shortcut={formatShortcut(shortcuts.moveClipLeft)}
+						onSelect={() => moveSelectedClip(-1, 0)}
+						disabled={!hasEditableSelectedClip}
+					/>
+					<MenubarItem
+						label={t("action.edit.moveClipRight")}
+						shortcut={formatShortcut(shortcuts.moveClipRight)}
+						onSelect={() => moveSelectedClip(1, 0)}
+						disabled={!hasEditableSelectedClip}
+					/>
+					<MenubarItem
+						label={t("action.edit.moveClipUp")}
+						shortcut={formatShortcut(shortcuts.moveClipUp)}
+						onSelect={() => moveSelectedClip(0, -1)}
+						disabled={!hasEditableSelectedClip}
+					/>
+					<MenubarItem
+						label={t("action.edit.moveClipDown")}
+						shortcut={formatShortcut(shortcuts.moveClipDown)}
+						onSelect={() => moveSelectedClip(0, 1)}
+						disabled={!hasEditableSelectedClip}
+					/>
+				</MenubarSub>
+				<MenubarSub label={t("action.edit.changeClipDuration")}>
+					<MenubarItem
+						label={t("action.edit.decreaseClipDuration")}
+						shortcut={formatShortcut(shortcuts.decreaseClipDuration)}
+						onSelect={() => adjustSelectedClipDuration(-1)}
+						disabled={!hasEditableSelectedClip}
+					/>
+					<MenubarItem
+						label={t("action.edit.increaseClipDuration")}
+						shortcut={formatShortcut(shortcuts.increaseClipDuration)}
+						onSelect={() => adjustSelectedClipDuration(1)}
+						disabled={!hasEditableSelectedClip}
+					/>
+				</MenubarSub>
 				<MenubarItem
 					label={t("action.edit.duplicateClip")}
 					shortcut={formatShortcut(shortcuts.duplicateClip)}
@@ -282,6 +371,16 @@ const GlobalMenubar = () => {
 					shortcut={formatShortcut(shortcuts.mergeClips)}
 					onSelect={clipContext.mergeSelectedClips}
 					disabled={!clipContext.canMergeSelectedClips}
+				/>
+				<MenubarItem
+					label={t("action.edit.deleteClip")}
+					shortcut={formatShortcut(shortcuts.deleteClip)}
+					disabled={!canDeleteSelectedClips}
+					onSelect={() => {
+						if (selectedClip != null) {
+							void clipContext.deleteClip(selectedClip.id);
+						}
+					}}
 				/>
 			</MenubarMenu>
 			<MenubarMenu label={t("action.select")}>

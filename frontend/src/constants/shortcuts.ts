@@ -31,6 +31,38 @@ export const shortcutDefinitions = {
 		defaultKey: "alt+d",
 	},
 	mergeClips: { label: "action.edit.mergeClips", defaultKey: "ctrl+e" },
+	moveClipLeft: {
+		label: "action.edit.moveClipLeft",
+		defaultKey: "ctrl+ArrowLeft",
+	},
+	moveClipRight: {
+		label: "action.edit.moveClipRight",
+		defaultKey: "ctrl+ArrowRight",
+	},
+	moveClipUp: {
+		label: "action.edit.moveClipUp",
+		defaultKey: "ctrl+ArrowUp",
+	},
+	moveClipDown: {
+		label: "action.edit.moveClipDown",
+		defaultKey: "ctrl+ArrowDown",
+	},
+	decreaseClipDuration: {
+		label: "action.edit.decreaseClipDuration",
+		defaultKey: "ctrl+shift+ArrowLeft",
+	},
+	increaseClipDuration: {
+		label: "action.edit.increaseClipDuration",
+		defaultKey: "ctrl+shift+ArrowRight",
+	},
+	swapLayerUp: {
+		label: "action.edit.swapLayerUp",
+		defaultKey: "ctrl+shift+ArrowUp",
+	},
+	swapLayerDown: {
+		label: "action.edit.swapLayerDown",
+		defaultKey: "ctrl+shift+ArrowDown",
+	},
 	clearSelection: { label: "action.select.clear", defaultKey: "ctrl+shift+a" },
 	reselect: { label: "action.select.reselect", defaultKey: "ctrl+shift+d" },
 	invertSelection: {
