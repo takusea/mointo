@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Dialog from "~/components/Dialog";
+import LabeledControl from "~/components/LabeledControl";
 import Separator from "~/components/Separator";
 import TextField from "~/components/TextField";
 import { useI18n } from "~/features/i18n/useI18n";
@@ -53,15 +54,20 @@ const EditCompositionSettingsDialog = (props: Props) => {
 				return project.setSettings(settings);
 			}}
 		>
-			<div className="mb-2 flex flex-col gap-2">
-				<span className="font-medium">{t("dialog.project.name")}</span>
-				<TextField id="project-title" value={title} onValueChange={setTitle} />
+			<div className="flex flex-col gap-2">
+				<LabeledControl label={t("dialog.project.name")}>
+					<TextField
+						id="project-title"
+						value={title}
+						onValueChange={setTitle}
+					/>
+				</LabeledControl>
 				<Separator />
+				<CompositionSettingsForm
+					settings={settings}
+					onSettingsChanged={setSettings}
+				/>
 			</div>
-			<CompositionSettingsForm
-				settings={settings}
-				onSettingsChanged={setSettings}
-			/>
 		</Dialog>
 	);
 };

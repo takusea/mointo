@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Button from "~/components/Button";
+import Card from "~/components/Card";
 import Dialog from "~/components/Dialog";
 import {
 	formatShortcut,
@@ -102,43 +103,45 @@ const ShortcutSettingsDialog = (props: Props) => {
 					return (
 						<section key={group} className="flex flex-col gap-2">
 							<h3 className="font-bold text-foreground-muted">{t(group)}</h3>
-							<div className="grid grid-cols-[1fr_auto] items-center gap-1">
-								{groupEntries.map(([id, definition]) => (
-									<div className="contents" key={id}>
-										<span>{t(definition.label)}</span>
-										<Button
-											onClick={() => {
-												setRecording(id);
-												setConflict(false);
-											}}
-											onKeyDown={(event) => {
-												if (recording !== id) return;
-												event.preventDefault();
-												event.stopPropagation();
-												const nextShortcut = getShortcutFromEvent(event);
-												if (nextShortcut == null) return;
-												if (
-													Object.entries(shortcuts).some(
-														([otherId, value]) =>
-															otherId !== id && value === nextShortcut,
-													)
-												) {
-													setConflict(true);
-													return;
+							<Card size="small">
+								<div className="grid grid-cols-[1fr_auto] items-center gap-1">
+									{groupEntries.map(([id, definition]) => (
+										<div className="contents" key={id}>
+											<span className="px-2">{t(definition.label)}</span>
+											<Button
+												onClick={() => {
+													setRecording(id);
+													setConflict(false);
+												}}
+												onKeyDown={(event) => {
+													if (recording !== id) return;
+													event.preventDefault();
+													event.stopPropagation();
+													const nextShortcut = getShortcutFromEvent(event);
+													if (nextShortcut == null) return;
+													if (
+														Object.entries(shortcuts).some(
+															([otherId, value]) =>
+																otherId !== id && value === nextShortcut,
+														)
+													) {
+														setConflict(true);
+														return;
+													}
+													setShortcut(id, nextShortcut);
+													setRecording(null);
+													setConflict(false);
+												}}
+												label={
+													recording === id
+														? t("dialog.shortcut.pressKeys")
+														: formatShortcut(shortcuts[id])
 												}
-												setShortcut(id, nextShortcut);
-												setRecording(null);
-												setConflict(false);
-											}}
-											label={
-												recording === id
-													? t("dialog.shortcut.pressKeys")
-													: formatShortcut(shortcuts[id])
-											}
-										></Button>
-									</div>
-								))}
-							</div>
+											></Button>
+										</div>
+									))}
+								</div>
+							</Card>
 						</section>
 					);
 				})}

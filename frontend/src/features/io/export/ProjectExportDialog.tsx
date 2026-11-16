@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Dialog from "~/components/Dialog";
+import LabeledControl from "~/components/LabeledControl";
 import Select from "~/components/Select/Select";
 import SelectItem from "~/components/Select/SelectItem";
 import { useDialogs } from "~/editor/dialogs/useDialogs";
@@ -31,23 +32,24 @@ const ProjectExportDialog = (props: Props) => {
 			}}
 		>
 			<div className="flex flex-col gap-2">
-				<span className="font-medium">{t("dialog.projectExport.format")}</span>
-				<Select
-					id="project-export-format"
-					label={t("dialog.projectExport.format")}
-					value={format}
-					onValueChange={(value) => {
-						if (isProjectExportFormat(value)) {
-							setFormat(value);
-						}
-					}}
-				>
-					{projectExporters.map((exporter) => (
-						<SelectItem key={exporter.format} value={exporter.format}>
-							{t(exporter.labelKey)}
-						</SelectItem>
-					))}
-				</Select>
+				<LabeledControl label={t("dialog.projectExport.format")}>
+					<Select
+						id="project-export-format"
+						label={t("dialog.projectExport.format")}
+						value={format}
+						onValueChange={(value) => {
+							if (isProjectExportFormat(value)) {
+								setFormat(value);
+							}
+						}}
+					>
+						{projectExporters.map((exporter) => (
+							<SelectItem key={exporter.format} value={exporter.format}>
+								{t(exporter.labelKey)}
+							</SelectItem>
+						))}
+					</Select>
+				</LabeledControl>
 			</div>
 		</Dialog>
 	);

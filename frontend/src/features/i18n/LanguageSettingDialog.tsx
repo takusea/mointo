@@ -1,3 +1,4 @@
+import Card from "~/components/Card";
 import Dialog from "~/components/Dialog";
 import RadioGroup from "~/components/RadioGroup/RadioGroup";
 import RadioGroupItem from "~/components/RadioGroup/RadioGroupItem";
@@ -18,25 +19,27 @@ const LanguageSettingDialog = (props: Props) => {
 			description={t("dialog.language.description")}
 			cancelText={t("common.close")}
 		>
-			<RadioGroup
-				value={locale}
-				onValueChange={(value) => {
-					if (value === "en" || value === "ja") {
-						setLocale(value);
-					}
-				}}
-			>
-				<RadioGroupItem
-					value="en"
-					label={t("dialog.language.english")}
-					id="langEn"
-				/>
-				<RadioGroupItem
-					value="ja"
-					label={t("dialog.language.japanese")}
-					id="langJa"
-				/>
-			</RadioGroup>
+			<Card size="small">
+				<RadioGroup
+					value={locale}
+					onValueChange={(value) => {
+						if (value === "en" || value === "ja") {
+							setLocale(value);
+						}
+					}}
+				>
+					<RadioGroupItem
+						value="en"
+						label={t("dialog.language.english")}
+						id="langEn"
+					/>
+					<RadioGroupItem
+						value="ja"
+						label={t("dialog.language.japanese")}
+						id="langJa"
+					/>
+				</RadioGroup>
+			</Card>
 		</Dialog>
 	);
 };

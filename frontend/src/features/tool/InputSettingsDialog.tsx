@@ -1,5 +1,7 @@
 import { useState } from "react";
+import Card from "~/components/Card";
 import Dialog from "~/components/Dialog";
+import LabeledControl from "~/components/LabeledControl";
 import Slider from "~/components/Slider";
 import Switch from "~/components/Switch";
 import { useI18n } from "~/features/i18n/useI18n";
@@ -93,30 +95,35 @@ const InputSettingsDialog = (props: Props) => {
 					<p className="text-foreground-muted">
 						{t("dialog.input.stabilizationDescription")}
 					</p>
-					<div className="flex justify-between gap-1">
-						<span className="font-medium">
-							{t("dialog.input.stabilizationLabel")}
-						</span>
-						<span>{tool.stabilization}%</span>
-					</div>
-					<Slider
-						id="inputStabilization"
-						min={0}
-						max={100}
-						step={1}
-						value={[tool.stabilization]}
-						onValueChange={([value]) => tool.setStabilization(value)}
-						aria-label={t("dialog.input.stabilizationLabel")}
-					/>
+					<Card size="small">
+						<div className="px-2 py-1">
+							<LabeledControl
+								label={t("dialog.input.stabilizationLabel")}
+								sideElement={<span>{tool.stabilization}%</span>}
+							>
+								<Slider
+									id="inputStabilization"
+									min={0}
+									max={100}
+									step={1}
+									value={[tool.stabilization]}
+									onValueChange={([value]) => tool.setStabilization(value)}
+									aria-label={t("dialog.input.stabilizationLabel")}
+								/>
+							</LabeledControl>
+						</div>
+					</Card>
 				</section>
 				<section className="flex flex-col gap-2">
 					<h3 className="font-bold">{t("dialog.input.pressure")}</h3>
-					<Switch
-						id="inputPressure"
-						label={t("dialog.input.pressureLabel")}
-						checked={tool.pressureEnabled}
-						onCheckedChange={tool.setPressureEnabled}
-					/>
+					<Card size="small">
+						<Switch
+							id="inputPressure"
+							label={t("dialog.input.pressureLabel")}
+							checked={tool.pressureEnabled}
+							onCheckedChange={tool.setPressureEnabled}
+						/>
+					</Card>
 				</section>
 				{tool.pressureEnabled && (
 					<section className="flex flex-col gap-2">
@@ -124,50 +131,52 @@ const InputSettingsDialog = (props: Props) => {
 						<p className="text-foreground-muted">
 							{t("dialog.input.curveDescription")}
 						</p>
-						<svg
-							viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}
-							role="img"
-							aria-label={t("dialog.input.pressureCurve")}
-							className="aspect-square w-full touch-none rounded-md border border-border bg-surface"
-							onPointerDown={addPoint}
-							onPointerMove={updatePoint}
-							onPointerUp={() => setDraggingPoint(null)}
-							onPointerCancel={() => setDraggingPoint(null)}
-						>
-							<path
-								d={`M 0 ${CURVE_VIEWBOX} L ${CURVE_VIEWBOX} 0`}
-								fill="none"
-								stroke="currentColor"
-								strokeOpacity=".25"
-								strokeDasharray="2 2"
-							/>
-							<path
-								d={getPressureCurvePath(tool.pressureCurve, CURVE_VIEWBOX)}
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.5"
-							/>
-							{tool.pressureCurve.map(([x, y], index) => (
-								<circle
-									key={x}
-									cx={x * CURVE_VIEWBOX}
-									cy={(1 - y) * CURVE_VIEWBOX}
-									r="3"
-									data-interactive={
-										index === 0 || index === tool.pressureCurve.length - 1
-									}
-									className="cursor-grab touch-none fill-foreground-muted stroke-foreground data-interactive:fill-primary"
-									strokeWidth="1"
-									onPointerDown={(pointerEvent) => {
-										pointerEvent.stopPropagation();
-										pointerEvent.currentTarget.ownerSVGElement?.setPointerCapture(
-											pointerEvent.pointerId,
-										);
-										setDraggingPoint(index);
-									}}
+						<Card size="small">
+							<svg
+								viewBox={`0 0 ${CURVE_VIEWBOX} ${CURVE_VIEWBOX}`}
+								role="img"
+								aria-label={t("dialog.input.pressureCurve")}
+								className="aspect-square w-full touch-none overflow-visible"
+								onPointerDown={addPoint}
+								onPointerMove={updatePoint}
+								onPointerUp={() => setDraggingPoint(null)}
+								onPointerCancel={() => setDraggingPoint(null)}
+							>
+								<path
+									d={`M 0 ${CURVE_VIEWBOX} L ${CURVE_VIEWBOX} 0`}
+									fill="none"
+									stroke="currentColor"
+									strokeOpacity=".25"
+									strokeDasharray="2 2"
 								/>
-							))}
-						</svg>
+								<path
+									d={getPressureCurvePath(tool.pressureCurve, CURVE_VIEWBOX)}
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="1.5"
+								/>
+								{tool.pressureCurve.map(([x, y], index) => (
+									<circle
+										key={x}
+										cx={x * CURVE_VIEWBOX}
+										cy={(1 - y) * CURVE_VIEWBOX}
+										r="3"
+										data-interactive={
+											index === 0 || index === tool.pressureCurve.length - 1
+										}
+										className="cursor-grab touch-none fill-foreground-muted stroke-foreground data-interactive:fill-primary"
+										strokeWidth="1"
+										onPointerDown={(pointerEvent) => {
+											pointerEvent.stopPropagation();
+											pointerEvent.currentTarget.ownerSVGElement?.setPointerCapture(
+												pointerEvent.pointerId,
+											);
+											setDraggingPoint(index);
+										}}
+									/>
+								))}
+							</svg>
+						</Card>
 					</section>
 				)}
 			</div>

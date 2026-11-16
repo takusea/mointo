@@ -1,4 +1,5 @@
 import Card from "~/components/Card";
+import LabeledControl from "~/components/LabeledControl";
 import Slider from "~/components/Slider";
 import Switch from "~/components/Switch";
 import type { ToolProperty } from "~/core/CoreService";
@@ -44,13 +45,13 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 					const safeValue = Number.isFinite(numericValue) ? numericValue : 0;
 
 					return (
-						<div key={property.name}>
-							<div className="flex justify-between gap-1">
-								<span className="font-medium">
-									{t(`inspector.tool.${property.name}` as MessageKey)}
-								</span>
+						<LabeledControl
+							key={property.name}
+							label={t(`inspector.tool.${property.name}` as MessageKey)}
+							sideElement={
 								<span>{`${String(property.value)}${property.unit ?? ""}`}</span>
-							</div>
+							}
+						>
 							<Slider
 								min={property.min}
 								max={property.max}
@@ -60,7 +61,7 @@ const ToolInspector = ({ properties, onPropertyChange }: Props) => {
 									onPropertyChange(property.name, value[0]);
 								}}
 							/>
-						</div>
+						</LabeledControl>
 					);
 				})}
 				{(["fill", "eyedropper", "wand"] as ToolKind[]).includes(
