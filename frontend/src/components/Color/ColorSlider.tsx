@@ -36,7 +36,7 @@ const ColorSlider = ({ currentColor, onCurrentColorChange }: Props) => {
 				];
 
 	return (
-		<div className="flex flex-col gap-1">
+		<div className="flex flex-col gap-2">
 			<ToggleGroup
 				type="single"
 				value={mode}
