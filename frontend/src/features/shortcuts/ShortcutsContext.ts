@@ -3,6 +3,8 @@ import type { ShortcutId, Shortcuts } from "~/constants/shortcuts";
 
 type ShortcutsContextValue = {
 	shortcuts: Shortcuts;
+	isRecording: boolean;
+	setIsRecording: (isRecording: boolean) => void;
 	setShortcut: (id: ShortcutId, shortcut: string) => void;
 	resetShortcuts: () => void;
 };

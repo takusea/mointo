@@ -1,21 +1,21 @@
 import type { MessageKey } from "~/features/i18n/I18nContext";
 
 export const shortcutDefinitions = {
-	newProject: { label: "action.file.new", defaultKey: "ctrl+n" },
-	openProject: { label: "action.file.open", defaultKey: "ctrl+o" },
-	saveProject: { label: "action.file.save", defaultKey: "ctrl+s" },
-	closeProject: { label: "action.file.close", defaultKey: "ctrl+w" },
-	saveWith: { label: "action.file.saveWith", defaultKey: "ctrl+shift+s" },
+	newProject: { label: "action.file.new", defaultKey: "mod+n" },
+	openProject: { label: "action.file.open", defaultKey: "mod+o" },
+	saveProject: { label: "action.file.save", defaultKey: "mod+s" },
+	closeProject: { label: "action.file.close", defaultKey: "mod+w" },
+	saveWith: { label: "action.file.saveWith", defaultKey: "mod+shift+s" },
 	projectSettings: {
 		label: "action.file.projectSettings",
-		defaultKey: "ctrl+p",
+		defaultKey: "mod+p",
 	},
-	undo: { label: "action.edit.undo", defaultKey: "ctrl+z" },
-	redo: { label: "action.edit.redo", defaultKey: "ctrl+shift+z" },
-	cut: { label: "action.edit.cut", defaultKey: "ctrl+x" },
-	copy: { label: "action.edit.copy", defaultKey: "ctrl+c" },
-	paste: { label: "action.edit.paste", defaultKey: "ctrl+v" },
-	selectAll: { label: "action.select.selectAll", defaultKey: "ctrl+a" },
+	undo: { label: "action.edit.undo", defaultKey: "mod+z" },
+	redo: { label: "action.edit.redo", defaultKey: "mod+shift+z" },
+	cut: { label: "action.edit.cut", defaultKey: "mod+x" },
+	copy: { label: "action.edit.copy", defaultKey: "mod+c" },
+	paste: { label: "action.edit.paste", defaultKey: "mod+v" },
+	selectAll: { label: "action.select.selectAll", defaultKey: "mod+a" },
 	addClip: { label: "action.edit.addImageClip", defaultKey: "insert" },
 	addAudioClip: {
 		label: "action.edit.addAudioClip",
@@ -25,65 +25,65 @@ export const shortcutDefinitions = {
 		label: "action.edit.addGroupClip",
 		defaultKey: "shift+insert",
 	},
-	duplicateClip: { label: "action.edit.duplicateClip", defaultKey: "ctrl+d" },
+	duplicateClip: { label: "action.edit.duplicateClip", defaultKey: "mod+d" },
 	duplicateLinkedClip: {
 		label: "action.edit.duplicateLinkedClip",
 		defaultKey: "alt+d",
 	},
-	mergeClips: { label: "action.edit.mergeClips", defaultKey: "ctrl+e" },
+	mergeClips: { label: "action.edit.mergeClips", defaultKey: "mod+e" },
 	moveClipLeft: {
 		label: "action.edit.moveClipLeft",
-		defaultKey: "ctrl+ArrowLeft",
+		defaultKey: "mod+arrowleft",
 	},
 	moveClipRight: {
 		label: "action.edit.moveClipRight",
-		defaultKey: "ctrl+ArrowRight",
+		defaultKey: "mod+arrowright",
 	},
 	moveClipUp: {
 		label: "action.edit.moveClipUp",
-		defaultKey: "ctrl+ArrowUp",
+		defaultKey: "mod+arrowup",
 	},
 	moveClipDown: {
 		label: "action.edit.moveClipDown",
-		defaultKey: "ctrl+ArrowDown",
+		defaultKey: "mod+arrowdown",
 	},
 	decreaseClipDuration: {
 		label: "action.edit.decreaseClipDuration",
-		defaultKey: "ctrl+shift+ArrowLeft",
+		defaultKey: "mod+shift+arrowleft",
 	},
 	increaseClipDuration: {
 		label: "action.edit.increaseClipDuration",
-		defaultKey: "ctrl+shift+ArrowRight",
+		defaultKey: "mod+shift+arrowright",
 	},
 	swapLayerUp: {
 		label: "action.edit.swapLayerUp",
-		defaultKey: "ctrl+shift+ArrowUp",
+		defaultKey: "mod+shift+arrowup",
 	},
 	swapLayerDown: {
 		label: "action.edit.swapLayerDown",
-		defaultKey: "ctrl+shift+ArrowDown",
+		defaultKey: "mod+shift+arrowdown",
 	},
-	clearSelection: { label: "action.select.clear", defaultKey: "ctrl+shift+a" },
-	reselect: { label: "action.select.reselect", defaultKey: "ctrl+shift+d" },
+	clearSelection: { label: "action.select.clear", defaultKey: "mod+shift+a" },
+	reselect: { label: "action.select.reselect", defaultKey: "mod+shift+d" },
 	invertSelection: {
 		label: "action.select.invert",
-		defaultKey: "ctrl+shift+i",
+		defaultKey: "mod+shift+i",
 	},
-	zoomIn: { label: "action.view.zoomIn", defaultKey: "ctrl+shift+equal" },
-	zoomOut: { label: "action.view.zoomOut", defaultKey: "ctrl+minus" },
-	fitView: { label: "action.view.fitView", defaultKey: "ctrl+shift+0" },
-	resetZoom: { label: "action.view.resetZoom", defaultKey: "ctrl+0" },
+	zoomIn: { label: "action.view.zoomIn", defaultKey: "mod+shift+equal" },
+	zoomOut: { label: "action.view.zoomOut", defaultKey: "mod+minus" },
+	fitView: { label: "action.view.fitView", defaultKey: "mod+shift+0" },
+	resetZoom: { label: "action.view.resetZoom", defaultKey: "mod+0" },
 	rotateLeft: {
 		label: "action.view.rotateLeft",
-		defaultKey: "ctrl+alt+ArrowLeft",
+		defaultKey: "mod+alt+arrowleft",
 	},
 	rotateRight: {
 		label: "action.view.rotateRight",
-		defaultKey: "ctrl+alt+ArrowRight",
+		defaultKey: "mod+alt+arrowright",
 	},
 	resetRotation: {
 		label: "action.view.resetRotation",
-		defaultKey: "ctrl+alt+0",
+		defaultKey: "mod+alt+0",
 	},
 	flipHorizontal: {
 		label: "action.view.flipHorizontal",
@@ -105,24 +105,24 @@ export const shortcutDefinitions = {
 	},
 	firstFrame: {
 		label: "action.play.firstFrame",
-		defaultKey: "shift+ArrowLeft",
+		defaultKey: "shift+arrowleft",
 	},
 	previousFrame: {
 		label: "action.play.previousFrame",
-		defaultKey: "ArrowLeft",
+		defaultKey: "arrowleft",
 	},
-	nextFrame: { label: "action.play.nextFrame", defaultKey: "ArrowRight" },
+	nextFrame: { label: "action.play.nextFrame", defaultKey: "arrowright" },
 	lastFrame: {
 		label: "action.play.lastFrame",
-		defaultKey: "shift+ArrowRight",
+		defaultKey: "shift+arrowright",
 	},
 	previousLayer: {
 		label: "action.select.previousLayer",
-		defaultKey: "ArrowUp",
+		defaultKey: "arrowup",
 	},
 	nextLayer: {
 		label: "action.select.nextLayer",
-		defaultKey: "ArrowDown",
+		defaultKey: "arrowdown",
 	},
 	penTool: { label: "tool.pen", defaultKey: "1" },
 	eraserTool: { label: "tool.eraser", defaultKey: "2" },
@@ -135,6 +135,70 @@ export const shortcutDefinitions = {
 
 export type ShortcutId = keyof typeof shortcutDefinitions;
 export type Shortcuts = Record<ShortcutId, string>;
+
+export const isMacOS =
+	typeof navigator !== "undefined" &&
+	/mac/i.test(navigator.userAgent) &&
+	!/iphone|ipad|ipod/i.test(navigator.userAgent);
+
+const shortcutSymbols: Record<string, string> = {
+	add: "+",
+	backquote: "`",
+	backslash: "\\",
+	bracketleft: "[",
+	bracketright: "]",
+	comma: ",",
+	decimal: ".",
+	divide: "/",
+	equal: "=",
+	minus: "-",
+	multiply: "*",
+	parenleft: "(",
+	parenright: ")",
+	period: ".",
+	quote: "'",
+	semicolon: ";",
+	slash: "/",
+	star: "*",
+	subtract: "-",
+};
+
+const shortcutKeyNames: Record<string, string> = {
+	...Object.fromEntries(
+		Array.from(
+			{ length: 24 },
+			(_, index) => [`f${index + 1}`, `F${index + 1}`] as const,
+		),
+	),
+	alt: isMacOS ? "⌥" : "Alt",
+	arrowdown: "↓",
+	arrowleft: "←",
+	arrowright: "→",
+	arrowup: "↑",
+	backspace: isMacOS ? "⌫" : "BackSpace",
+	capslock: isMacOS ? "⇪" : "CapsLock",
+	contextmenu: "ContextMenu",
+	ctrl: isMacOS ? "⌃" : "Ctrl",
+	delete: isMacOS ? "⌦" : "Delete",
+	end: "End",
+	enter: isMacOS ? "⏎" : "Enter",
+	escape: isMacOS ? "⎋" : "Escape",
+	fn: "Fn",
+	fnlock: "FnLock",
+	home: "Home",
+	insert: "Insert",
+	meta: isMacOS ? "⌘" : "Meta",
+	mod: isMacOS ? "⌘" : "Ctrl",
+	numlock: "NumLock",
+	pagedown: "PageDown",
+	pageup: "PageUp",
+	pause: "Pause",
+	printscreen: "PrintScreen",
+	scrolllock: "ScrollLock",
+	shift: isMacOS ? "⇧" : "Shift",
+	space: "Space",
+	tab: isMacOS ? "⇥" : "Tab",
+};
 
 export const defaultShortcuts = Object.fromEntries(
 	Object.entries(shortcutDefinitions).map(([id, definition]) => [
@@ -151,21 +215,8 @@ export const formatShortcut = (shortcut: string) =>
 			if (symbol != null) {
 				return String.fromCodePoint(Number.parseInt(symbol[1], 16));
 			}
-			if (part === "backquote") return "`";
-			if (part === "ctrl") return "Ctrl";
-			if (part === "alt") return "Alt";
-			if (part === "shift") return "Shift";
-			if (part === "meta") return "Meta";
-			if (part === "equal") return "=";
-			if (part === "minus") return "-";
-			if (part === "ArrowLeft") return "←";
-			if (part === "ArrowRight") return "→";
-			if (part === "ArrowUp") return "↑";
-			if (part === "ArrowDown") return "↓";
-			if (part === "space") return "Space";
-			if (part === "insert") return "Insert";
-			if (part === "delete") return "Delete";
-			if (part === "escape") return "Escape";
+			if (shortcutSymbols[part] != null) return shortcutSymbols[part];
+			if (shortcutKeyNames[part] != null) return shortcutKeyNames[part];
 			return part.length === 1 ? part.toUpperCase() : part;
 		})
-		.join("+");
+		.join(isMacOS ? " " : "+");

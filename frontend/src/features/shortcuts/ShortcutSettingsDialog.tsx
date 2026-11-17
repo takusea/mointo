@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { IconRestore } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { useRecordHotkeys } from "react-hotkeys-hook";
 import Button from "~/components/Button";
 import Card from "~/components/Card";
 import Dialog from "~/components/Dialog";
+import IconButton from "~/components/IconButton";
+import Tooltip from "~/components/Tooltip";
 import {
+	defaultShortcuts,
 	formatShortcut,
+	isMacOS,
 	type ShortcutId,
 	shortcutDefinitions,
 } from "~/constants/shortcuts";
@@ -16,24 +22,7 @@ type Props = {
 	onOpenChange: (open: boolean) => void;
 };
 
-const modifiers = new Set(["Control", "Alt", "Shift", "Meta"]);
-const keyNames: Record<string, string> = {
-	" ": "space",
-	ArrowDown: "ArrowDown",
-	ArrowLeft: "ArrowLeft",
-	ArrowRight: "ArrowRight",
-	ArrowUp: "ArrowUp",
-	Backspace: "backspace",
-	Delete: "delete",
-	End: "end",
-	Enter: "enter",
-	Escape: "escape",
-	Home: "home",
-	Insert: "insert",
-	PageDown: "pagedown",
-	PageUp: "pageup",
-	Tab: "tab",
-};
+const modifierOrder = ["ctrl", "alt", "shift", "meta"];
 
 const shortcutGroups: MessageKey[] = [
 	"action.file",
@@ -44,44 +33,69 @@ const shortcutGroups: MessageKey[] = [
 	"tool",
 ];
 
-const getShortcutFromEvent = (event: React.KeyboardEvent): string | null => {
-	if (modifiers.has(event.key)) return null;
+const getShortcutFromKeys = (keys: Set<string>): string | null => {
+	const modifiers = modifierOrder
+		.filter((modifier) => keys.has(modifier))
+		.map((modifier) =>
+			(isMacOS && modifier === "meta") || (!isMacOS && modifier === "ctrl")
+				? "mod"
+				: modifier,
+		);
+	const otherKeys = [...keys].filter((key) => !modifierOrder.includes(key));
 
-	let key = keyNames[event.key];
-	if (key == null && event.key.length === 1) {
-		key = /^[a-z0-9]$/i.test(event.key)
-			? event.key.toLowerCase()
-			: `code:${event.code}:${event.key.codePointAt(0)?.toString(16)}`;
-	}
-	if (key == null) return null;
-
-	return [
-		event.ctrlKey && "ctrl",
-		event.altKey && "alt",
-		event.shiftKey && "shift",
-		event.metaKey && "meta",
-		key,
-	]
-		.filter(Boolean)
-		.join("+");
+	if (otherKeys.length === 0) return null;
+	return [...modifiers, ...otherKeys].join("+");
 };
 
 const ShortcutSettingsDialog = (props: Props) => {
 	const { t } = useI18n();
-	const { shortcuts, setShortcut, resetShortcuts } = useShortcutSettings();
+	const { shortcuts, setIsRecording, setShortcut, resetShortcuts } =
+		useShortcutSettings();
 	const [recording, setRecording] = useState<ShortcutId | null>(null);
-	const [conflict, setConflict] = useState(false);
+	const [recordedKeys, { start, stop, resetKeys, isRecording }] =
+		useRecordHotkeys();
 	const entries = Object.entries(shortcutDefinitions) as [
 		ShortcutId,
 		(typeof shortcutDefinitions)[ShortcutId],
 	][];
 
+	useEffect(() => {
+		if (recording == null || !isRecording) return;
+
+		const nextShortcut = getShortcutFromKeys(recordedKeys);
+		if (nextShortcut == null) return;
+
+		setShortcut(recording, nextShortcut);
+		stop();
+		setIsRecording(false);
+		setRecording(null);
+	}, [isRecording, recordedKeys, recording, setIsRecording, setShortcut, stop]);
+
+	const getConflictingShortcutId = (id: ShortcutId) =>
+		(Object.keys(shortcutDefinitions) as ShortcutId[]).find(
+			(otherId) => otherId !== id && shortcuts[otherId] === shortcuts[id],
+		);
+
+	const getShortcutTooltip = (id: ShortcutId) => {
+		if (recording === id) return t("dialog.shortcut.pressKeys");
+
+		const conflictingId = getConflictingShortcutId(id);
+		if (conflictingId != null) {
+			return t("dialog.shortcut.conflict", {
+				shortcut: t(shortcutDefinitions[conflictingId].label),
+			});
+		}
+		return t("dialog.shortcut.change");
+	};
+
 	return (
 		<Dialog
 			open={props.open}
 			onOpenChange={(nextOpen) => {
+				stop();
+				resetKeys();
+				setIsRecording(false);
 				setRecording(null);
-				setConflict(false);
 				props.onOpenChange(nextOpen);
 			}}
 			title={t("dialog.shortcut.title")}
@@ -89,8 +103,10 @@ const ShortcutSettingsDialog = (props: Props) => {
 			tertiaryText={t("dialog.shortcut.reset")}
 			onTertiary={() => {
 				resetShortcuts();
+				stop();
+				resetKeys();
+				setIsRecording(false);
 				setRecording(null);
-				setConflict(false);
 			}}
 		>
 			<div className="flex flex-col gap-4">
@@ -104,40 +120,46 @@ const ShortcutSettingsDialog = (props: Props) => {
 						<section key={group} className="flex flex-col gap-2">
 							<h3 className="font-bold text-foreground-muted">{t(group)}</h3>
 							<Card size="small">
-								<div className="grid grid-cols-[1fr_auto] items-center gap-1">
+								<div className="flex flex-col gap-1">
 									{groupEntries.map(([id, definition]) => (
-										<div className="contents" key={id}>
+										<div
+											className="grid grid-cols-[1fr_auto_auto] items-center gap-1"
+											key={id}
+										>
 											<span className="px-2">{t(definition.label)}</span>
-											<Button
-												onClick={() => {
-													setRecording(id);
-													setConflict(false);
-												}}
-												onKeyDown={(event) => {
-													if (recording !== id) return;
-													event.preventDefault();
-													event.stopPropagation();
-													const nextShortcut = getShortcutFromEvent(event);
-													if (nextShortcut == null) return;
-													if (
-														Object.entries(shortcuts).some(
-															([otherId, value]) =>
-																otherId !== id && value === nextShortcut,
-														)
-													) {
-														setConflict(true);
-														return;
+											<Tooltip label={getShortcutTooltip(id)}>
+												<Button
+													onClick={() => {
+														start();
+														setIsRecording(true);
+														setRecording(id);
+													}}
+													label={
+														recording === id
+															? t("dialog.shortcut.pressKeys")
+															: formatShortcut(shortcuts[id])
 													}
-													setShortcut(id, nextShortcut);
-													setRecording(null);
-													setConflict(false);
+													variant={
+														getConflictingShortcutId(id) == null
+															? "default"
+															: "warning"
+													}
+												/>
+											</Tooltip>
+											<IconButton
+												icon={IconRestore}
+												label={t("dialog.shortcut.reset")}
+												disabled={shortcuts[id] === defaultShortcuts[id]}
+												onClick={() => {
+													setShortcut(id, defaultShortcuts[id]);
+													if (recording === id) {
+														stop();
+														resetKeys();
+														setIsRecording(false);
+														setRecording(null);
+													}
 												}}
-												label={
-													recording === id
-														? t("dialog.shortcut.pressKeys")
-														: formatShortcut(shortcuts[id])
-												}
-											></Button>
+											/>
 										</div>
 									))}
 								</div>
@@ -145,14 +167,6 @@ const ShortcutSettingsDialog = (props: Props) => {
 						</section>
 					);
 				})}
-				{conflict && (
-					<p
-						role="alert"
-						className="sticky bottom-0 bg-background py-4 text-warning backdrop-blur-xl"
-					>
-						{t("dialog.shortcut.conflict")}
-					</p>
-				)}
 			</div>
 		</Dialog>
 	);

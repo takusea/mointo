@@ -1,5 +1,15 @@
 import type { HotkeyCallback } from "react-hotkeys-hook";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useShortcutSettings } from "./useShortcuts";
+
+type HotkeyOptions = Exclude<
+	NonNullable<Parameters<typeof useHotkeys>[2]>,
+	readonly unknown[]
+>;
+
+const isHotkeyOptions = (
+	options: NonNullable<Parameters<typeof useHotkeys>[2]>,
+): options is HotkeyOptions => !Array.isArray(options);
 
 const toHotkeyPart = (part: string) => {
 	if (part === "`") return "backquote";
@@ -15,7 +25,17 @@ export const useShortcut = (
 	options?: Parameters<typeof useHotkeys>[2],
 	dependencies?: Parameters<typeof useHotkeys>[3],
 ) => {
+	const { isRecording } = useShortcutSettings();
 	const hotkey = shortcut.split("+").map(toHotkeyPart).join("+");
+	const hotkeyOptions =
+		options == null
+			? { enabled: isRecording ? false : undefined }
+			: isHotkeyOptions(options)
+				? {
+						...options,
+						enabled: isRecording ? false : options.enabled,
+					}
+				: options;
 
-	return useHotkeys(hotkey, callback, options, dependencies);
+	return useHotkeys(hotkey, callback, hotkeyOptions, dependencies);
 };

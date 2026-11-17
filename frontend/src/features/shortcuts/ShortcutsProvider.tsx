@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import {
 	defaultShortcuts,
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export const ShortcutsProvider = ({ children }: Props) => {
+	const [isRecording, setIsRecording] = useState(false);
 	const [shortcuts, setShortcuts] = useLocalStorage<Shortcuts>(
 		storageKeys.shortcuts,
 		defaultShortcuts,
@@ -27,7 +29,13 @@ export const ShortcutsProvider = ({ children }: Props) => {
 
 	return (
 		<ShortcutsContext
-			value={{ shortcuts: resolvedShortcuts, setShortcut, resetShortcuts }}
+			value={{
+				shortcuts: resolvedShortcuts,
+				isRecording,
+				setIsRecording,
+				setShortcut,
+				resetShortcuts,
+			}}
 		>
 			{children}
 		</ShortcutsContext>
