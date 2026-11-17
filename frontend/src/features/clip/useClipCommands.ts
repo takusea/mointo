@@ -358,126 +358,136 @@ export const useClipCommands = ({
 		}
 	};
 
-	const getSplittableClip = () => {
-		const clip = clips.find((candidate) => candidate.id === selectedClipId);
-		if (
-			clip == null ||
-			clip.locked ||
-			isLayerLocked(clip.layer_id) ||
-			currentFrame <= clip.start ||
-			currentFrame >= clip.start + clip.duration
-		) {
-			return undefined;
-		}
-		return clip;
+	const getSplittableClips = () => {
+		const selectedIds = new Set([
+			...selectedClipIds,
+			...(selectedClipId == null ? [] : [selectedClipId]),
+		]);
+		return clips.filter(
+			(clip) =>
+				selectedIds.has(clip.id) &&
+				!clip.locked &&
+				!isLayerLocked(clip.layer_id) &&
+				currentFrame > clip.start &&
+				currentFrame < clip.start + clip.duration,
+		);
 	};
 
 	const splitSelectedClip = async () => {
-		const source = getSplittableClip();
-		if (source == null) return;
-
-		const rightDuration = source.start + source.duration - currentFrame;
-		const leftDuration = currentFrame - source.start;
-		const audioData =
-			source.clip_type === "audio"
-				? await core.getAudioClipData(source.id)
-				: undefined;
-		const pixels =
-			source.clip_type === "image"
-				? await core.getClipPixels(source.id)
-				: undefined;
-		if (source.clip_type === "image" && pixels == null) {
-			throw new Error(`Image data is missing for clip ${source.id}.`);
-		}
-
+		const sources = getSplittableClips();
+		if (sources.length === 0) return;
 		const snapshot = core.getSnapshot();
-		const transform = snapshot.clipTransforms[source.id];
-		const keyframes = snapshot.clipKeyframes[source.id] ?? [];
+		const splitSources = await Promise.all(
+			sources.map(async (source) => ({
+				source,
+				leftDuration: currentFrame - source.start,
+				rightDuration: source.start + source.duration - currentFrame,
+				audioData:
+					source.clip_type === "audio"
+						? await core.getAudioClipData(source.id)
+						: undefined,
+				transform: snapshot.clipTransforms[source.id],
+				keyframes: snapshot.clipKeyframes[source.id] ?? [],
+			})),
+		);
 		const existingIds = new Set(clips.map((clip) => clip.id));
+		const splitClipIds: string[] = [];
 		let changed = false;
-		let splitClip: ClipMetadata | undefined;
 
 		await core.beginActionGroup();
 		try {
-			let nextClips: ClipMetadata[];
-			if (source.clip_type === "audio") {
-				if (audioData == null) {
-					throw new Error(`Audio data is missing for clip ${source.id}.`);
+			for (const {
+				source,
+				leftDuration,
+				rightDuration,
+				audioData,
+				transform,
+				keyframes,
+			} of splitSources) {
+				let nextClips: ClipMetadata[];
+				if (source.clip_type === "audio") {
+					if (audioData == null) {
+						throw new Error(`Audio data is missing for clip ${source.id}.`);
+					}
+					nextClips = await core.addAudioClip(
+						currentFrame,
+						source.layer_id,
+						rightDuration,
+						audioData,
+						source.audio_mime_type,
+						source.name,
+					);
+				} else if (source.clip_type === "group") {
+					nextClips = await core.addGroupClip(currentFrame, source.layer_id);
+				} else {
+					nextClips = await core.addClipWithSize(
+						currentFrame,
+						source.layer_id,
+						source.width,
+						source.height,
+					);
 				}
-				nextClips = await core.addAudioClip(
-					currentFrame,
-					source.layer_id,
-					rightDuration,
-					audioData,
-					source.audio_mime_type,
-					source.name,
+				changed = true;
+				const splitClip = nextClips.find(
+					(clip) =>
+						!existingIds.has(clip.id) &&
+						clip.clip_type === source.clip_type &&
+						clip.start === currentFrame &&
+						clip.layer_id === source.layer_id,
 				);
-			} else if (source.clip_type === "group") {
-				nextClips = await core.addGroupClip(currentFrame, source.layer_id);
-			} else {
-				nextClips = await core.addClipWithSize(
-					currentFrame,
-					source.layer_id,
-					source.width,
-					source.height,
-				);
-			}
-			changed = true;
-			splitClip = nextClips.find(
-				(clip) =>
-					!existingIds.has(clip.id) &&
-					clip.clip_type === source.clip_type &&
-					clip.start === currentFrame &&
-					clip.layer_id === source.layer_id,
-			);
-			if (splitClip == null) {
-				throw new Error(`Could not create a split for clip ${source.id}.`);
-			}
+				if (splitClip == null) {
+					throw new Error(`Could not create a split for clip ${source.id}.`);
+				}
+				existingIds.add(splitClip.id);
 
-			if (source.clip_type !== "audio") {
-				await core.changeClipDuration(splitClip.id, rightDuration);
-			}
-			await core.changeClipName(splitClip.id, source.name);
-			const properties: ClipProperties =
-				source.clip_type === "image"
-					? {
-							hidden: source.hidden,
-							locked: source.locked,
-							alpha_locked: source.alpha_locked,
-							opacity: source.opacity,
-							blend_mode: source.blend_mode,
-						}
-					: source.clip_type === "audio"
+				if (source.clip_type !== "group") {
+					await core.linkClips(source.id, splitClip.id);
+				}
+				if (source.clip_type !== "audio") {
+					await core.changeClipDuration(splitClip.id, rightDuration);
+				}
+				await core.changeClipName(splitClip.id, source.name);
+				const properties: ClipProperties =
+					source.clip_type === "image"
 						? {
 								hidden: source.hidden,
 								locked: source.locked,
-								audio_start_frame: source.audio_start_frame + leftDuration,
+								alpha_locked: source.alpha_locked,
+								opacity: source.opacity,
+								blend_mode: source.blend_mode,
 							}
-						: {
-								hidden: source.hidden,
-								locked: source.locked,
-								group_depth: source.depth,
-							};
-			await core.changeClipProperties(splitClip.id, properties);
-			if (pixels != null) await core.replaceClipPixels(splitClip.id, pixels);
-			if (transform != null)
-				await core.updateClipTransform(splitClip.id, transform);
-			for (const keyframe of keyframes) {
-				await core.setClipKeyframe(
-					splitClip.id,
-					keyframe.frame,
-					keyframe.property,
-					keyframe.value,
-				);
+						: source.clip_type === "audio"
+							? {
+									hidden: source.hidden,
+									locked: source.locked,
+									audio_start_frame: source.audio_start_frame + leftDuration,
+								}
+							: {
+									hidden: source.hidden,
+									locked: source.locked,
+									group_depth: source.depth,
+								};
+				await core.changeClipProperties(splitClip.id, properties);
+				if (transform != null)
+					await core.updateClipTransform(splitClip.id, transform);
+				for (const keyframe of keyframes) {
+					await core.setClipKeyframe(
+						splitClip.id,
+						keyframe.frame,
+						keyframe.property,
+						keyframe.value,
+					);
+				}
+				await core.changeClipDuration(source.id, leftDuration);
+				splitClipIds.push(splitClip.id);
 			}
-			await core.changeClipDuration(source.id, leftDuration);
 		} catch (error) {
 			await core.endActionGroup();
 			if (changed) await core.undo();
 			throw error;
 		}
 		await core.endActionGroup();
-		if (splitClip != null) onClipSelected(splitClip.id, source.layer_id, true);
+		onClipsSelected(splitClipIds);
 	};
 
 	const moveClip = async (
@@ -723,7 +733,7 @@ export const useClipCommands = ({
 		addGroupClip,
 		deleteClip,
 		splitSelectedClip,
-		canSplitSelectedClip: getSplittableClip() != null,
+		canSplitSelectedClip: getSplittableClips().length > 0,
 		moveClip,
 		changeClipDuration,
 		changeClipName,
