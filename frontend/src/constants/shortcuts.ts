@@ -31,6 +31,7 @@ export const shortcutDefinitions = {
 		defaultKey: "alt+d",
 	},
 	mergeClips: { label: "action.edit.mergeClips", defaultKey: "mod+e" },
+	splitClip: { label: "action.edit.splitClip", defaultKey: "mod+k" },
 	moveClipLeft: {
 		label: "action.edit.moveClipLeft",
 		defaultKey: "mod+arrowleft",

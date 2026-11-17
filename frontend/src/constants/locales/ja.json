@@ -12,6 +12,7 @@
 	"action.edit.duplicateLinkedClip": "クリップをリンク複製",
 	"action.edit.increaseClipDuration": "クリップを長くする",
 	"action.edit.mergeClips": "クリップを統合",
+	"action.edit.splitClip": "クリップを分割",
 	"action.edit.moveClip": "クリップを移動",
 	"action.edit.moveClipDown": "クリップを下のレイヤーへ移動",
 	"action.edit.moveClipLeft": "クリップを左へ移動",

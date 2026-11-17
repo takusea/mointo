@@ -46,6 +46,9 @@ const Timeline = () => {
 	useShortcut(shortcuts.mergeClips, () => {
 		void clipContext.mergeSelectedClips();
 	});
+	useShortcut(shortcuts.splitClip, () => {
+		void clipContext.splitSelectedClip();
+	});
 	useShortcut(shortcuts.previousLayer, () => moveSelectedLayer(-1));
 	useShortcut(shortcuts.nextLayer, () => moveSelectedLayer(1));
 

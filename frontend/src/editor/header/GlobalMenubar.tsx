@@ -367,6 +367,12 @@ const GlobalMenubar = () => {
 					onSelect={clipContext.linkDuplicateSelectedClip}
 				/>
 				<MenubarItem
+					label={t("action.edit.splitClip")}
+					shortcut={formatShortcut(shortcuts.splitClip)}
+					onSelect={clipContext.splitSelectedClip}
+					disabled={!clipContext.canSplitSelectedClip}
+				/>
+				<MenubarItem
 					label={t("action.edit.mergeClips")}
 					shortcut={formatShortcut(shortcuts.mergeClips)}
 					onSelect={clipContext.mergeSelectedClips}

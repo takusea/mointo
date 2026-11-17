@@ -12,6 +12,7 @@
 	"action.edit.duplicateLinkedClip": "Duplicate Linked Clip",
 	"action.edit.increaseClipDuration": "Lengthen Clip",
 	"action.edit.mergeClips": "Merge Clips",
+	"action.edit.splitClip": "Split Clip",
 	"action.edit.moveClip": "Move Clip",
 	"action.edit.moveClipDown": "Move Clip Down",
 	"action.edit.moveClipLeft": "Move Clip Left",

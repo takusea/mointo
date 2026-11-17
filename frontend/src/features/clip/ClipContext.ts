@@ -31,6 +31,8 @@ export type ClipContextValue = {
 	linkDuplicateSelectedClip: () => Promise<void>;
 	canMergeSelectedClips: boolean;
 	mergeSelectedClips: () => Promise<void>;
+	canSplitSelectedClip: boolean;
+	splitSelectedClip: () => Promise<void>;
 	addClip: (start: number, layerId: LayerId) => Promise<void>;
 	addImageClip: (
 		start: number,
