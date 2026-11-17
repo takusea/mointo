@@ -3,7 +3,7 @@ import type { JSX } from "react";
 type Size = "small" | "medium" | "large";
 
 type Props = {
-	children: JSX.Element;
+	children: JSX.Element | JSX.Element[];
 	size?: Size;
 };
 
