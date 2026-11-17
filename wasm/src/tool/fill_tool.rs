@@ -155,7 +155,11 @@ impl Tool for FillTool {
             return;
         }
 
-        let blend = |image: &mut Image, i: usize, coverage: f32, color: [u8; 4], changes: &mut Vec<PixelChange>| {
+        let blend = |image: &mut Image,
+                     i: usize,
+                     coverage: f32,
+                     color: [u8; 4],
+                     changes: &mut Vec<PixelChange>| {
             if coverage <= 0.0 {
                 return;
             }
