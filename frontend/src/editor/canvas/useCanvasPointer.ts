@@ -94,6 +94,27 @@ export const useCanvasPointer = (
 	};
 
 	const selection = useCanvasSelection(canvasRef, getPointerPosition);
+	const fillTargetColorRef = useRef<Uint8Array | null>(null);
+	const fillReferencePixelsRef = useRef<Uint8ClampedArray | undefined>(
+		undefined,
+	);
+
+	const sampleReferencePixel = (
+		referencePixels: Uint8ClampedArray | Uint8Array | undefined,
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+	) => {
+		if (referencePixels == null) return null;
+		const pixelX = Math.floor(x);
+		const pixelY = Math.floor(y);
+		if (pixelX < 0 || pixelY < 0 || pixelX >= width || pixelY >= height)
+			return null;
+		const pixelIndex = (pixelY * width + pixelX) * 4;
+		if (pixelIndex + 4 > referencePixels.length) return null;
+		return new Uint8Array(referencePixels.slice(pixelIndex, pixelIndex + 4));
+	};
 
 	const pickColor = async (clientX: number, clientY: number) => {
 		const canvas = canvasRef.current;
@@ -417,15 +438,29 @@ export const useCanvasPointer = (
 			y,
 			pressure: getPointerPressure(event.nativeEvent),
 		};
+		const canvas = canvasRef.current;
 		canvasDraw.beginDraw(
 			drawState,
 			clipId,
 			isPenEraser ? "eraser" : toolContext.tool,
 		);
-		if (!isPenEraser && toolContext.tool === "fill") {
+		if (!isPenEraser && toolContext.tool === "fill" && canvas != null) {
 			const referencePixels = toolContext.referenceOtherLayers.fill
 				? await playbackContext.renderFrame(playbackContext.currentFrame)
-				: undefined;
+				: layerContext.selectedLayerId == null
+					? undefined
+					: await playbackContext.renderLayerFrame(
+							playbackContext.currentFrame,
+							layerContext.selectedLayerId,
+						);
+			fillReferencePixelsRef.current = referencePixels;
+			fillTargetColorRef.current = sampleReferencePixel(
+				referencePixels,
+				x,
+				y,
+				canvas.width,
+				canvas.height,
+			);
 			canvasDraw.draw(drawState, referencePixels);
 		}
 		render(canvasRef.current, isOnionSkin, layerContext.selectedLayerId);
@@ -443,6 +478,8 @@ export const useCanvasPointer = (
 		}
 		const canvas = canvasRef.current;
 		if (canvas == null) return;
+		const isPenEraser =
+			event.pointerType === "pen" && (event.buttons & 32) !== 0;
 		if (selection.moveSelection(event)) return;
 		if (event.buttons & 2) {
 			await pickColor(event.clientX, event.clientY);
@@ -544,6 +581,45 @@ export const useCanvasPointer = (
 			return;
 		}
 
+		if (!isPenEraser && toolContext.tool === "fill") {
+			const referencePixels = fillReferencePixelsRef.current;
+			if (referencePixels == null) {
+				render(canvas, isOnionSkin, layerContext.selectedLayerId);
+				return;
+			}
+			const latestPointerEvent = event.nativeEvent.getCoalescedEvents
+				? (event.nativeEvent.getCoalescedEvents().at(-1) ?? event)
+				: event;
+			const { x, y } = getPointerPosition(
+				latestPointerEvent.clientX,
+				latestPointerEvent.clientY,
+			);
+			const sampledColor = sampleReferencePixel(
+				referencePixels,
+				x,
+				y,
+				canvas.width,
+				canvas.height,
+			);
+			if (
+				fillTargetColorRef.current != null &&
+				sampledColor != null &&
+				(sampledColor[0] !== fillTargetColorRef.current[0] ||
+					sampledColor[1] !== fillTargetColorRef.current[1] ||
+					sampledColor[2] !== fillTargetColorRef.current[2] ||
+					sampledColor[3] !== fillTargetColorRef.current[3])
+			) {
+				render(canvas, isOnionSkin, layerContext.selectedLayerId);
+				return;
+			}
+			canvasDraw.draw(
+				{ x, y, pressure: getPointerPressure(latestPointerEvent) },
+				referencePixels,
+			);
+			render(canvas, isOnionSkin, layerContext.selectedLayerId);
+			return;
+		}
+
 		event.currentTarget.setPointerCapture(event.pointerId);
 		const drawStates = event.nativeEvent.getCoalescedEvents
 			? event.nativeEvent.getCoalescedEvents().map((pointerEvent) => ({
@@ -586,6 +662,8 @@ export const useCanvasPointer = (
 			return;
 		}
 		canvasDraw.finishDraw();
+		fillTargetColorRef.current = null;
+		fillReferencePixelsRef.current = undefined;
 		void core.endDraw();
 		if (canvasRef.current != null) {
 			render(canvasRef.current, isOnionSkin, layerContext.selectedLayerId);

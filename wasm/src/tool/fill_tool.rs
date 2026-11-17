@@ -131,13 +131,76 @@ impl Tool for FillTool {
             region = dilated;
         }
 
-        // Reconstruct a smooth coverage mask from the filled pixel mask. Supersampling
-        // only affects edge pixels and the setting controls the sample quality.
+        // Reconstruct a smooth coverage mask from the filled pixel mask. Most of the
+        // cost is due to supersampling across the full canvas, so we only do that for the
+        // boundary pixels actually touched by the fill.
         let samples = self.antialiasing.clamp(1, 16) as usize;
         let original = image.data.clone();
-        for cy in 0..height {
-            for cx in 0..width {
+        let mut min_x = width;
+        let mut min_y = height;
+        let mut max_x = 0usize;
+        let mut max_y = 0usize;
+        for (index, filled) in region.iter().enumerate() {
+            if !*filled {
+                continue;
+            }
+            let x = index % width;
+            let y = index / width;
+            min_x = min_x.min(x);
+            min_y = min_y.min(y);
+            max_x = max_x.max(x);
+            max_y = max_y.max(y);
+        }
+        if min_x == width {
+            return;
+        }
+
+        let blend = |image: &mut Image, i: usize, coverage: f32, color: [u8; 4], changes: &mut Vec<PixelChange>| {
+            if coverage <= 0.0 {
+                return;
+            }
+            let src_a = color[3] as f32 / 255.0 * (self.opacity as f32 / 100.0) * coverage;
+            let dst_a = original[i + 3] as f32 / 255.0;
+            let out_a = src_a + dst_a * (1.0 - src_a);
+            if out_a <= 0.0 {
+                return;
+            }
+            let mut blended = color;
+            for channel in 0..3 {
+                blended[channel] = ((color[channel] as f32 * src_a
+                    + original[i + channel] as f32 * dst_a * (1.0 - src_a))
+                    / out_a)
+                    .round() as u8;
+            }
+            blended[3] = (out_a * 255.0).round() as u8;
+            image.set_pixel(i, blended, changes);
+        };
+
+        for cy in min_y..=max_y {
+            for cx in min_x..=max_x {
                 let vi = cy * width + cx;
+                let i = vi * 4;
+                if region[vi] {
+                    blend(image, i, 1.0, color, changes);
+                    continue;
+                }
+
+                let mut has_neighbor = false;
+                for ny in cy.saturating_sub(1)..=(cy + 1).min(height - 1) {
+                    for nx in cx.saturating_sub(1)..=(cx + 1).min(width - 1) {
+                        if region[ny * width + nx] {
+                            has_neighbor = true;
+                            break;
+                        }
+                    }
+                    if has_neighbor {
+                        break;
+                    }
+                }
+                if !has_neighbor {
+                    continue;
+                }
+
                 let mut coverage = 0.0f32;
                 for sy in 0..samples {
                     for sx in 0..samples {
@@ -161,25 +224,8 @@ impl Tool for FillTool {
                         coverage += top * (1.0 - ty) + bottom * ty;
                     }
                 }
-                if coverage == 0.0 {
-                    continue;
-                }
-                let i = vi * 4;
                 coverage /= (samples * samples) as f32;
-                let src_a = color[3] as f32 / 255.0 * self.opacity as f32 / 100.0 * coverage;
-                let dst_a = original[i + 3] as f32 / 255.0;
-                let out_a = src_a + dst_a * (1.0 - src_a);
-                if out_a > 0.0 {
-                    let mut blended = color;
-                    for channel in 0..3 {
-                        blended[channel] = ((color[channel] as f32 * src_a
-                            + original[i + channel] as f32 * dst_a * (1.0 - src_a))
-                            / out_a)
-                            .round() as u8;
-                    }
-                    blended[3] = (out_a * 255.0).round() as u8;
-                    image.set_pixel(i, blended, changes);
-                }
+                blend(image, i, coverage, color, changes);
             }
         }
     }
