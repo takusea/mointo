@@ -7,7 +7,7 @@ type Props = React.ComponentProps<typeof ToggleGroupPrimitive.Item> & {
 const ToggleGroupItem = ({ id, label, ...props }: Props) => (
 	<ToggleGroupPrimitive.Item
 		{...props}
-		className="flex flex-1 cursor-pointer items-center justify-center rounded px-2 font-medium hover:not-disabled:bg-clear-hover active:not-disabled:bg-clear-hover data-[state=on]:bg-primary data-[state=on]:text-foreground-primary data-[state=on]:hover:not-disabled:bg-primary-hover data-[state=on]:active:not-disabled:bg-primary-hover"
+		className="flex flex-1 cursor-pointer items-center justify-center rounded px-2 font-medium hover:not-disabled:bg-clear-hover active:not-disabled:bg-clear-hover data-[state=on]:bg-primary data-[state=on]:text-foreground-incolor data-[state=on]:hover:not-disabled:bg-primary-hover data-[state=on]:active:not-disabled:bg-primary-hover"
 	>
 		{label}
 	</ToggleGroupPrimitive.Item>

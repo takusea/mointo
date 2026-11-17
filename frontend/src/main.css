@@ -25,7 +25,7 @@
 		var(--color-foreground) 50%,
 		transparent 50%
 	);
-	--color-foreground-primary: light-dark(
+	--color-foreground-incolor: light-dark(
 		var(--color-zinc-50),
 		var(--color-zinc-950)
 	);
@@ -45,6 +45,10 @@
 		transparent 60%
 	);
 	--color-warning: light-dark(var(--color-red-600), var(--color-red-400));
+	--color-warning-hover: light-dark(
+		oklch(from var(--color-warning) calc(l * 0.9) c h),
+		oklch(from var(--color-warning) calc(l * 1.1) c h)
+	);
 	--color-clip: var(--color-primary);
 }
 

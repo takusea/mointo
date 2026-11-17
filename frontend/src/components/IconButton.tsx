@@ -29,7 +29,7 @@ const IconButton = ({
 				type="button"
 				data-variant={variant}
 				data-size={size}
-				className="flex cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50 data-[size=large]:p-2 data-[size=medium]:p-1 data-[size=small]:p-1 data-[variant=default]:hover:not-disabled:bg-clear-hover data-[variant=default]:active:not-disabled:bg-clear-hover data-[variant=primary]:bg-primary data-[variant=primary]:text-foreground-primary data-[variant=primary]:hover:not-disabled:bg-primary-hover data-[variant=primary]:active:not-disabled:bg-primary-hover"
+				className="flex cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50 data-[size=large]:p-2 data-[size=medium]:p-1 data-[size=small]:p-1 data-[variant=default]:hover:not-disabled:bg-clear-hover data-[variant=default]:active:not-disabled:bg-clear-hover data-[variant=primary]:bg-primary data-[variant=primary]:text-foreground-incolor data-[variant=primary]:hover:not-disabled:bg-primary-hover data-[variant=primary]:active:not-disabled:bg-primary-hover data-[variant=warning]:bg-warning data-[variant=warning]:text-foreground-incolor data-[variant=warning]:hover:not-disabled:bg-warning-hover data-[variant=warning]:active:not-disabled:bg-warning-hover"
 				aria-label={label}
 			>
 				<Icon size={size === "small" ? 16 : 24} />

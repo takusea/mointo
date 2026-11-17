@@ -12,7 +12,7 @@ const Switch = ({ label, ...props }: Props) => (
 		<span className="flex cursor-pointer items-center">{label}</span>
 		<div className="relative flex h-6 w-10 cursor-pointer items-center rounded-full border border-border bg-surface px-1 group-data-[state=checked]:bg-primary">
 			<SwitchPrimitive.Thumb asChild>
-				<div className="-m-px block size-4 translate-x-0 rounded-full bg-white shadow-md ring-1 ring-border transition-transform data-[state=checked]:translate-x-full data-[state=checked]:bg-foreground-primary" />
+				<div className="-m-px block size-4 translate-x-0 rounded-full bg-white shadow-md ring-1 ring-border transition-transform data-[state=checked]:translate-x-full data-[state=checked]:bg-foreground-incolor" />
 			</SwitchPrimitive.Thumb>
 		</div>
 	</SwitchPrimitive.Root>
