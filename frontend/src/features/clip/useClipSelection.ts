@@ -160,13 +160,10 @@ export const useClipSelection = ({
 
 	const selectClips = (ids: string[]) => {
 		preserveSelectionOnPlayheadChange.current = true;
-		const selectedIds = ids.filter((id) =>
-			clips.some((clip) => clip.id === id),
-		);
-		preserveEmptySelection.current = selectedIds.length === 0;
-		const primaryId = selectedIds.at(-1);
+		preserveEmptySelection.current = ids.length === 0;
+		const primaryId = ids.at(-1);
 		selectionAnchorId.current = primaryId;
-		setSelectedClipIds(selectedIds);
+		setSelectedClipIds(ids);
 		setSelectedClipId(primaryId);
 		selectionContext.current = {
 			layerId: currentLayerId,
