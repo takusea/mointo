@@ -10,6 +10,7 @@ import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
 import { useTool } from "~/features/tool/useTool";
 import { CanvasOverlay } from "./CanvasOverlay";
+import { getCanvasViewportSize } from "./getCanvasViewportSize";
 import { useCanvasNavigation } from "./useCanvasNavigation";
 import { useCanvasPointer } from "./useCanvasPointer";
 import { useCanvasRender } from "./useCanvasRender";
@@ -85,10 +86,31 @@ const DrawCanvas = () => {
 			return;
 		}
 
+		let previousViewportSize = getCanvasViewportSize(viewport);
 		canvasView.setPosition({
-			x: (viewport.clientWidth - canvasWidth) / 2,
-			y: (viewport.clientHeight - canvasHeight) / 2,
+			x: (previousViewportSize.width - canvasWidth) / 2,
+			y: (previousViewportSize.height - canvasHeight) / 2,
 		});
+
+		const observer = new ResizeObserver(() => {
+			const nextViewportSize = getCanvasViewportSize(viewport);
+			const offsetX = (nextViewportSize.width - previousViewportSize.width) / 2;
+			const offsetY =
+				(nextViewportSize.height - previousViewportSize.height) / 2;
+			previousViewportSize = nextViewportSize;
+			if (offsetX === 0 && offsetY === 0) return;
+			canvasView.setPosition((position) => ({
+				x: position.x + offsetX,
+				y: position.y + offsetY,
+			}));
+		});
+		observer.observe(viewport);
+		const toolbar = document.querySelector<HTMLElement>(
+			"[data-canvas-toolbar]",
+		);
+		if (toolbar != null) observer.observe(toolbar);
+
+		return () => observer.disconnect();
 	}, [canvasWidth, canvasHeight, canvasView.setPosition]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: The WASM renderer reads layer state from shared core state.

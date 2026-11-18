@@ -169,6 +169,7 @@ const Toolbar = () => {
 			ref={toolbar}
 			role="toolbar"
 			aria-label={t("editor.toolbar")}
+			data-canvas-toolbar
 			className="flex gap-2"
 			onFocusCapture={handleToolbarFocus}
 			onKeyDown={handleToolbarKeyDown}

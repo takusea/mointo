@@ -18,6 +18,7 @@ import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
 import { useShortcut } from "~/features/shortcuts/useShortcut";
 import { useShortcutSettings } from "~/features/shortcuts/useShortcuts";
+import { getCanvasViewportSize } from "../canvas/getCanvasViewportSize";
 import { useCanvasView } from "../canvas/useCanvasView";
 
 const GlobalMenubar = () => {
@@ -51,15 +52,16 @@ const GlobalMenubar = () => {
 			return;
 		}
 		const canvas = document.querySelector<HTMLCanvasElement>("#draw-canvas");
-		const viewport = canvas?.parentElement?.getBoundingClientRect();
+		const viewport = canvas?.parentElement;
 		if (canvas == null || viewport == null) {
 			throw new Error("Cannot fit the view before the canvas is available.");
 		}
+		const viewportSize = getCanvasViewportSize(viewport);
 		canvasView.fitToView(
 			canvas.width,
 			canvas.height,
-			viewport.width,
-			viewport.height,
+			viewportSize.width,
+			viewportSize.height,
 		);
 	};
 	const toggleHorizontalFlip = () =>
