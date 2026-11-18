@@ -129,6 +129,7 @@
 	"dialog.projectExport.apng": "Animated PNG (APNG)",
 	"dialog.projectExport.format": "File Format",
 	"dialog.projectExport.gif": "Animated GIF",
+	"dialog.projectExport.mp4": "MP4 Video",
 	"dialog.projectExport.pngSequence": "PNG Sequence (ZIP)",
 	"dialog.projectExport.title": "Export Project",
 	"dialog.shortcut.change": "Change shortcut",

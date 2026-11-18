@@ -1,11 +1,25 @@
 import type { MessageKey } from "~/features/i18n/I18nContext";
 import type { CompositionSettings } from "~/features/project/type";
 
-export type ProjectExportFormat = "gif" | "apng" | "png-sequence";
+export type ProjectExportFormat = "gif" | "apng" | "png-sequence" | "mp4";
 
 export type ProjectFrame = {
 	index: number;
 	pixels: Uint8ClampedArray;
+};
+
+export type ProjectExportAudioTrack = {
+	id: string;
+	start: number;
+	duration: number;
+	hidden: boolean;
+	layerVisible: boolean;
+	audioStartFrame: number;
+};
+
+export type ProjectExportContext = {
+	audioTracks: ProjectExportAudioTrack[];
+	getAudioClipData: (id: string) => Promise<Uint8Array | undefined>;
 };
 
 export type ProjectExporter = {
@@ -15,6 +29,7 @@ export type ProjectExporter = {
 	encode: (
 		settings: CompositionSettings,
 		frames: AsyncIterable<ProjectFrame>,
+		context?: ProjectExportContext,
 	) => Promise<Blob>;
 };
 
@@ -59,8 +74,10 @@ export const exportProject = (
 	renderFrame: RenderProjectFrame,
 	exporter: ProjectExporter,
 	onProgress: (completed: number, total: number) => void,
+	context?: ProjectExportContext,
 ) =>
 	exporter.encode(
 		settings,
 		renderProjectFrames(settings, renderFrame, onProgress),
+		context,
 	);

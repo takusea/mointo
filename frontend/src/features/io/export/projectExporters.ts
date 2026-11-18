@@ -215,6 +215,189 @@ const encodePngSequence: ProjectExporter["encode"] = async (
 	return new Blob([zipSync(files)], { type: "application/zip" });
 };
 
+const encodeMp4: ProjectExporter["encode"] = async (
+	settings,
+	frames,
+	exportContext,
+) => {
+	if (
+		typeof MediaRecorder === "undefined" ||
+		typeof HTMLCanvasElement.prototype.captureStream !== "function"
+	) {
+		throw new Error("MP4 export is not supported by this browser.");
+	}
+
+	const mimeType = [
+		"video/mp4;codecs=avc1,mp4a.40.2",
+		"video/mp4;codecs=avc1",
+		"video/mp4",
+	].find((type) => MediaRecorder.isTypeSupported(type));
+	if (mimeType == null) {
+		throw new Error("This browser does not support MP4 recording.");
+	}
+
+	const canvas = document.createElement("canvas");
+	canvas.width = settings.width;
+	canvas.height = settings.height;
+	const canvasContext = canvas.getContext("2d");
+	if (canvasContext == null) {
+		throw new Error("Could not create an MP4 output canvas.");
+	}
+
+	const canvasStream = canvas.captureStream(settings.frameRate);
+	let audioContext: AudioContext | undefined;
+	let audioDestination: MediaStreamAudioDestinationNode | undefined;
+	const mixedTracks = [...canvasStream.getVideoTracks()];
+	const pendingAudioSources: Array<{
+		source: AudioBufferSourceNode;
+		destinationStart: number;
+		sourceOffset: number;
+		duration: number;
+	}> = [];
+
+	if (exportContext != null && exportContext.audioTracks.length > 0) {
+		const AudioContextConstructor =
+			window.AudioContext ??
+			(
+				window as typeof window & {
+					webkitAudioContext?: typeof AudioContext;
+				}
+			).webkitAudioContext;
+		if (AudioContextConstructor == null) {
+			throw new Error("MP4 audio export is not supported by this browser.");
+		}
+		audioContext = new AudioContextConstructor();
+		await audioContext.resume();
+		audioDestination = audioContext.createMediaStreamDestination();
+
+		for (const track of exportContext.audioTracks) {
+			if (track.hidden || !track.layerVisible) continue;
+			const clipEnd = track.start + track.duration;
+			if (
+				clipEnd <= settings.startFrame ||
+				track.start >= settings.endFrame + 1
+			)
+				continue;
+
+			const data = await exportContext.getAudioClipData(track.id);
+			if (data == null) {
+				throw new Error(`Audio data is missing for clip ${track.id}.`);
+			}
+			const dataBuffer = new ArrayBuffer(data.byteLength);
+			new Uint8Array(dataBuffer).set(data);
+			const audioBuffer = await audioContext.decodeAudioData(dataBuffer);
+
+			const timelineStartFrame = Math.max(track.start, settings.startFrame);
+			const timelineEndFrame = Math.min(clipEnd, settings.endFrame + 1);
+			const destinationStart =
+				(timelineStartFrame - settings.startFrame) / settings.frameRate;
+			const duration =
+				(timelineEndFrame - timelineStartFrame) / settings.frameRate;
+			const sourceOffset =
+				(track.audioStartFrame + timelineStartFrame - track.start) /
+				settings.frameRate;
+
+			if (duration <= 0 || sourceOffset >= audioBuffer.duration) continue;
+			const source = audioContext.createBufferSource();
+			source.buffer = audioBuffer;
+			source.connect(audioDestination);
+			pendingAudioSources.push({
+				source,
+				destinationStart,
+				sourceOffset,
+				duration: Math.min(duration, audioBuffer.duration - sourceOffset),
+			});
+		}
+		mixedTracks.push(...audioDestination.stream.getAudioTracks());
+	}
+
+	const stream = new MediaStream(mixedTracks);
+	const chunks: BlobPart[] = [];
+	const recorder = new MediaRecorder(stream, {
+		mimeType,
+		videoBitsPerSecond: Math.max(
+			1_000_000,
+			settings.width * settings.height * 4,
+		),
+	});
+	const stopped = new Promise<void>((resolve, reject) => {
+		recorder.addEventListener("dataavailable", (event) => {
+			if (event.data.size > 0) {
+				chunks.push(event.data);
+			}
+		});
+		recorder.addEventListener("stop", () => resolve(), { once: true });
+		recorder.addEventListener(
+			"error",
+			() => {
+				reject(new Error("MP4 recording failed."));
+			},
+			{ once: true },
+		);
+	});
+
+	recorder.start();
+	const frameDuration = 1000 / settings.frameRate;
+	const track = stream.getVideoTracks()[0] as MediaStreamTrack & {
+		requestFrame?: () => void;
+	};
+	const audioStartDelay = 50;
+	const audioTimelineStart =
+		audioContext == null
+			? 0
+			: audioContext.currentTime + audioStartDelay / 1000;
+	for (const pending of pendingAudioSources) {
+		pending.source.start(
+			audioTimelineStart + pending.destinationStart,
+			pending.sourceOffset,
+			pending.duration,
+		);
+	}
+	const recordingStart = performance.now();
+	const visualTimelineStart = recordingStart + audioStartDelay;
+	try {
+		for await (const { index, pixels } of frames) {
+			const relativeFrame = index - settings.startFrame;
+			const deadline = visualTimelineStart + relativeFrame * frameDuration;
+			const waitForFrame = deadline - performance.now();
+			if (waitForFrame > 0) {
+				await new Promise((resolve) =>
+					window.setTimeout(resolve, waitForFrame),
+				);
+			}
+			const rgba = new Uint8ClampedArray(pixels.length);
+			rgba.set(pixels);
+			canvasContext.putImageData(
+				new ImageData(rgba, settings.width, settings.height),
+				0,
+				0,
+			);
+			track.requestFrame?.();
+		}
+		const recordingEnd =
+			visualTimelineStart +
+			(settings.endFrame - settings.startFrame + 1) * frameDuration;
+		const remaining = recordingEnd - performance.now();
+		if (remaining > 0) {
+			await new Promise((resolve) => window.setTimeout(resolve, remaining));
+		}
+		recorder.stop();
+		await stopped;
+	} finally {
+		if (recorder.state !== "inactive") {
+			recorder.stop();
+		}
+		stream.getTracks().forEach((track) => {
+			track.stop();
+		});
+		if (audioContext != null) {
+			void audioContext.close();
+		}
+	}
+
+	return new Blob(chunks, { type: mimeType.split(";")[0] });
+};
+
 export const projectExporters = [
 	{
 		format: "gif",
@@ -233,6 +416,12 @@ export const projectExporters = [
 		extension: "zip",
 		labelKey: "dialog.projectExport.pngSequence",
 		encode: encodePngSequence,
+	},
+	{
+		format: "mp4",
+		extension: "mp4",
+		labelKey: "dialog.projectExport.mp4",
+		encode: encodeMp4,
 	},
 ] satisfies ProjectExporter[];
 

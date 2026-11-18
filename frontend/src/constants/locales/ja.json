@@ -129,6 +129,7 @@
 	"dialog.projectExport.apng": "アニメーションPNG (APNG)",
 	"dialog.projectExport.format": "ファイル形式",
 	"dialog.projectExport.gif": "アニメーションGIF",
+	"dialog.projectExport.mp4": "MP4動画",
 	"dialog.projectExport.pngSequence": "PNG連番 (ZIP)",
 	"dialog.projectExport.title": "プロジェクトをエクスポート",
 	"dialog.shortcut.change": "ショートカットを変更",
