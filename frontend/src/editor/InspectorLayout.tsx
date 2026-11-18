@@ -1,6 +1,6 @@
 import { IconAdjustmentsHorizontal, IconTools } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
-import { type RefObject, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { useMediaQuery, useOnClickOutside, useToggle } from "usehooks-ts";
 import Card from "~/components/Card";
 import IconButton from "~/components/IconButton";
@@ -132,8 +132,13 @@ const InspectorLayout = () => {
 	const showClipInspector = Boolean(
 		selectedClip && clipContext.transform && (isDesktop || isClipInspectorOpen),
 	);
+	const [hasClipInspectorTrack, setHasClipInspectorTrack] =
+		useState(showClipInspector);
+	useEffect(() => {
+		if (showClipInspector) setHasClipInspectorTrack(true);
+	}, [showClipInspector]);
 	const gridTemplateColumns = isDesktop
-		? `${showToolInspector ? `${toolInspectorWidth}px 8px ` : ""}minmax(0, 1fr) ${showClipInspector ? `8px ${clipInspectorWidth}px` : ""}`
+		? `${showToolInspector ? `${toolInspectorWidth}px 8px ` : ""}minmax(0, 1fr) ${hasClipInspectorTrack ? `8px ${clipInspectorWidth}px` : ""}`
 		: "minmax(0, 1fr)";
 	const toolInspectorRef = useRef<HTMLDivElement>(null);
 	const clipInspectorRef = useRef<HTMLDivElement>(null);
@@ -274,7 +279,9 @@ const InspectorLayout = () => {
 					/>
 				</div>
 			)}
-			<AnimatePresence>
+			<AnimatePresence
+				onExitComplete={() => setHasClipInspectorTrack(showClipInspector)}
+			>
 				{showClipInspector && selectedClip && clipContext.transform && (
 					<motion.div
 						data-full-width={!isDesktop}
