@@ -18,7 +18,10 @@ export const useProject = () => {
 	const { compositionSettings, projectTitle, revision } = useCoreSnapshot();
 	const { t } = useI18n();
 	const ioProgress = useIoProgress();
-	const saveHandle = useRef<Extract<Awaited<ReturnType<typeof chooseSaveDestination>>, { type: "file" }> | null>(null);
+	const saveHandle = useRef<Extract<
+		Awaited<ReturnType<typeof chooseSaveDestination>>,
+		{ type: "file" }
+	> | null>(null);
 	const hasUnsavedChanges = revision !== projectContext.savedRevision;
 
 	const confirmDiscard = useCallback(() => {
