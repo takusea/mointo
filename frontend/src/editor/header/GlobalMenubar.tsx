@@ -148,6 +148,7 @@ const GlobalMenubar = () => {
 	});
 	useShortcut(shortcuts.openProject, () => project.open());
 	useShortcut(shortcuts.saveProject, () => project.save());
+	useShortcut(shortcuts.saveWith, () => project.saveWith());
 	useShortcut(shortcuts.closeProject, () => void project.close());
 	useShortcut(shortcuts.projectSettings, (event) => {
 		event.preventDefault();
@@ -189,11 +190,14 @@ const GlobalMenubar = () => {
 				<MenubarItem
 					label={t("action.file.save")}
 					shortcut={formatShortcut(shortcuts.saveProject)}
+					disabled={project.settings == null}
 					onSelect={() => project.save()}
 				/>
 				<MenubarItem
 					label={t("action.file.saveWith")}
 					shortcut={formatShortcut(shortcuts.saveWith)}
+					disabled={project.settings == null}
+					onSelect={() => project.saveWith()}
 				/>
 				<MenubarSeparator />
 				<MenubarSub label={t("action.file.import")}>

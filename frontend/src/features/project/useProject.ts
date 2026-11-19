@@ -1,4 +1,4 @@
-import { use, useCallback, useEffect } from "react";
+import { use, useCallback, useEffect, useRef } from "react";
 import { useDocumentTitle } from "usehooks-ts";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
@@ -18,6 +18,7 @@ export const useProject = () => {
 	const { compositionSettings, projectTitle, revision } = useCoreSnapshot();
 	const { t } = useI18n();
 	const ioProgress = useIoProgress();
+	const saveHandle = useRef<Extract<Awaited<ReturnType<typeof chooseSaveDestination>>, { type: "file" }> | null>(null);
 	const hasUnsavedChanges = revision !== projectContext.savedRevision;
 
 	const confirmDiscard = useCallback(() => {
@@ -80,16 +81,10 @@ export const useProject = () => {
 		input.remove();
 	};
 
-	const save = async () => {
-		const title =
-			projectTitle?.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
-		const destination = await chooseSaveDestination(
-			`${title}.moiproj`,
-			["application/vnt.moiproj"],
-			"Mointo Project",
-		);
+	const saveToDestination = async (
+		destination: Awaited<ReturnType<typeof chooseSaveDestination>>,
+	) => {
 		if (destination.type === "cancelled") return;
-
 		const signal = ioProgress.start("io.saveProject");
 		if (signal == null) return;
 		try {
@@ -110,6 +105,30 @@ export const useProject = () => {
 		}
 	};
 
+	const getSuggestedName = () => {
+		const title =
+			projectTitle?.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
+		return `${title}.moiproj`;
+	};
+
+	const save = async () => {
+		const destination = saveHandle.current ?? {
+			type: "download" as const,
+			suggestedName: getSuggestedName(),
+		};
+		await saveToDestination(destination);
+	};
+
+	const saveWith = async () => {
+		const destination = await chooseSaveDestination(
+			getSuggestedName(),
+			["application/vnt.moiproj"],
+			"Mointo Project",
+		);
+		if (destination.type === "file") saveHandle.current = destination;
+		await saveToDestination(destination);
+	};
+
 	const close = async () => {
 		if (compositionSettings == null || !confirmDiscard()) return;
 		await core.closeProject();
@@ -125,6 +144,7 @@ export const useProject = () => {
 		open,
 		importFile,
 		save,
+		saveWith,
 		close,
 		hasUnsavedChanges,
 		confirmDiscard,
