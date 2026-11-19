@@ -340,6 +340,7 @@ const Timeline = () => {
 				</div>
 				<motion.div layout className="overflow-hidden border-b border-border">
 					<TrackHeader
+						disabled={projectContext.settings === undefined}
 						frameWidth={frameWidth}
 						totalFrames={playbackContext.maxFrameCount}
 						scrollX={scrollPosition.x}
