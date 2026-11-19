@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useI18n } from "~/features/i18n/useI18n";
+import { chooseSaveDestination, writeSavedBlob } from "~/features/io/saveBlob";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
 import { exportProject, type ProjectExportFormat } from "./projectExport";
@@ -22,6 +23,18 @@ export const useProjectExport = () => {
 		if (settings == null || progress != null) return;
 
 		const exporter = getProjectExporter(format);
+		const title =
+			project.title
+				?.replace(/[<>:"/\\|?*]/g, "_")
+				.replace(/\p{Cc}/gu, "_")
+				.trim() || "project";
+		const destination = await chooseSaveDestination(
+			`${title}.${exporter.extension}`,
+			[exporter.mimeType],
+			"Export",
+		);
+		if (destination.type === "cancelled") return;
+
 		setProgress({
 			completed: 0,
 			total: settings.endFrame - settings.startFrame + 1,
@@ -48,18 +61,7 @@ export const useProjectExport = () => {
 					getAudioClipData: (id) => core.getAudioClipData(id),
 				},
 			);
-			const url = URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			const title =
-				project.title
-					?.replace(/[<>:"/\\|?*]/g, "_")
-					.replace(/\p{Cc}/gu, "_")
-					.trim() || "project";
-			link.href = url;
-			link.download = `${title}.${exporter.extension}`;
-			link.click();
-			link.remove();
-			window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+			await writeSavedBlob(destination, blob);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			window.alert(t("header.exportFailed", { error: message }));

@@ -3,6 +3,10 @@ import { useDocumentTitle } from "usehooks-ts";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useI18n } from "~/features/i18n/useI18n";
+import {
+	chooseSaveDestination,
+	writeSavedBlob,
+} from "~/features/io/saveBlob";
 import { ProjectContext } from "./ProjectProvider";
 import type { CompositionSettings } from "./type";
 
@@ -64,18 +68,20 @@ export const useProject = () => {
 	};
 
 	const save = async () => {
+		const title =
+			projectTitle?.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
+		const destination = await chooseSaveDestination(
+			`${title}.moiproj`,
+			["application/vnt.moiproj"],
+			"Mointo Project",
+		);
+		if (destination.type === "cancelled") return;
+
 		const data = await core.exportProject();
 		const blob = new Blob([data.buffer as ArrayBuffer], {
 			type: "application/vnt.moiproj",
 		});
-		const link = document.createElement("a");
-		link.href = URL.createObjectURL(blob);
-		const title =
-			projectTitle?.trim().replace(/[\\/:*?"<>|]/g, "_") || "project";
-		link.download = `${title}.moiproj`;
-		link.click();
-		link.remove();
-		window.setTimeout(() => URL.revokeObjectURL(link.href), 0);
+		await writeSavedBlob(destination, blob);
 		projectContext.setSavedRevision(core.getSnapshot().revision);
 	};
 

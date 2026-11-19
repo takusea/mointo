@@ -25,6 +25,7 @@ export type ProjectExportContext = {
 export type ProjectExporter = {
 	format: ProjectExportFormat;
 	extension: string;
+	mimeType: string;
 	labelKey: MessageKey;
 	encode: (
 		settings: CompositionSettings,

@@ -402,24 +402,28 @@ export const projectExporters = [
 	{
 		format: "gif",
 		extension: "gif",
+		mimeType: "image/gif",
 		labelKey: "dialog.projectExport.gif",
 		encode: encodeGif,
 	},
 	{
 		format: "apng",
 		extension: "apng",
+		mimeType: "image/apng",
 		labelKey: "dialog.projectExport.apng",
 		encode: encodeApng,
 	},
 	{
 		format: "png-sequence",
 		extension: "zip",
+		mimeType: "application/zip",
 		labelKey: "dialog.projectExport.pngSequence",
 		encode: encodePngSequence,
 	},
 	{
 		format: "mp4",
 		extension: "mp4",
+		mimeType: "video/mp4",
 		labelKey: "dialog.projectExport.mp4",
 		encode: encodeMp4,
 	},
