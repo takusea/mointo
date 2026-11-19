@@ -145,8 +145,15 @@ export class CoreService {
 
 	getSnapshot = (): CoreSnapshot => this.snapshot;
 
-	private enqueue<T>(operation: WasmOperation<T>, notify = false): Promise<T> {
+	private enqueue<T>(
+		operation: WasmOperation<T>,
+		notify = false,
+		signal?: AbortSignal,
+	): Promise<T> {
 		const result = this.operationQueue.then(async () => {
+			if (signal?.aborted) {
+				throw new DOMException("The operation was cancelled.", "AbortError");
+			}
 			const value = await operation(this.core);
 			this.core.sync_clip_assets();
 			if (notify) this.notify();
@@ -214,8 +221,8 @@ export class CoreService {
 		return this.enqueue((core) => core.close_project(), true);
 	}
 
-	importProject(data: Uint8Array) {
-		return this.enqueue((core) => core.import_project(data), true);
+	importProject(data: Uint8Array, signal?: AbortSignal) {
+		return this.enqueue((core) => core.import_project(data), true, signal);
 	}
 
 	getCompositionSettings() {
@@ -238,8 +245,8 @@ export class CoreService {
 		});
 	}
 
-	exportProject() {
-		return this.enqueue((core) => core.export_project());
+	exportProject(signal?: AbortSignal) {
+		return this.enqueue((core) => core.export_project(), false, signal);
 	}
 
 	getClips() {

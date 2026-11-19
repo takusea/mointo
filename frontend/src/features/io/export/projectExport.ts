@@ -1,4 +1,5 @@
 import type { MessageKey } from "~/features/i18n/I18nContext";
+import { throwIfIoCancelled } from "~/features/io/cancellation";
 import type { CompositionSettings } from "~/features/project/type";
 
 export type ProjectExportFormat = "gif" | "apng" | "png-sequence" | "mp4";
@@ -42,6 +43,7 @@ export async function* renderProjectFrames(
 	settings: CompositionSettings,
 	renderFrame: RenderProjectFrame,
 	onProgress: (completed: number, total: number) => void,
+	signal?: AbortSignal,
 ): AsyncGenerator<ProjectFrame> {
 	const { width, height, startFrame, endFrame, frameRate } = settings;
 	if (
@@ -58,7 +60,9 @@ export async function* renderProjectFrames(
 
 	const total = endFrame - startFrame + 1;
 	for (let index = startFrame; index <= endFrame; index += 1) {
+		if (signal) throwIfIoCancelled(signal);
 		const pixels = await renderFrame(index);
+		if (signal) throwIfIoCancelled(signal);
 		if (pixels == null) {
 			throw new Error(`Could not render frame ${index}.`);
 		}
@@ -76,9 +80,10 @@ export const exportProject = (
 	exporter: ProjectExporter,
 	onProgress: (completed: number, total: number) => void,
 	context?: ProjectExportContext,
+	signal?: AbortSignal,
 ) =>
 	exporter.encode(
 		settings,
-		renderProjectFrames(settings, renderFrame, onProgress),
+		renderProjectFrames(settings, renderFrame, onProgress, signal),
 		context,
 	);

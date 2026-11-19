@@ -1,8 +1,9 @@
-import { useState } from "react";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useI18n } from "~/features/i18n/useI18n";
+import { throwIfIoCancelled } from "~/features/io/cancellation";
 import { chooseSaveDestination, writeSavedBlob } from "~/features/io/saveBlob";
+import { useIoProgress } from "~/features/io/useIoProgress";
 import { usePlayback } from "~/features/playback/usePlayback";
 import { useProject } from "~/features/project/useProject";
 import { exportProject, type ProjectExportFormat } from "./projectExport";
@@ -14,13 +15,15 @@ export const useProjectExport = () => {
 	const { clips, layers } = useCoreSnapshot();
 	const project = useProject();
 	const playback = usePlayback();
-	const [progress, setProgress] = useState<
-		{ completed: number; total: number } | undefined
-	>();
+	const ioProgress = useIoProgress();
+	const progress =
+		ioProgress.labelKey === "io.exportProject"
+			? ioProgress.progress
+			: undefined;
 
 	const exportAs = async (format: ProjectExportFormat) => {
 		const settings = project.settings;
-		if (settings == null || progress != null) return;
+		if (settings == null || ioProgress.labelKey != null) return;
 
 		const exporter = getProjectExporter(format);
 		const title =
@@ -35,7 +38,9 @@ export const useProjectExport = () => {
 		);
 		if (destination.type === "cancelled") return;
 
-		setProgress({
+		const signal = ioProgress.start("io.exportProject");
+		if (signal == null) return;
+		ioProgress.setProgress({
 			completed: 0,
 			total: settings.endFrame - settings.startFrame + 1,
 		});
@@ -44,7 +49,7 @@ export const useProjectExport = () => {
 				settings,
 				playback.renderFrame,
 				exporter,
-				(completed, total) => setProgress({ completed, total }),
+				(completed, total) => ioProgress.setProgress({ completed, total }),
 				{
 					audioTracks: clips
 						.filter((clip) => clip.clip_type === "audio")
@@ -60,13 +65,17 @@ export const useProjectExport = () => {
 						})),
 					getAudioClipData: (id) => core.getAudioClipData(id),
 				},
+				signal,
 			);
+			throwIfIoCancelled(signal);
+			ioProgress.setCancelable(false);
 			await writeSavedBlob(destination, blob);
 		} catch (error) {
+			if (signal.aborted) return;
 			const message = error instanceof Error ? error.message : String(error);
 			window.alert(t("header.exportFailed", { error: message }));
 		} finally {
-			setProgress(undefined);
+			ioProgress.finish();
 		}
 	};
 

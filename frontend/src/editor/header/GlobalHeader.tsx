@@ -72,11 +72,7 @@ const GlobalHeader = () => {
 						<div className="col-start-3 flex min-w-max justify-end">
 							<div className="contents [-webkit-app-region:no-drag]">
 								<ExportButton
-									label={
-										exportProgress
-											? t("header.exportProgress", exportProgress)
-											: t("header.export")
-									}
+									label={t("header.export")}
 									icon={IconFileExport}
 									variant="primary"
 									disabled={project.settings == null || exportProgress != null}

@@ -3,10 +3,9 @@ import { useDocumentTitle } from "usehooks-ts";
 import { useCore } from "~/core/useCore";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
 import { useI18n } from "~/features/i18n/useI18n";
-import {
-	chooseSaveDestination,
-	writeSavedBlob,
-} from "~/features/io/saveBlob";
+import { throwIfIoCancelled } from "~/features/io/cancellation";
+import { chooseSaveDestination, writeSavedBlob } from "~/features/io/saveBlob";
+import { useIoProgress } from "~/features/io/useIoProgress";
 import { ProjectContext } from "./ProjectProvider";
 import type { CompositionSettings } from "./type";
 
@@ -18,6 +17,7 @@ export const useProject = () => {
 	const core = useCore();
 	const { compositionSettings, projectTitle, revision } = useCoreSnapshot();
 	const { t } = useI18n();
+	const ioProgress = useIoProgress();
 	const hasUnsavedChanges = revision !== projectContext.savedRevision;
 
 	const confirmDiscard = useCallback(() => {
@@ -48,11 +48,24 @@ export const useProject = () => {
 
 	const importFile = async (file: File) => {
 		if (!confirmDiscard()) return;
-		const data = await file.arrayBuffer();
-		await core.importProject(new Uint8Array(data));
-		const projectName = file.name.replace(/\.[^.]+$/, "");
-		await core.setProjectTitle(projectName || file.name);
-		projectContext.setSavedRevision(core.getSnapshot().revision);
+		const signal = ioProgress.start("io.importProject");
+		if (signal == null) return;
+		try {
+			const data = await file.arrayBuffer();
+			throwIfIoCancelled(signal);
+			ioProgress.setProgress({ completed: 1, total: 2 });
+			ioProgress.setCancelable(false);
+			await core.importProject(new Uint8Array(data), signal);
+			ioProgress.setProgress({ completed: 2, total: 2 });
+			const projectName = file.name.replace(/\.[^.]+$/, "");
+			await core.setProjectTitle(projectName || file.name);
+			projectContext.setSavedRevision(core.getSnapshot().revision);
+		} catch (error) {
+			if (signal.aborted) return;
+			throw error;
+		} finally {
+			ioProgress.finish();
+		}
 	};
 
 	const open = () => {
@@ -77,12 +90,24 @@ export const useProject = () => {
 		);
 		if (destination.type === "cancelled") return;
 
-		const data = await core.exportProject();
-		const blob = new Blob([data.buffer as ArrayBuffer], {
-			type: "application/vnt.moiproj",
-		});
-		await writeSavedBlob(destination, blob);
-		projectContext.setSavedRevision(core.getSnapshot().revision);
+		const signal = ioProgress.start("io.saveProject");
+		if (signal == null) return;
+		try {
+			const data = await core.exportProject(signal);
+			throwIfIoCancelled(signal);
+			ioProgress.setCancelable(false);
+			const blob = new Blob([data.buffer as ArrayBuffer], {
+				type: "application/vnt.moiproj",
+			});
+			await writeSavedBlob(destination, blob);
+			throwIfIoCancelled(signal);
+			projectContext.setSavedRevision(core.getSnapshot().revision);
+		} catch (error) {
+			if (signal.aborted) return;
+			throw error;
+		} finally {
+			ioProgress.finish();
+		}
 	};
 
 	const close = async () => {

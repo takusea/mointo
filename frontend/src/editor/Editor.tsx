@@ -7,6 +7,7 @@ import { useDialogs } from "~/editor/dialogs/useDialogs";
 import GlobalHeader from "~/editor/header/GlobalHeader";
 import Timeline from "~/editor/timeline/Timeline";
 import { useI18n } from "~/features/i18n/useI18n";
+import IoProgressOverlay from "~/features/io/IoProgressOverlay";
 import { useProject } from "~/features/project/useProject";
 import { useProjectFileLaunch } from "~/features/project/useProjectFileLaunch";
 import DrawCanvas from "./canvas/Canvas";
@@ -33,6 +34,7 @@ const Editor = () => {
 
 	return (
 		<div className="grid h-svh w-svw grid-rows-[48px_minmax(0,1fr)] overflow-hidden pb-[env(safe-area-inset-bottom,0)]">
+			<IoProgressOverlay />
 			{isDraggingFiles && (
 				<motion.div
 					className="pointer-events-none fixed inset-0 z-100 grid place-items-center bg-black/40 p-6"

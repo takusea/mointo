@@ -6,6 +6,7 @@ import { DialogsProvider } from "~/editor/dialogs/DialogsProvider";
 import { AppearanceProvider } from "~/features/appearance/AppearanceProvider";
 import { ClipProvider } from "~/features/clip/ClipProvider";
 import { I18nProvider } from "~/features/i18n/I18nProvider";
+import { IoProgressProvider } from "~/features/io/IoProgressProvider";
 import { LayerProvider } from "~/features/layer/LayerProvider";
 import { PlaybackProvider } from "~/features/playback/PlaybackProvider";
 import { ProjectProvider } from "~/features/project/ProjectProvider";
@@ -28,19 +29,23 @@ function EditorProviders({ children }: Props) {
 					<ShortcutsProvider>
 						<AppearanceProvider>
 							<CoreProvider>
-								<ProjectProvider>
-									<PlaybackProvider>
-										<LayerProvider>
-											<ToolProvider>
-												<ClipProvider>
-													<DialogsProvider>
-														<CanvasViewProvider>{children}</CanvasViewProvider>
-													</DialogsProvider>
-												</ClipProvider>
-											</ToolProvider>
-										</LayerProvider>
-									</PlaybackProvider>
-								</ProjectProvider>
+								<IoProgressProvider>
+									<ProjectProvider>
+										<PlaybackProvider>
+											<LayerProvider>
+												<ToolProvider>
+													<ClipProvider>
+														<DialogsProvider>
+															<CanvasViewProvider>
+																{children}
+															</CanvasViewProvider>
+														</DialogsProvider>
+													</ClipProvider>
+												</ToolProvider>
+											</LayerProvider>
+										</PlaybackProvider>
+									</ProjectProvider>
+								</IoProgressProvider>
 							</CoreProvider>
 						</AppearanceProvider>
 					</ShortcutsProvider>
