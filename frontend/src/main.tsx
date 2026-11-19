@@ -1,8 +1,11 @@
+import { registerSW } from "virtual:pwa-register";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./main.css";
 import Editor from "~/editor/Editor";
 import EditorProviders from "~/editor/EditorProviders";
+
+registerSW({ immediate: true });
 
 const preventDefault = (event: Event) => event.preventDefault();
 const preventWheelDefault = (event: WheelEvent) => {
