@@ -18,6 +18,7 @@ const AboutDialog = (props: Props) => {
 			cancelText={t("common.close")}
 		>
 			<div className="flex flex-col items-center gap-4 text-center">
+				<img src="about.gif" className="rounded-md" alt="" />
 				<div>
 					<div className="text-lg font-bold">mointo</div>
 					<div>
