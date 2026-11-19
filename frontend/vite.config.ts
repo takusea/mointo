@@ -5,7 +5,15 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+const appVersion = process.env.GITHUB_SHA?.slice(0, 7) ?? "dev";
+const buildDate =
+	process.env.APP_BUILD_DATE ?? new Date().toISOString().slice(0, 10);
+
 export default defineConfig({
+	define: {
+		__APP_VERSION__: JSON.stringify(appVersion),
+		__BUILD_DATE__: JSON.stringify(buildDate),
+	},
 	resolve: {
 		tsconfigPaths: true,
 	},

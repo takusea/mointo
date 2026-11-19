@@ -1,3 +1,5 @@
+import { IconBrandGithub } from "@tabler/icons-react";
+import Button from "~/components/Button";
 import Dialog from "~/components/Dialog";
 import { useI18n } from "~/features/i18n/useI18n";
 
@@ -15,18 +17,17 @@ const AboutDialog = (props: Props) => {
 			title={t("dialog.about.title")}
 			cancelText={t("common.close")}
 		>
-			<div className="grid grid-cols-[auto_1fr] gap-2">
-				<img
-					src="favicon.png"
-					width={16}
-					height={16}
-					alt=""
-					className="w-16 [image-rendering:pixelated]"
-				/>
-				<div className="flex flex-col gap-2">
-					<span className="text-lg font-bold">mointo</span>
-					<span>Ver 0.0.1</span>
+			<div className="flex flex-col items-center gap-4 text-center">
+				<div>
+					<div className="text-lg font-bold">mointo</div>
+					<div>
+						{__APP_VERSION__} {__BUILD_DATE__}
+					</div>
 				</div>
+				<a href="https://github.com/takusea/mointo">
+					<Button icon={IconBrandGithub} label="GitHub" />
+				</a>
+				<div>©2026 takusea</div>
 			</div>
 		</Dialog>
 	);

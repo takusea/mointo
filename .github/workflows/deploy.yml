@@ -60,6 +60,9 @@ jobs:
         working-directory: frontend
         run: npm run lint:ci
 
+      - name: Set build date
+        run: echo "APP_BUILD_DATE=$(date -u +'%Y-%m-%d')" >> "$GITHUB_ENV"
+
       - name: Build
         working-directory: frontend
         run: npm run build
