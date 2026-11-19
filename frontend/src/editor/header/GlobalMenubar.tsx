@@ -87,11 +87,7 @@ const GlobalMenubar = () => {
 		void clipContext.addGroupClip(currentFrame, layerContext.selectedLayerId);
 	};
 	const addAudioClip = () => {
-		if (
-			project.settings == null ||
-			layerContext.selectedLayerId == null ||
-			layerContext.isLayerLocked(layerContext.selectedLayerId)
-		) {
+		if (project.settings == null || layerContext.selectedLayerId == null) {
 			return;
 		}
 		void importAudio();
@@ -204,18 +200,14 @@ const GlobalMenubar = () => {
 					<MenubarItem
 						label={t("action.file.importImage")}
 						disabled={
-							project.settings == null ||
-							layerContext.selectedLayerId == null ||
-							layerContext.isLayerLocked(layerContext.selectedLayerId)
+							project.settings == null || layerContext.selectedLayerId == null
 						}
 						onSelect={() => importImage()}
 					/>
 					<MenubarItem
 						label={t("action.file.importAudio")}
 						disabled={
-							project.settings == null ||
-							layerContext.selectedLayerId == null ||
-							layerContext.isLayerLocked(layerContext.selectedLayerId)
+							project.settings == null || layerContext.selectedLayerId == null
 						}
 						onSelect={() => importAudio()}
 					/>
@@ -234,6 +226,7 @@ const GlobalMenubar = () => {
 				<MenubarItem
 					label={t("action.file.projectSettings")}
 					shortcut={formatShortcut(shortcuts.projectSettings)}
+					disabled={project.settings == null}
 					onSelect={() => dialogs.open("editCompositionSettings")}
 				/>
 				<MenubarSeparator />
@@ -262,16 +255,19 @@ const GlobalMenubar = () => {
 					label={t("action.edit.cut")}
 					shortcut={formatShortcut(shortcuts.cut)}
 					onSelect={clipContext.cut}
+					disabled={project.settings == null}
 				/>
 				<MenubarItem
 					label={t("action.edit.copy")}
 					shortcut={formatShortcut(shortcuts.copy)}
 					onSelect={clipContext.copy}
+					disabled={project.settings == null}
 				/>
 				<MenubarItem
 					label={t("action.edit.paste")}
 					shortcut={formatShortcut(shortcuts.paste)}
 					onSelect={clipContext.paste}
+					disabled={project.settings == null}
 				/>
 				<MenubarSeparator />
 				<MenubarItem
@@ -295,9 +291,7 @@ const GlobalMenubar = () => {
 						label={t("action.edit.addImageClip")}
 						shortcut={formatShortcut(shortcuts.addClip)}
 						disabled={
-							project.settings == null ||
-							layerContext.selectedLayerId == null ||
-							layerContext.isLayerLocked(layerContext.selectedLayerId)
+							project.settings == null || layerContext.selectedLayerId == null
 						}
 						onSelect={addClipAtCurrentFrame}
 					/>
@@ -305,9 +299,7 @@ const GlobalMenubar = () => {
 						label={t("action.edit.addAudioClip")}
 						shortcut={formatShortcut(shortcuts.addAudioClip)}
 						disabled={
-							project.settings == null ||
-							layerContext.selectedLayerId == null ||
-							layerContext.isLayerLocked(layerContext.selectedLayerId)
+							project.settings == null || layerContext.selectedLayerId == null
 						}
 						onSelect={addAudioClip}
 					/>
@@ -315,9 +307,7 @@ const GlobalMenubar = () => {
 						label={t("action.edit.addGroupClip")}
 						shortcut={formatShortcut(shortcuts.addGroupClip)}
 						disabled={
-							project.settings == null ||
-							layerContext.selectedLayerId == null ||
-							layerContext.isLayerLocked(layerContext.selectedLayerId)
+							project.settings == null || layerContext.selectedLayerId == null
 						}
 						onSelect={addGroupClipAtCurrentFrame}
 					/>
@@ -366,11 +356,13 @@ const GlobalMenubar = () => {
 					label={t("action.edit.duplicateClip")}
 					shortcut={formatShortcut(shortcuts.duplicateClip)}
 					onSelect={clipContext.duplicateSelectedClip}
+					disabled={!hasEditableSelectedClip}
 				/>
 				<MenubarItem
 					label={t("action.edit.duplicateLinkedClip")}
 					shortcut={formatShortcut(shortcuts.duplicateLinkedClip)}
 					onSelect={clipContext.linkDuplicateSelectedClip}
+					disabled={!hasEditableSelectedClip}
 				/>
 				<MenubarItem
 					label={t("action.edit.splitClip")}
@@ -400,11 +392,13 @@ const GlobalMenubar = () => {
 					label={t("action.select.selectAll")}
 					shortcut={formatShortcut(shortcuts.selectAll)}
 					onSelect={clipContext.selectAll}
+					disabled={project.settings == null}
 				/>
 				<MenubarItem
 					label={t("action.select.clear")}
 					shortcut={formatShortcut(shortcuts.clearSelection)}
 					onSelect={() => clipContext.setSelection(undefined)}
+					disabled={project.settings == null}
 				/>
 				<MenubarItem
 					label={t("action.select.reselect")}
@@ -460,7 +454,6 @@ const GlobalMenubar = () => {
 				<MenubarItem
 					label={t("action.view.fitView")}
 					shortcut={formatShortcut(shortcuts.fitView)}
-					disabled={project.settings == null}
 					onSelect={fitToView}
 				/>
 				<MenubarItem
@@ -535,11 +528,13 @@ const GlobalMenubar = () => {
 							? playbackContext.pause()
 							: playbackContext.play()
 					}
+					disabled={project.settings == null}
 				/>
 				<MenubarItem
 					label={t("action.play.stop")}
 					shortcut={formatShortcut(shortcuts.stop)}
 					onSelect={playbackContext.stop}
+					disabled={project.settings == null}
 				/>
 				<MenubarSeparator />
 				<MenubarCheckboxItem
