@@ -212,7 +212,7 @@ const TrackBody = ({
 			ref={ref}
 		>
 			<div
-				className="absolute top-0 w-px bg-primary"
+				className="pointer-events-none absolute top-0 w-px bg-primary"
 				style={{
 					height: `${bodyHeight}px`,
 					translate: `${currentFrame * frameWidth}px 0`,
