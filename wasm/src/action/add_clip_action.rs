@@ -40,7 +40,7 @@ impl AddClipAction {
             content: AddClipContent::Image { size: None },
             clip_id: None,
             name: None,
-            duration: 1,
+            duration: 3,
         }
     }
 
@@ -53,7 +53,7 @@ impl AddClipAction {
             },
             clip_id: None,
             name: None,
-            duration: 1,
+            duration: 3,
         }
     }
 
@@ -86,7 +86,7 @@ impl AddClipAction {
             content: AddClipContent::Group { depth: 1 },
             clip_id: None,
             name: None,
-            duration: 1,
+            duration: 3,
         }
     }
 }
