@@ -1,5 +1,5 @@
 import { Separator } from "radix-ui/separator";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 type Orientation = "horizontal" | "vertical";
 
@@ -28,6 +28,7 @@ const Splitter = ({
 	onCollapse,
 }: Props) => {
 	const pointerPosition = useRef<number | null>(null);
+	const [isDragging, setIsDragging] = useState(false);
 	const collapseDistance = useRef(0);
 	const pointerCollapseLocked = useRef(false);
 	const pointerExpandDistance = useRef(0);
@@ -72,8 +73,10 @@ const Splitter = ({
 			aria-valuenow={value}
 			tabIndex={0}
 			className="group z-10 touch-none p-px data-[orientation=horizontal]:h-full data-[orientation=horizontal]:cursor-row-resize data-[orientation=vertical]:size-full data-[orientation=vertical]:cursor-col-resize"
+			data-dragging={isDragging}
 			onPointerDown={(event) => {
 				if (event.button !== 0) return;
+				setIsDragging(true);
 				pointerPosition.current = isHorizontal ? event.clientY : event.clientX;
 				collapseDistance.current = 0;
 				pointerCollapseLocked.current = false;
@@ -107,12 +110,14 @@ const Splitter = ({
 				resize(delta);
 			}}
 			onPointerUp={() => {
+				setIsDragging(false);
 				pointerPosition.current = null;
 				collapseDistance.current = 0;
 				pointerCollapseLocked.current = false;
 				pointerExpandDistance.current = 0;
 			}}
 			onLostPointerCapture={() => {
+				setIsDragging(false);
 				pointerPosition.current = null;
 				collapseDistance.current = 0;
 				pointerCollapseLocked.current = false;
@@ -131,7 +136,7 @@ const Splitter = ({
 				}
 			}}
 		>
-			<div className="size-full rounded-full group-hover:not-disabled:bg-primary group-active:not-disabled:bg-primary" />
+			<div className="size-full rounded-full group-hover:not-disabled:bg-primary group-active:not-disabled:bg-primary group-data-[dragging=true]:bg-primary" />
 		</Separator>
 	);
 };
