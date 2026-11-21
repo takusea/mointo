@@ -1,6 +1,6 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type Props = React.ComponentProps<typeof TooltipPrimitive.Root> & {
 	label: string;
@@ -10,10 +10,44 @@ type Props = React.ComponentProps<typeof TooltipPrimitive.Root> & {
 
 const Tooltip = ({ label, shortcut, side, children, ...props }: Props) => {
 	const [isOpen, setOpen] = useState(false);
+	const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const touchCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const longPressTriggered = useRef(false);
+
+	const clearTouchTimer = () => {
+		if (touchTimer.current) clearTimeout(touchTimer.current);
+		touchTimer.current = null;
+	};
+
+	const handlePointerDown = (event: React.PointerEvent) => {
+		if (event.pointerType !== "touch") return;
+		clearTouchTimer();
+		if (touchCloseTimer.current) clearTimeout(touchCloseTimer.current);
+		longPressTriggered.current = false;
+		touchTimer.current = setTimeout(() => {
+			longPressTriggered.current = true;
+			setOpen(true);
+		}, 500);
+	};
+
+	const handlePointerEnd = (event: React.PointerEvent) => {
+		if (event.pointerType !== "touch") return;
+		clearTouchTimer();
+		if (longPressTriggered.current) {
+			touchCloseTimer.current = setTimeout(() => setOpen(false), 1200);
+		}
+	};
 
 	return (
 		<TooltipPrimitive.Root {...props} open={isOpen} onOpenChange={setOpen}>
-			<TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+			<TooltipPrimitive.Trigger
+				asChild
+				onPointerDown={handlePointerDown}
+				onPointerUp={handlePointerEnd}
+				onPointerCancel={handlePointerEnd}
+			>
+				{children}
+			</TooltipPrimitive.Trigger>
 			<AnimatePresence>
 				{isOpen && (
 					<TooltipPrimitive.Portal forceMount>
