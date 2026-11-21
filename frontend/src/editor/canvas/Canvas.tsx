@@ -87,10 +87,12 @@ const DrawCanvas = () => {
 		}
 
 		let previousViewportSize = getCanvasViewportSize(viewport);
-		canvasView.setPosition({
-			x: (previousViewportSize.width - canvasWidth) / 2,
-			y: (previousViewportSize.height - canvasHeight) / 2,
-		});
+		canvasView.fitToView(
+			canvasWidth,
+			canvasHeight,
+			previousViewportSize.width,
+			previousViewportSize.height,
+		);
 
 		const observer = new ResizeObserver(() => {
 			const nextViewportSize = getCanvasViewportSize(viewport);
@@ -111,7 +113,7 @@ const DrawCanvas = () => {
 		if (toolbar != null) observer.observe(toolbar);
 
 		return () => observer.disconnect();
-	}, [canvasWidth, canvasHeight, canvasView.setPosition]);
+	}, [canvasWidth, canvasHeight, canvasView.fitToView, canvasView.setPosition]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: The WASM renderer reads layer state from shared core state.
 	useEffect(() => {

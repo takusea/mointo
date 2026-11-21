@@ -1,4 +1,4 @@
-import { use } from "react";
+import { use, useCallback } from "react";
 import { CanvasViewContext } from "./CanvasViewContext";
 
 const SCALE_MINIMUM = 0.0625;
@@ -100,7 +100,7 @@ export const useCanvasView = () => {
 		context.setRotation((prev) => prev + rotationDelta);
 	};
 
-	const fitToView = (
+	const fitToView = useCallback((
 		contentWidth: number,
 		contentHeight: number,
 		viewportWidth: number,
@@ -127,7 +127,7 @@ export const useCanvasView = () => {
 			x: (viewportWidth - contentWidth) / 2,
 			y: (viewportHeight - contentHeight) / 2,
 		});
-	};
+	}, [context.setPosition, context.setScale]);
 
 	return {
 		...context,
