@@ -98,6 +98,7 @@ export const useCanvasPointer = (
 	const fillReferencePixelsRef = useRef<Uint8ClampedArray | undefined>(
 		undefined,
 	);
+	const brushResizeRef = useRef<{ y: number; size: number } | null>(null);
 
 	const sampleReferencePixel = (
 		referencePixels: Uint8ClampedArray | Uint8Array | undefined,
@@ -116,7 +117,11 @@ export const useCanvasPointer = (
 		return new Uint8Array(referencePixels.slice(pixelIndex, pixelIndex + 4));
 	};
 
-	const pickColor = async (clientX: number, clientY: number) => {
+	const pickColor = async (
+		clientX: number,
+		clientY: number,
+		shiftKey = false,
+	) => {
 		const canvas = canvasRef.current;
 		if (canvas == null) return;
 		const { x, y } = getPointerPosition(clientX, clientY);
@@ -129,14 +134,15 @@ export const useCanvasPointer = (
 			pixelY >= canvas.height
 		)
 			return;
-		const image = toolContext.referenceOtherLayers.eyedropper
-			? await playbackContext.renderFrame(playbackContext.currentFrame)
-			: layerContext.selectedLayerId == null
-				? undefined
-				: await playbackContext.renderLayerFrame(
-						playbackContext.currentFrame,
-						layerContext.selectedLayerId,
-					);
+		const image =
+			toolContext.referenceOtherLayers.eyedropper || shiftKey
+				? await playbackContext.renderFrame(playbackContext.currentFrame)
+				: layerContext.selectedLayerId == null
+					? undefined
+					: await playbackContext.renderLayerFrame(
+							playbackContext.currentFrame,
+							layerContext.selectedLayerId,
+						);
 		if (image == null) return;
 		const pixelIndex = (pixelY * canvas.width + pixelX) * 4;
 		const data = image.subarray(pixelIndex, pixelIndex + 4);
@@ -330,10 +336,28 @@ export const useCanvasPointer = (
 		const isPenEraser =
 			event.pointerType === "pen" &&
 			(event.button === 5 || (event.buttons & 32) !== 0);
-		if ((!(event.buttons & 1) && !isPenEraser) || event.shiftKey) return;
+		if (!(event.buttons & 1) && !isPenEraser) return;
+		const sizeProperty = toolContext.properties.find(
+			(property) => property.name === "size",
+		);
+		if (
+			event.shiftKey &&
+			!isPenEraser &&
+			(toolContext.tool === "pen" || toolContext.tool === "eraser") &&
+			sizeProperty != null &&
+			typeof sizeProperty.value === "number"
+		) {
+			brushResizeRef.current = { y: event.clientY, size: sizeProperty.value };
+			event.currentTarget.setPointerCapture(event.pointerId);
+		}
+		if (event.ctrlKey && !isPenEraser) {
+			event.currentTarget.setPointerCapture(event.pointerId);
+			await pickColor(event.clientX, event.clientY, event.shiftKey);
+			return;
+		}
 		if (!isPenEraser && toolContext.tool === "eyedropper") {
 			event.currentTarget.setPointerCapture(event.pointerId);
-			await pickColor(event.clientX, event.clientY);
+			await pickColor(event.clientX, event.clientY, event.shiftKey);
 			return;
 		}
 
@@ -347,7 +371,7 @@ export const useCanvasPointer = (
 			return;
 		}
 		if (!isPenEraser && toolContext.tool === "wand") {
-			await selection.selectSimilar(event.clientX, event.clientY);
+			await selection.selectSimilar(event.clientX, event.clientY, event);
 			return;
 		}
 
@@ -481,12 +505,25 @@ export const useCanvasPointer = (
 		const isPenEraser =
 			event.pointerType === "pen" && (event.buttons & 32) !== 0;
 		if (selection.moveSelection(event)) return;
+		if (event.ctrlKey && event.buttons & 1) {
+			await pickColor(event.clientX, event.clientY, event.shiftKey);
+			return;
+		}
+		if (brushResizeRef.current != null && event.buttons & 1) {
+			const { y, size } = brushResizeRef.current;
+			toolContext.setProperty(
+				"size",
+				Math.max(1, Math.min(100, size + (y - event.clientY) * 0.25)),
+			);
+			return;
+		}
 		if (event.buttons & 2) {
-			await pickColor(event.clientX, event.clientY);
+			await pickColor(event.clientX, event.clientY, event.shiftKey);
 			return;
 		}
 		if (toolContext.tool === "eyedropper") {
-			if (event.buttons & 1) await pickColor(event.clientX, event.clientY);
+			if (event.buttons & 1)
+				await pickColor(event.clientX, event.clientY, event.shiftKey);
 			return;
 		}
 		if (toolContext.tool === "move" && moveDragRef.current == null) {
@@ -520,8 +557,14 @@ export const useCanvasPointer = (
 			setTransformCursor(drag.cursor);
 			const matrix = { ...drag.baseMatrix };
 			if (drag.mode === "move") {
-				matrix.x += x - drag.startX;
-				matrix.y += y - drag.startY;
+				let dx = x - drag.startX;
+				let dy = y - drag.startY;
+				if (event.shiftKey) {
+					if (Math.abs(dx) >= Math.abs(dy)) dy = 0;
+					else dx = 0;
+				}
+				matrix.x += dx;
+				matrix.y += dy;
 			} else if (drag.mode === "rotate") {
 				matrix.rotation +=
 					Math.atan2(y - drag.centerY, x - drag.centerX) - drag.startAngle;
@@ -646,6 +689,7 @@ export const useCanvasPointer = (
 			if (isMultiTouchRef.current) return;
 		}
 		if (selection.finishSelection(event)) return;
+		brushResizeRef.current = null;
 		if (toolContext.tool === "eyedropper" && !canvasDraw.drawState.isDrawing)
 			return;
 
@@ -743,5 +787,6 @@ export const useCanvasPointer = (
 		handlePointerDown,
 		handlePointerMove,
 		handlePointerUp,
+		isBrushResizing: () => brushResizeRef.current != null,
 	};
 };

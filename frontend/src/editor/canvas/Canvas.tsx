@@ -42,6 +42,7 @@ const DrawCanvas = () => {
 		y: number;
 	} | null>(null);
 	const [isRightButtonDown, setIsRightButtonDown] = useState(false);
+	const [isCtrlDown, setIsCtrlDown] = useState(false);
 	const sizeProperty = toolContext.properties.find(
 		(property) => property.name === "size",
 	);
@@ -52,7 +53,7 @@ const DrawCanvas = () => {
 	const cursorSize =
 		Math.max(1, Number.isFinite(brushSize) ? brushSize : 1) * canvasView.scale;
 	const cursorStyle =
-		toolContext.tool === "eyedropper" || isRightButtonDown
+		toolContext.tool === "eyedropper" || isRightButtonDown || isCtrlDown
 			? "crosshair"
 			: toolContext.tool === "move"
 				? canvasPointer.transformCursor
@@ -63,8 +64,11 @@ const DrawCanvas = () => {
 					: toolContext.tool === "select"
 						? "crosshair"
 						: "none";
-	const updateCursorPosition = (event: PointerEvent<HTMLCanvasElement>) => {
-		if (cursorStyle !== "none") return;
+	const updateCursorPosition = (
+		event: PointerEvent<HTMLCanvasElement>,
+		force = false,
+	) => {
+		if (cursorStyle !== "none" && !force) return;
 		const bounds = event.currentTarget.parentElement?.getBoundingClientRect();
 		if (bounds != null) {
 			setCursorPosition({
@@ -73,6 +77,16 @@ const DrawCanvas = () => {
 			});
 		}
 	};
+	useEffect(() => {
+		const updateModifierCursor = (event: KeyboardEvent) =>
+			setIsCtrlDown(event.ctrlKey);
+		window.addEventListener("keydown", updateModifierCursor);
+		window.addEventListener("keyup", updateModifierCursor);
+		return () => {
+			window.removeEventListener("keydown", updateModifierCursor);
+			window.removeEventListener("keyup", updateModifierCursor);
+		};
+	}, []);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -209,16 +223,21 @@ const DrawCanvas = () => {
 				onPointerLeave={() => setCursorPosition(null)}
 				onPointerMove={(event) => {
 					setIsRightButtonDown((event.buttons & 2) !== 0);
+					setIsCtrlDown(event.ctrlKey);
 					canvasPointer.handlePointerMove(event);
-					updateCursorPosition(event);
+					if (!canvasPointer.isBrushResizing()) updateCursorPosition(event);
 				}}
 				onPointerDown={(event) => {
 					setIsRightButtonDown((event.buttons & 2) !== 0);
+					setIsCtrlDown(event.ctrlKey);
+					updateCursorPosition(event);
 					canvasPointer.handlePointerDown(event);
 				}}
 				onPointerUp={(event) => {
 					setIsRightButtonDown(false);
+					setIsCtrlDown(event.ctrlKey);
 					canvasPointer.handlePointerUp(event);
+					updateCursorPosition(event, true);
 				}}
 				onPointerCancel={(event) => {
 					setIsRightButtonDown(false);

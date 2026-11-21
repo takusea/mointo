@@ -20,6 +20,10 @@ export const useCanvasSelection = (
 	const pointsRef = useRef<Point[]>([]);
 	const modeRef = useRef<"rectangle" | "lasso">("lasso");
 	const selectionDraftRef = useRef<Selection | undefined>(undefined);
+	const previousSelectionRef = useRef<Selection | undefined>(undefined);
+	const selectionOperationRef = useRef<"replace" | "add" | "subtract">(
+		"replace",
+	);
 	const [selectionDraft, setSelectionDraft] = useState<Selection | undefined>(
 		undefined,
 	);
@@ -27,6 +31,48 @@ export const useCanvasSelection = (
 	const updateSelectionDraft = (selection: Selection | undefined) => {
 		selectionDraftRef.current = selection;
 		setSelectionDraft(selection);
+	};
+	const applySelectionOperation = (
+		next: Selection,
+		canvas: HTMLCanvasElement,
+	) => {
+		const previous = previousSelectionRef.current;
+		const operation = selectionOperationRef.current;
+		if (previous == null || operation === "replace") {
+			clipContext.setSelection(next);
+			return;
+		}
+		const x = Math.min(previous.x, next.x);
+		const y = Math.min(previous.y, next.y);
+		const right = Math.max(previous.x + previous.width, next.x + next.width);
+		const bottom = Math.max(previous.y + previous.height, next.y + next.height);
+		const mask = new Uint8Array(canvas.width * canvas.height);
+		const contains = (selection: Selection, px: number, py: number) => {
+			if (
+				px < selection.x ||
+				py < selection.y ||
+				px >= selection.x + selection.width ||
+				py >= selection.y + selection.height
+			)
+				return false;
+			return (
+				selection.mask == null || selection.mask[py * canvas.width + px] === 1
+			);
+		};
+		for (let py = y; py < bottom; py++)
+			for (let px = x; px < right; px++) {
+				const inPrevious = contains(previous, px, py);
+				const inNext = contains(next, px, py);
+				if (operation === "add" ? inPrevious || inNext : inPrevious && !inNext)
+					mask[py * canvas.width + px] = 1;
+			}
+		clipContext.setSelection({
+			x,
+			y,
+			width: right - x,
+			height: bottom - y,
+			mask,
+		});
 	};
 
 	const beginSelection = (
@@ -37,6 +83,12 @@ export const useCanvasSelection = (
 		if (canvas == null) return;
 
 		const point = getPointerPosition(event.clientX, event.clientY);
+		previousSelectionRef.current = clipContext.selection;
+		selectionOperationRef.current = event.shiftKey
+			? "add"
+			: event.altKey
+				? "subtract"
+				: "replace";
 		const start = {
 			x: Math.max(0, Math.min(canvas.width - 1, Math.floor(point.x))),
 			y: Math.max(0, Math.min(canvas.height - 1, Math.floor(point.y))),
@@ -102,14 +154,17 @@ export const useCanvasSelection = (
 					y: Math.max(0, Math.min(canvas.height - 1, Math.floor(point.y))),
 				};
 				if (end.x === start.x && end.y === start.y) {
-					clipContext.setSelection(undefined);
+					if (selectionOperationRef.current === "replace")
+						clipContext.setSelection(undefined);
+					else clipContext.setSelection(previousSelectionRef.current);
 				} else {
-					clipContext.setSelection({
+					const nextSelection: Selection = {
 						x: Math.min(start.x, end.x),
 						y: Math.min(start.y, end.y),
 						width: Math.abs(end.x - start.x) + 1,
 						height: Math.abs(end.y - start.y) + 1,
-					});
+					};
+					applySelectionOperation(nextSelection, canvas);
 				}
 			}
 		} else if (draft != null && pointsRef.current.length >= 3) {
@@ -134,11 +189,14 @@ export const useCanvasSelection = (
 						}
 						if (inside) mask[y * canvas.width + x] = 1;
 					}
-				clipContext.setSelection({
-					...draft,
-					mask,
-					points: [...pointsRef.current],
-				});
+				applySelectionOperation(
+					{
+						...draft,
+						mask,
+						points: [...pointsRef.current],
+					},
+					canvas,
+				);
 			}
 		}
 		updateSelectionDraft(undefined);
@@ -153,9 +211,19 @@ export const useCanvasSelection = (
 		beginSelection,
 		moveSelection,
 		finishSelection,
-		selectSimilar: async (clientX: number, clientY: number) => {
+		selectSimilar: async (
+			clientX: number,
+			clientY: number,
+			modifiers: { shiftKey: boolean; altKey: boolean },
+		) => {
 			const canvas = canvasRef.current;
 			if (!canvas) return;
+			previousSelectionRef.current = clipContext.selection;
+			selectionOperationRef.current = modifiers.shiftKey
+				? "add"
+				: modifiers.altKey
+					? "subtract"
+					: "replace";
 			const p = getPointerPosition(clientX, clientY),
 				sx = Math.floor(p.x),
 				sy = Math.floor(p.y);
@@ -206,13 +274,16 @@ export const useCanvasSelection = (
 				if (y > 0) stack.push(index - canvas.width);
 				if (y + 1 < canvas.height) stack.push(index + canvas.width);
 			}
-			clipContext.setSelection({
-				x: left,
-				y: top,
-				width: right - left + 1,
-				height: bottom - top + 1,
-				mask,
-			});
+			applySelectionOperation(
+				{
+					x: left,
+					y: top,
+					width: right - left + 1,
+					height: bottom - top + 1,
+					mask,
+				},
+				canvas,
+			);
 		},
 	};
 };

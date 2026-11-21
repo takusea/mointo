@@ -100,34 +100,37 @@ export const useCanvasView = () => {
 		context.setRotation((prev) => prev + rotationDelta);
 	};
 
-	const fitToView = useCallback((
-		contentWidth: number,
-		contentHeight: number,
-		viewportWidth: number,
-		viewportHeight: number,
-	) => {
-		if (
-			contentWidth <= 0 ||
-			contentHeight <= 0 ||
-			viewportWidth <= 0 ||
-			viewportHeight <= 0
-		) {
-			throw new Error("Canvas and viewport dimensions must be positive.");
-		}
+	const fitToView = useCallback(
+		(
+			contentWidth: number,
+			contentHeight: number,
+			viewportWidth: number,
+			viewportHeight: number,
+		) => {
+			if (
+				contentWidth <= 0 ||
+				contentHeight <= 0 ||
+				viewportWidth <= 0 ||
+				viewportHeight <= 0
+			) {
+				throw new Error("Canvas and viewport dimensions must be positive.");
+			}
 
-		const padding = 0.9;
-		const fitScale = Math.min(
-			(viewportWidth * padding) / contentWidth,
-			(viewportHeight * padding) / contentHeight,
-		);
-		context.setScale(
-			Math.min(Math.max(SCALE_MINIMUM, fitScale), SCALE_MAXIMUM),
-		);
-		context.setPosition({
-			x: (viewportWidth - contentWidth) / 2,
-			y: (viewportHeight - contentHeight) / 2,
-		});
-	}, [context.setPosition, context.setScale]);
+			const padding = 0.9;
+			const fitScale = Math.min(
+				(viewportWidth * padding) / contentWidth,
+				(viewportHeight * padding) / contentHeight,
+			);
+			context.setScale(
+				Math.min(Math.max(SCALE_MINIMUM, fitScale), SCALE_MAXIMUM),
+			);
+			context.setPosition({
+				x: (viewportWidth - contentWidth) / 2,
+				y: (viewportHeight - contentHeight) / 2,
+			});
+		},
+		[context.setPosition, context.setScale],
+	);
 
 	return {
 		...context,
