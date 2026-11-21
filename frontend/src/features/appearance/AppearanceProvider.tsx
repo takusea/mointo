@@ -3,7 +3,11 @@ import { useLocalStorage, useTernaryDarkMode } from "usehooks-ts";
 import { storageKeys } from "~/constants/storageKeys";
 import { AppearanceContext } from "./AppearanceContext";
 
-export const AppearanceProvider = ({ children }: { children: JSX.Element }) => {
+type Props = {
+	children: JSX.Element;
+};
+
+export const AppearanceProvider = ({ children }: Props) => {
 	const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } =
 		useTernaryDarkMode({ localStorageKey: storageKeys.appearance.theme });
 	const [accentColor, setAccentColor] = useLocalStorage(

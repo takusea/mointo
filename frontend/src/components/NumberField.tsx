@@ -3,8 +3,8 @@ import { type JSX, useEffect, useRef, useState } from "react";
 import Tooltip from "~/components/Tooltip";
 
 type Props = Omit<React.ComponentProps<"input">, "className" | "type"> & {
-	leftElement?: string | JSX.Element;
-	rightElement?: string | JSX.Element;
+	leftElement?: JSX.Element | string;
+	rightElement?: JSX.Element | string;
 	onValueChange?: (value: number) => void;
 	onInteractionStart?: () => void;
 	onInteractionEnd?: () => void;

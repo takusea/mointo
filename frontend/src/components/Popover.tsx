@@ -2,7 +2,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { type JSX, useState } from "react";
 
 type Props = React.ComponentProps<typeof PopoverPrimitive.Root> & {
-	content: JSX.Element;
+	content: JSX.Element | string;
 	side?: "top" | "right" | "bottom" | "left";
 };
 

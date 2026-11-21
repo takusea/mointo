@@ -17,7 +17,7 @@ const Tooltip = ({ label, shortcut, side, children, ...props }: Props) => {
 			<AnimatePresence>
 				{isOpen && (
 					<TooltipPrimitive.Portal forceMount>
-						<TooltipPrimitive.Content asChild side={side}>
+						<TooltipPrimitive.Content asChild collisionPadding={8} side={side}>
 							<motion.div
 								className="z-50 rounded-md border border-border bg-background p-2 leading-none shadow-md backdrop-blur-xl select-none"
 								initial={{ opacity: 0 }}

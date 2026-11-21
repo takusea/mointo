@@ -16,6 +16,7 @@ const DropdownMenu = ({ menu, side, children, ...props }: Props) => {
 			</DropdownMenuPrimitive.Trigger>
 			<DropdownMenuPrimitive.Portal>
 				<DropdownMenuPrimitive.Content
+					collisionPadding={8}
 					className="z-50 rounded-xl border border-border bg-background p-2 leading-none shadow-md backdrop-blur-xl select-none"
 					side={side}
 				>

@@ -2,7 +2,9 @@ import { type JSX, useRef, useState } from "react";
 import type { MessageKey } from "~/features/i18n/I18nContext";
 import { type IoProgress, IoProgressContext } from "./IoProgressContext";
 
-type Props = { children: JSX.Element };
+type Props = {
+	children: JSX.Element;
+};
 
 type Operation = {
 	labelKey: MessageKey;

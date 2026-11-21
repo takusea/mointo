@@ -1,14 +1,10 @@
-import { createContext, type JSX, useState } from "react";
+import { type JSX, useState } from "react";
 import { useCoreSnapshot } from "~/core/useCoreSnapshot";
+import { ProjectContext } from "./ProjectContext";
 
-type ProjectContextValue = {
-	savedRevision: number;
-	setSavedRevision: (revision: number) => void;
+type Props = {
+	children: JSX.Element;
 };
-
-export const ProjectContext = createContext<ProjectContextValue | null>(null);
-
-type Props = { children: JSX.Element };
 
 export const ProjectProvider = ({ children }: Props) => {
 	const { revision } = useCoreSnapshot();

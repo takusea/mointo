@@ -6,7 +6,7 @@ import { useI18n } from "~/features/i18n/useI18n";
 import { throwIfIoCancelled } from "~/features/io/cancellation";
 import { chooseSaveDestination, writeSavedBlob } from "~/features/io/saveBlob";
 import { useIoProgress } from "~/features/io/useIoProgress";
-import { ProjectContext } from "./ProjectProvider";
+import { ProjectContext } from "./ProjectContext";
 import type { CompositionSettings } from "./type";
 
 export const useProject = () => {
