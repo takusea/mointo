@@ -15,6 +15,8 @@ type CanvasViewContextValue = {
 	setIsGridVisible: React.Dispatch<React.SetStateAction<boolean>>;
 	isOnionSkin: boolean;
 	setIsOnionSkin: React.Dispatch<React.SetStateAction<boolean>>;
+	onionSkinOpacity: number;
+	setOnionSkinOpacity: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export const CanvasViewContext = createContext<CanvasViewContextValue | null>(

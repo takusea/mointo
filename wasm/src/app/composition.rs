@@ -427,6 +427,7 @@ impl Composition {
         layer_id: LayerId,
         width: u32,
         height: u32,
+        onion_opacity: f32,
     ) -> Result<(), String> {
         let Some(selected_layer_index) = self.layer_index(layer_id) else {
             return self
@@ -503,6 +504,7 @@ impl Composition {
                 &previous,
                 &next,
                 selected_layer_index,
+                onion_opacity,
                 width,
                 height,
             )

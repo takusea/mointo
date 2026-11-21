@@ -565,11 +565,17 @@ export class CoreService {
 		frame: number,
 		canvas: HTMLCanvasElement,
 		onionLayerId?: LayerId | null,
+		onionOpacity = 40,
 	) {
 		return this.enqueue((core) =>
 			onionLayerId == null
 				? core.render_frame_to_canvas(frame, canvas)
-				: core.render_frame_to_canvas_with_onion(frame, canvas, onionLayerId),
+				: core.render_frame_to_canvas_with_onion(
+						frame,
+						canvas,
+						onionLayerId,
+						onionOpacity / 100,
+					),
 		);
 	}
 

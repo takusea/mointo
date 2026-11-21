@@ -120,6 +120,7 @@ const DrawCanvas = () => {
 			canvasRef.current,
 			canvasView.isOnionSkin,
 			layerContext.selectedLayerId,
+			canvasView.onionSkinOpacity,
 		);
 	}, [
 		clipContext.clips,
@@ -128,6 +129,7 @@ const DrawCanvas = () => {
 		layerContext.selectedLayerId,
 		playbackContext.currentFrame,
 		canvasView.isOnionSkin,
+		canvasView.onionSkinOpacity,
 	]);
 
 	if (

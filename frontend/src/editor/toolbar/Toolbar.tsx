@@ -36,7 +36,10 @@ import DropdownMenuRadioItem from "~/components/DropdownMenu/DropDownRadioItem";
 import DropdownMenu from "~/components/DropdownMenu/DropdownMenu";
 import DropdownMenuRadioGroup from "~/components/DropdownMenu/DropdownRadioGroup";
 import IconButton from "~/components/IconButton";
+import LabeledControl from "~/components/LabeledControl";
 import NumberField from "~/components/NumberField";
+import Popover from "~/components/Popover";
+import Slider from "~/components/Slider";
 import { formatShortcut } from "~/constants/shortcuts";
 import { useClip } from "~/features/clip/useClip";
 import { useUndo } from "~/features/history/useUndo";
@@ -343,13 +346,46 @@ const Toolbar = () => {
 							playbackContext.setIsScrollFollow(!playbackContext.isScrollFollow)
 						}
 					/>
-					<IconButton
-						label={t("action.view.onionSkin")}
-						shortcut={formatShortcut(shortcuts.toggleOnionSkin)}
-						icon={IconLayersDifference}
-						variant={canvasView.isOnionSkin ? "primary" : "default"}
-						onClick={() => canvasView.setIsOnionSkin((prev) => !prev)}
-					/>
+					<div className="flex">
+						<IconButton
+							label={t("action.view.onionSkin")}
+							shortcut={formatShortcut(shortcuts.toggleOnionSkin)}
+							icon={IconLayersDifference}
+							variant={canvasView.isOnionSkin ? "primary" : "default"}
+							onClick={() => canvasView.setIsOnionSkin((prev) => !prev)}
+						/>
+						<Popover
+							side="top"
+							content={
+								<LabeledControl
+									label={t("action.view.onionSkinOpacity")}
+									sideElement={
+										<div className="w-12 text-right">
+											{canvasView.onionSkinOpacity}%
+										</div>
+									}
+								>
+									<Slider
+										aria-label={t("action.view.onionSkinOpacity")}
+										min={0}
+										max={100}
+										step={1}
+										value={[canvasView.onionSkinOpacity]}
+										onValueChange={([value]) =>
+											canvasView.setOnionSkinOpacity(value)
+										}
+									/>
+								</LabeledControl>
+							}
+						>
+							<IconButton
+								size="small"
+								label={t("tool.select")}
+								icon={IconChevronUp}
+								variant={canvasView.isOnionSkin ? "primary" : "default"}
+							/>
+						</Popover>
+					</div>
 				</div>
 			</Card>
 			<Card size="small">

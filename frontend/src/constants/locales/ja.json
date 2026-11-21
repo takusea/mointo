@@ -69,6 +69,7 @@
 	"action.view.hideGrid": "グリッドを非表示",
 	"action.view.hideOnionSkin": "オニオンスキンを非表示",
 	"action.view.onionSkin": "オニオンスキン",
+	"action.view.onionSkinOpacity": "オニオンスキンの不透明度",
 	"action.view.resetFlip": "反転をリセット",
 	"action.view.resetRotate": "回転をリセット",
 	"action.view.resetRotation": "回転をリセット",

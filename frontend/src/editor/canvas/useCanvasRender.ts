@@ -7,9 +7,11 @@ export const useCanvasRender = () => {
 	const playbackContext = usePlayback();
 	const core = useCore();
 	const frameRequestRef = useRef<number | null>(null);
+	const onionOpacityRef = useRef(40);
 	const pendingRenderRef = useRef<{
 		canvas: HTMLCanvasElement;
 		onionLayerId: LayerId | null;
+		onionOpacity: number;
 	} | null>(null);
 	const renderingRef = useRef(false);
 	const finishRender = () => {
@@ -29,6 +31,7 @@ export const useCanvasRender = () => {
 					playbackContext.currentFrame,
 					request.canvas,
 					request.onionLayerId,
+					request.onionOpacity,
 				)
 				.then(finishRender, finishRender);
 		});
@@ -37,11 +40,14 @@ export const useCanvasRender = () => {
 		canvas: HTMLCanvasElement,
 		_isOnionSkinEnabled: boolean,
 		layerId: LayerId | null,
+		onionOpacity?: number,
 	) => {
+		if (onionOpacity != null) onionOpacityRef.current = onionOpacity;
 		pendingRenderRef.current = {
 			canvas,
 			onionLayerId:
 				_isOnionSkinEnabled && !playbackContext.isPlaying ? layerId : null,
+			onionOpacity: onionOpacityRef.current,
 		};
 		scheduleRender();
 	};

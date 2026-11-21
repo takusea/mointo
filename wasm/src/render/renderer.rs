@@ -111,6 +111,7 @@ impl GpuRenderer {
             .map(|clip| RenderClip {
                 clip,
                 tint: [0.0; 4],
+                is_onion: false,
             })
             .collect();
         self.render_frame_inner(&items, width, height, false).await
@@ -130,6 +131,7 @@ impl GpuRenderer {
             .map(|clip| RenderClip {
                 clip,
                 tint: [0.0; 4],
+                is_onion: false,
             })
             .collect();
         self.render_frame_inner(&items, width, height, true)
@@ -143,6 +145,7 @@ impl GpuRenderer {
         previous: &[&Clip],
         next: &[&Clip],
         selected_layer_index: usize,
+        onion_opacity: f32,
         width: u32,
         height: u32,
     ) -> Result<(), String> {
@@ -152,27 +155,32 @@ impl GpuRenderer {
             if !inserted && *layer_index >= selected_layer_index {
                 items.extend(previous.iter().map(|clip| RenderClip {
                     clip,
-                    tint: [1.0, 0.19, 0.19, 0.4],
+                    tint: [1.0, 0.19, 0.19, onion_opacity],
+                    is_onion: true,
                 }));
                 items.extend(next.iter().map(|clip| RenderClip {
                     clip,
-                    tint: [0.19, 0.5, 1.0, 0.4],
+                    tint: [0.19, 0.5, 1.0, onion_opacity],
+                    is_onion: true,
                 }));
                 inserted = true;
             }
             items.push(RenderClip {
                 clip,
                 tint: [0.0; 4],
+                is_onion: false,
             });
         }
         if !inserted {
             items.extend(previous.iter().map(|clip| RenderClip {
                 clip,
-                tint: [1.0, 0.19, 0.19, 0.4],
+                tint: [1.0, 0.19, 0.19, onion_opacity],
+                is_onion: true,
             }));
             items.extend(next.iter().map(|clip| RenderClip {
                 clip,
-                tint: [0.19, 0.5, 1.0, 0.4],
+                tint: [0.19, 0.5, 1.0, onion_opacity],
+                is_onion: true,
             }));
         }
         self.render_frame_inner(&items, width, height, true)
@@ -461,12 +469,12 @@ impl GpuRenderer {
                 image_size: [image.width as f32, image.height as f32],
                 output_size: [width as f32, height as f32],
                 opacity: clip.image_opacity().unwrap_or(1.0)
-                    * if item.tint[3] > 0.0 {
+                    * if item.is_onion {
                         item.tint[3]
                     } else {
                         1.0
                     },
-                blend_mode: if item.tint[3] > 0.0 {
+                blend_mode: if item.is_onion {
                     0
                 } else {
                     match clip.image_blend_mode().unwrap_or(BlendMode::Normal) {

@@ -16,6 +16,7 @@ export const CanvasViewProvider = ({ children }: Props) => {
 	const [isFlippedVertical, setIsFlippedVertical] = useState(false);
 	const [isGridVisible, setIsGridVisible] = useState(false);
 	const [isOnionSkin, setIsOnionSkin] = useState(false);
+	const [onionSkinOpacity, setOnionSkinOpacity] = useState(40);
 
 	return (
 		<CanvasViewContext
@@ -34,6 +35,8 @@ export const CanvasViewProvider = ({ children }: Props) => {
 				setIsGridVisible,
 				isOnionSkin,
 				setIsOnionSkin,
+				onionSkinOpacity,
+				setOnionSkinOpacity,
 			}}
 		>
 			{children}

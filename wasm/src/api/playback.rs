@@ -38,6 +38,7 @@ impl MointoCore {
         frame_index: u32,
         canvas: HtmlCanvasElement,
         layer_id_str: String,
+        opacity: f32,
     ) -> bool {
         let Ok(layer_id) = layer_id_str.parse::<LayerId>() else {
             return false;
@@ -72,7 +73,14 @@ impl MointoCore {
         };
         match project
             .composition()
-            .render_frame_gpu_to_canvas_with_onion(renderer, frame_index, layer_id, width, height)
+            .render_frame_gpu_to_canvas_with_onion(
+                renderer,
+                frame_index,
+                layer_id,
+                width,
+                height,
+                opacity.clamp(0.0, 1.0),
+            )
             .await
         {
             Ok(()) => true,

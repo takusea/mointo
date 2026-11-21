@@ -16,6 +16,7 @@ pub(super) struct ClipUniforms {
 pub(super) struct RenderClip<'a> {
     pub(super) clip: &'a Clip,
     pub(super) tint: [f32; 4],
+    pub(super) is_onion: bool,
 }
 
 pub(super) struct CachedClipTexture {
