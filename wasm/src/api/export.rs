@@ -57,7 +57,9 @@ impl MointoCore {
             .collect::<Result<_, wasm_bindgen::JsValue>>()?;
         for (asset_id, asset_type) in referenced_assets {
             let parsed_asset_id = AssetId::parse_str(&asset_id).map_err(js_error)?;
-            let asset = composition.assets.get(&parsed_asset_id)
+            let asset = composition
+                .assets
+                .get(&parsed_asset_id)
                 .ok_or_else(|| js_error(format!("Clip references missing asset {asset_id}")))?;
             let actual_type = match asset {
                 Asset::Image(_) => "image",
@@ -76,7 +78,8 @@ impl MointoCore {
                         .start_file(format!("assets/{id}.png"), options)
                         .map_err(js_error)?;
                     {
-                        let mut encoder = png::Encoder::new(&mut archive, image.width, image.height);
+                        let mut encoder =
+                            png::Encoder::new(&mut archive, image.width, image.height);
                         encoder.set_color(png::ColorType::Rgba);
                         encoder.set_depth(png::BitDepth::Eight);
                         let mut writer = encoder.write_header().map_err(js_error)?;
@@ -90,7 +93,7 @@ impl MointoCore {
                     archive
                         .start_file(format!("assets/{id}.wav"), options)
                         .map_err(js_error)?;
-                    archive.write_all(&audio_data).map_err(js_error)?;
+                    archive.write_all(audio_data).map_err(js_error)?;
                 }
             }
         }
