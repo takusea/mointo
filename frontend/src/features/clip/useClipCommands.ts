@@ -285,18 +285,17 @@ export const useClipCommands = ({
 					else properties.group_depth = source.depth;
 				}
 				await core.changeClipProperties(duplicate.id, properties);
-				if (source.clip_type === "group") {
-					const transform = core.getSnapshot().clipTransforms[source.id];
-					if (transform != null)
-						await core.updateClipTransform(duplicate.id, transform);
-					for (const key of core.getSnapshot().clipKeyframes[source.id] ?? []) {
-						await core.setClipKeyframe(
-							duplicate.id,
-							key.frame + offset,
-							key.property,
-							key.value,
-						);
-					}
+				const snapshot = core.getSnapshot();
+				const transform = snapshot.clipTransforms[source.id];
+				if (transform != null)
+					await core.updateClipTransform(duplicate.id, transform);
+				for (const key of snapshot.clipKeyframes[source.id] ?? []) {
+					await core.setClipKeyframe(
+						duplicate.id,
+						key.frame + offset,
+						key.property,
+						key.value,
+					);
 				}
 				if (linkAsset && source.clip_type !== "group") {
 					await core.linkClips(source.id, duplicate.id);
