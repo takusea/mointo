@@ -202,7 +202,7 @@ impl GpuRenderer {
         let clips: Vec<_> = clips
             .iter()
             .filter(|item| {
-                item.clip.image().map_or(true, |image| {
+                item.clip.image().is_none_or(|image| {
                     item.clip
                         .inverse_transform_matrix3((
                             image.width as f32 / 2.0,
