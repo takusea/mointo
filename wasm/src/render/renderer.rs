@@ -19,6 +19,13 @@ pub struct GpuRenderer {
     frame_textures: Option<(u32, u32, [wgpu::Texture; 2])>,
 }
 
+pub struct OnionFrame<'a> {
+    pub previous: &'a [&'a Clip],
+    pub next: &'a [&'a Clip],
+    pub selected_layer_index: usize,
+    pub opacity: f32,
+}
+
 impl GpuRenderer {
     pub fn has_canvas(&self) -> bool {
         self.surface.is_some()
@@ -142,25 +149,22 @@ impl GpuRenderer {
     pub async fn render_frame_with_onion_to_canvas(
         &mut self,
         clips: &[(&Clip, usize)],
-        previous: &[&Clip],
-        next: &[&Clip],
-        selected_layer_index: usize,
-        onion_opacity: f32,
+        onion: OnionFrame<'_>,
         width: u32,
         height: u32,
     ) -> Result<(), String> {
         let mut items = Vec::new();
         let mut inserted = false;
         for (clip, layer_index) in clips {
-            if !inserted && *layer_index >= selected_layer_index {
-                items.extend(previous.iter().map(|clip| RenderClip {
+            if !inserted && *layer_index >= onion.selected_layer_index {
+                items.extend(onion.previous.iter().map(|clip| RenderClip {
                     clip,
-                    tint: [1.0, 0.19, 0.19, onion_opacity],
+                    tint: [1.0, 0.19, 0.19, onion.opacity],
                     is_onion: true,
                 }));
-                items.extend(next.iter().map(|clip| RenderClip {
+                items.extend(onion.next.iter().map(|clip| RenderClip {
                     clip,
-                    tint: [0.19, 0.5, 1.0, onion_opacity],
+                    tint: [0.19, 0.5, 1.0, onion.opacity],
                     is_onion: true,
                 }));
                 inserted = true;
@@ -172,14 +176,14 @@ impl GpuRenderer {
             });
         }
         if !inserted {
-            items.extend(previous.iter().map(|clip| RenderClip {
+            items.extend(onion.previous.iter().map(|clip| RenderClip {
                 clip,
-                tint: [1.0, 0.19, 0.19, onion_opacity],
+                tint: [1.0, 0.19, 0.19, onion.opacity],
                 is_onion: true,
             }));
-            items.extend(next.iter().map(|clip| RenderClip {
+            items.extend(onion.next.iter().map(|clip| RenderClip {
                 clip,
-                tint: [0.19, 0.5, 1.0, onion_opacity],
+                tint: [0.19, 0.5, 1.0, onion.opacity],
                 is_onion: true,
             }));
         }

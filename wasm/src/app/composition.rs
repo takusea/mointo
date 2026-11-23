@@ -501,10 +501,12 @@ impl Composition {
         renderer
             .render_frame_with_onion_to_canvas(
                 &current,
-                &previous,
-                &next,
-                selected_layer_index,
-                onion_opacity,
+                crate::render::OnionFrame {
+                    previous: &previous,
+                    next: &next,
+                    selected_layer_index,
+                    opacity: onion_opacity,
+                },
                 width,
                 height,
             )

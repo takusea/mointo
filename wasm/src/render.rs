@@ -3,4 +3,4 @@ pub mod pipeline;
 pub mod renderer;
 pub mod types;
 
-pub use renderer::GpuRenderer;
+pub use renderer::{GpuRenderer, OnionFrame};
