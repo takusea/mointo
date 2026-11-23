@@ -26,16 +26,19 @@ const NumberField = ({
 
 	const [isMoved, setIsMoved] = useState<boolean>(false);
 	const [innerValue, setInnerValue] = useState<string>("");
-
+	const step = Number(props.step ?? 1);
+	const stepPrecision = (step.toString().split(".")[1] ?? "").length;
 	useEffect(() => {
-		setInnerValue(
-			props.value?.toString() ?? props.defaultValue?.toString() ?? "",
-		);
-	}, [props.value, props.defaultValue]);
+		const value = Number(props.value ?? props.defaultValue);
+		const string = Number.isFinite(value)
+			? value.toFixed(stepPrecision)
+			: value.toString();
+
+		setInnerValue(string);
+	}, [props.value, props.defaultValue, stepPrecision]);
 
 	const min = Number(props.min ?? Number.MIN_SAFE_INTEGER);
 	const max = Number(props.max ?? Number.MAX_SAFE_INTEGER);
-	const step = Number(props.step ?? 1);
 	const clamp = (value: number) => {
 		return Math.max(min, Math.min(Math.round(value / step) * step, max));
 	};
