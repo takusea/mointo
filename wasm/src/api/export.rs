@@ -1,10 +1,14 @@
+use std::collections::HashMap;
 use std::io::{Cursor, Read, Write};
 
 use wasm_bindgen::prelude::wasm_bindgen;
 use zip::{write::SimpleFileOptions, ZipArchive, ZipWriter};
 
 use super::MointoCore;
+use crate::app::clip::AssetId;
+use crate::app::composition::Asset;
 use crate::app::project::Project;
+use crate::core::image::Image;
 
 #[derive(serde::Serialize)]
 struct OrderedCompositionManifest<'a> {
@@ -199,7 +203,7 @@ impl MointoCore {
             .strip_suffix(".json")
             .unwrap_or("main");
         manifest["name"] = serde_json::Value::String(composition_name.to_string());
-        let mut assets = serde_json::Map::new();
+        let mut assets: HashMap<AssetId, Asset> = HashMap::new();
         let clips = manifest["clips"]
             .as_array_mut()
             .ok_or_else(|| js_error("Composition clips are invalid"))?;
@@ -284,9 +288,10 @@ impl MointoCore {
                 let data = content.remove("data");
                 content.remove("opacity");
                 content.remove("blend_mode");
-                if !assets.contains_key(&asset_id) {
+                let asset_key = asset_id.parse::<AssetId>().map_err(js_error)?;
+                if let std::collections::hash_map::Entry::Vacant(e) = assets.entry(asset_key) {
                     let audio_data = if let Some(data) = data {
-                        data
+                        serde_json::from_value::<Vec<u8>>(data).map_err(js_error)?
                     } else {
                         let mut audio_data = Vec::new();
                         archive
@@ -294,12 +299,9 @@ impl MointoCore {
                             .map_err(js_error)?
                             .read_to_end(&mut audio_data)
                             .map_err(js_error)?;
-                        serde_json::json!(audio_data)
+                        audio_data
                     };
-                    assets.insert(
-                        asset_id,
-                        serde_json::json!({"type": "audio", "data": audio_data}),
-                    );
+                    e.insert(Asset::Audio(audio_data));
                 }
                 continue;
             }
@@ -333,36 +335,40 @@ impl MointoCore {
                 .and_then(serde_json::Value::as_str)
                 .map(str::to_owned)
                 .ok_or_else(|| js_error("Clip asset ID is missing"))?;
-            if assets.contains_key(&id) {
+            let asset_key = id.parse::<AssetId>().map_err(js_error)?;
+            if assets.contains_key(&asset_key) {
                 continue;
             }
-            let mut png_data = Vec::new();
-            archive
+            let png_file = archive
                 .by_name(&format!("assets/{id}.png"))
-                .map_err(js_error)?
-                .read_to_end(&mut png_data)
                 .map_err(js_error)?;
-            let mut reader = png::Decoder::new(Cursor::new(png_data))
-                .read_info()
-                .map_err(js_error)?;
+            let mut decoder = png::Decoder::new(png_file);
+            decoder.set_transformations(png::Transformations::EXPAND);
+            let mut reader = decoder.read_info().map_err(js_error)?;
+            let palette = reader.info().palette.clone();
+            let transparency = reader.info().trns.clone();
             let mut decoded = vec![0; reader.output_buffer_size()];
             let info = reader.next_frame(&mut decoded).map_err(js_error)?;
-            let pixels = to_rgba(&decoded[..info.buffer_size()], info.color_type)?;
+            decoded.truncate(info.buffer_size());
+            let pixels = to_rgba(
+                decoded,
+                info.color_type,
+                palette.as_deref(),
+                transparency.as_deref(),
+            )?;
             assets.insert(
-                id,
-                serde_json::json!({
-                    "type": "image",
-                    "data": {
-                        "width": info.width,
-                        "height": info.height,
-                        "data": pixels,
-                    },
+                asset_key,
+                Asset::Image(Image {
+                    data: pixels,
+                    width: info.width,
+                    height: info.height,
                 }),
             );
         }
-        manifest["assets"] = serde_json::Value::Object(assets);
+        manifest["assets"] = serde_json::json!({});
         let project_value = serde_json::json!({"title": "Untitled", "compositions": [manifest]});
         let mut project: Project = serde_json::from_value(project_value).map_err(js_error)?;
+        project.composition_mut().assets = assets;
         for composition in &mut project.compositions {
             composition.ensure_layers().map_err(js_error)?;
             composition.hydrate_asset_views().map_err(js_error)?;
@@ -470,15 +476,22 @@ fn js_error(error: impl std::fmt::Display) -> wasm_bindgen::JsValue {
     wasm_bindgen::JsValue::from_str(&error.to_string())
 }
 
-fn to_rgba(data: &[u8], color: png::ColorType) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
+fn to_rgba(
+    data: Vec<u8>,
+    color: png::ColorType,
+    palette: Option<&[u8]>,
+    transparency: Option<&[u8]>,
+) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
+    if color == png::ColorType::Rgba {
+        return Ok(data);
+    }
+
     let channels = match color {
         png::ColorType::Rgba => 4,
         png::ColorType::Rgb => 3,
         png::ColorType::GrayscaleAlpha => 2,
         png::ColorType::Grayscale => 1,
-        png::ColorType::Indexed => {
-            return Err(js_error("Indexed PNG decoding was not expanded"));
-        }
+        png::ColorType::Indexed => 1,
     };
     let mut rgba = Vec::with_capacity(data.len() / channels * 4);
     for pixel in data.chunks_exact(channels) {
@@ -487,7 +500,23 @@ fn to_rgba(data: &[u8], color: png::ColorType) -> Result<Vec<u8>, wasm_bindgen::
             png::ColorType::Rgb => (pixel[0], pixel[1], pixel[2], 255),
             png::ColorType::GrayscaleAlpha => (pixel[0], pixel[0], pixel[0], pixel[1]),
             png::ColorType::Grayscale => (pixel[0], pixel[0], pixel[0], 255),
-            png::ColorType::Indexed => unreachable!(),
+            png::ColorType::Indexed => {
+                let index = pixel[0] as usize;
+                let palette = palette.ok_or_else(|| js_error("Indexed PNG palette is missing"))?;
+                let palette_offset = index * 3;
+                if palette_offset + 2 >= palette.len() {
+                    return Err(js_error("Indexed PNG palette index is invalid"));
+                }
+                (
+                    palette[palette_offset],
+                    palette[palette_offset + 1],
+                    palette[palette_offset + 2],
+                    transparency
+                        .and_then(|alpha| alpha.get(index))
+                        .copied()
+                        .unwrap_or(255),
+                )
+            }
         };
         rgba.extend_from_slice(&[r, g, b, a]);
     }
