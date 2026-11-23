@@ -262,7 +262,6 @@ const Timeline = () => {
 	}
 
 	function handleHorizontalZoom(event: React.WheelEvent<HTMLDivElement>) {
-		event.preventDefault();
 		const viewport = timelineViewportRef.current;
 		if (viewport == null) return;
 
@@ -286,7 +285,6 @@ const Timeline = () => {
 	}
 
 	function handleVerticalZoom(event: React.WheelEvent<HTMLDivElement>) {
-		event.preventDefault();
 		const viewport = timelineViewportRef.current;
 		if (viewport == null) return;
 
