@@ -26,8 +26,11 @@ impl MointoCore {
             .ok_or_else(|| js_error("No project is open"))?;
         let mut manifest = serde_json::to_value(project.composition()).map_err(js_error)?;
         let manifest_name = composition_manifest_name(Some(&manifest));
-        let mut png_assets = Vec::new();
-        let mut audio_assets = Vec::new();
+        let mut archive = ZipWriter::new(Cursor::new(Vec::new()));
+        let options = SimpleFileOptions::default();
+        archive
+            .add_directory("assets/", options)
+            .map_err(js_error)?;
         let referenced_assets: Vec<(String, String)> = manifest["clips"]
             .as_array()
             .ok_or_else(|| js_error("Composition clips are invalid"))?
@@ -59,7 +62,7 @@ impl MointoCore {
                 )));
             }
         }
-        for (id, asset) in asset_manifest.iter_mut() {
+        for (id, asset) in asset_manifest.iter() {
             match asset["type"].as_str() {
                 Some("image") => {
                     let width = asset["data"]["width"]
@@ -70,25 +73,49 @@ impl MointoCore {
                         .as_u64()
                         .ok_or_else(|| js_error("Asset height is invalid"))?
                         as u32;
-                    let pixels: Vec<u8> =
-                        serde_json::from_value(asset["data"]["data"].clone()).map_err(js_error)?;
-                    let mut png_data = Vec::new();
+                    let pixel_values = asset["data"]["data"]
+                        .as_array()
+                        .ok_or_else(|| js_error("Image pixel data is invalid"))?;
+                    let pixels: Vec<u8> = pixel_values
+                        .iter()
+                        .map(|value| {
+                            value
+                                .as_u64()
+                                .and_then(|value| u8::try_from(value).ok())
+                                .ok_or_else(|| js_error("Image pixel value is invalid"))
+                        })
+                        .collect::<Result<_, _>>()?;
+                    archive
+                        .start_file(format!("assets/{id}.png"), options)
+                        .map_err(js_error)?;
                     {
-                        let mut encoder = png::Encoder::new(&mut png_data, width, height);
+                        let mut encoder = png::Encoder::new(&mut archive, width, height);
                         encoder.set_color(png::ColorType::Rgba);
                         encoder.set_depth(png::BitDepth::Eight);
                         let mut writer = encoder.write_header().map_err(js_error)?;
                         writer.write_image_data(&pixels).map_err(js_error)?;
                     }
-                    png_assets.push((format!("assets/{id}.png"), png_data));
                 }
                 Some("audio") => {
-                    let audio_data: Vec<u8> =
-                        serde_json::from_value(asset["data"].clone()).map_err(js_error)?;
+                    let audio_values = asset["data"]
+                        .as_array()
+                        .ok_or_else(|| js_error("Audio asset data is invalid"))?;
+                    let audio_data: Vec<u8> = audio_values
+                        .iter()
+                        .map(|value| {
+                            value
+                                .as_u64()
+                                .and_then(|value| u8::try_from(value).ok())
+                                .ok_or_else(|| js_error("Audio byte value is invalid"))
+                        })
+                        .collect::<Result<_, _>>()?;
                     if audio_data.is_empty() {
                         return Err(js_error(format!("Audio asset {id} is empty")));
                     }
-                    audio_assets.push((format!("assets/{id}.wav"), audio_data));
+                    archive
+                        .start_file(format!("assets/{id}.wav"), options)
+                        .map_err(js_error)?;
+                    archive.write_all(&audio_data).map_err(js_error)?;
                 }
                 _ => return Err(js_error(format!("Asset {id} has an invalid type"))),
             }
@@ -149,25 +176,12 @@ impl MointoCore {
             layers: &manifest["layers"],
         };
 
-        let mut archive = ZipWriter::new(Cursor::new(Vec::new()));
-        let options = SimpleFileOptions::default();
-        archive
-            .add_directory("assets/", options)
-            .map_err(js_error)?;
         archive
             .start_file(&manifest_name, options)
             .map_err(js_error)?;
         archive
             .write_all(&serde_json::to_vec_pretty(&ordered_manifest).map_err(js_error)?)
             .map_err(js_error)?;
-        for (name, data) in png_assets {
-            archive.start_file(name, options).map_err(js_error)?;
-            archive.write_all(&data).map_err(js_error)?;
-        }
-        for (name, data) in audio_assets {
-            archive.start_file(name, options).map_err(js_error)?;
-            archive.write_all(&data).map_err(js_error)?;
-        }
         Ok(archive.finish().map_err(js_error)?.into_inner())
     }
 
