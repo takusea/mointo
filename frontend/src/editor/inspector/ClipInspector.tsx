@@ -458,7 +458,7 @@ const ClipInspector = ({
 								<NumberField
 									id="clipScale"
 									aria-label={t("inspector.clip.scaleX")}
-									min={0}
+									min={-1000}
 									max={1000}
 									value={transform.scale[0] * 100}
 									disabled={isLocked}
@@ -476,7 +476,7 @@ const ClipInspector = ({
 								<NumberField
 									id="clipScaleY"
 									aria-label={t("inspector.clip.scaleY")}
-									min={0}
+									min={-1000}
 									max={1000}
 									value={transform.scale[1] * 100}
 									disabled={isLocked}
@@ -487,7 +487,7 @@ const ClipInspector = ({
 									onValueChange={(value) => {
 										onTransformChange({
 											...transform,
-											scale: [transform.scale[0], Math.round(value / 100)],
+											scale: [transform.scale[0], value / 100],
 										});
 									}}
 								/>

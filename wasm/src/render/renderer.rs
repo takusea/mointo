@@ -199,6 +199,19 @@ impl GpuRenderer {
         height: u32,
         to_canvas: bool,
     ) -> Result<Image, String> {
+        let clips: Vec<_> = clips
+            .iter()
+            .filter(|item| {
+                item.clip.image().map_or(true, |image| {
+                    item.clip
+                        .inverse_transform_matrix3((
+                            image.width as f32 / 2.0,
+                            image.height as f32 / 2.0,
+                        ))
+                        .is_some()
+                })
+            })
+            .collect();
         let surface_texture = if to_canvas {
             let config = self
                 .surface_config
@@ -283,7 +296,7 @@ impl GpuRenderer {
         self.clip_bind_groups
             .retain(|clip_id, _| active_clip_ids.contains(clip_id));
 
-        for item in clips {
+        for item in &clips {
             let clip = item.clip;
             let image = clip
                 .image()
@@ -461,9 +474,11 @@ impl GpuRenderer {
             let image = clip
                 .image()
                 .ok_or_else(|| "Audio clip reached image renderer".to_string())?;
-            let inverse = clip
+            let Some(inverse) = clip
                 .inverse_transform_matrix3((image.width as f32 / 2.0, image.height as f32 / 2.0))
-                .ok_or_else(|| "Clip transform is not invertible".to_string())?;
+            else {
+                return Err("Clip transform changed during rendering".to_string());
+            };
             let uniforms = ClipUniforms {
                 inverse_transform: [
                     [inverse.x.x, inverse.x.y, inverse.x.z, 0.0],
