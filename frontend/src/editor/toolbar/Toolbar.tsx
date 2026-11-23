@@ -380,7 +380,7 @@ const Toolbar = () => {
 						>
 							<IconButton
 								size="small"
-								label={t("tool.select")}
+								label={t("action.view.onionSkinSettings")}
 								icon={IconChevronUp}
 								variant={canvasView.isOnionSkin ? "primary" : "default"}
 							/>
