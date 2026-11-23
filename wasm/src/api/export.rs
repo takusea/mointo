@@ -24,8 +24,15 @@ impl MointoCore {
             .project
             .as_ref()
             .ok_or_else(|| js_error("No project is open"))?;
-        let mut manifest = serde_json::to_value(project.composition()).map_err(js_error)?;
-        let manifest_name = composition_manifest_name(Some(&manifest));
+        let composition = project.composition();
+        // Do not serialize the whole composition: serde_json would expand every
+        // binary asset into a JSON number array before the archive is written.
+        let mut manifest = serde_json::json!({
+            "settings": serde_json::to_value(&composition.settings).map_err(js_error)?,
+            "clips": serde_json::to_value(&composition.clips).map_err(js_error)?,
+            "layers": serde_json::to_value(&composition.layers).map_err(js_error)?,
+        });
+        let manifest_name = composition_manifest_name(None);
         let mut archive = ZipWriter::new(Cursor::new(Vec::new()));
         let options = SimpleFileOptions::default();
         archive
@@ -48,67 +55,35 @@ impl MointoCore {
                 Ok((asset_id, asset_type))
             })
             .collect::<Result<_, wasm_bindgen::JsValue>>()?;
-        let asset_manifest = manifest
-            .get_mut("assets")
-            .and_then(serde_json::Value::as_object_mut)
-            .ok_or_else(|| js_error("Composition assets are invalid"))?;
         for (asset_id, asset_type) in referenced_assets {
-            let asset = asset_manifest
-                .get(&asset_id)
+            let parsed_asset_id = AssetId::parse_str(&asset_id).map_err(js_error)?;
+            let asset = composition.assets.get(&parsed_asset_id)
                 .ok_or_else(|| js_error(format!("Clip references missing asset {asset_id}")))?;
-            if asset["type"].as_str() != Some(asset_type.as_str()) {
+            let actual_type = match asset {
+                Asset::Image(_) => "image",
+                Asset::Audio(_) => "audio",
+            };
+            if actual_type != asset_type {
                 return Err(js_error(format!(
                     "Clip references asset {asset_id} with the wrong content type"
                 )));
             }
         }
-        for (id, asset) in asset_manifest.iter() {
-            match asset["type"].as_str() {
-                Some("image") => {
-                    let width = asset["data"]["width"]
-                        .as_u64()
-                        .ok_or_else(|| js_error("Asset width is invalid"))?
-                        as u32;
-                    let height = asset["data"]["height"]
-                        .as_u64()
-                        .ok_or_else(|| js_error("Asset height is invalid"))?
-                        as u32;
-                    let pixel_values = asset["data"]["data"]
-                        .as_array()
-                        .ok_or_else(|| js_error("Image pixel data is invalid"))?;
-                    let pixels: Vec<u8> = pixel_values
-                        .iter()
-                        .map(|value| {
-                            value
-                                .as_u64()
-                                .and_then(|value| u8::try_from(value).ok())
-                                .ok_or_else(|| js_error("Image pixel value is invalid"))
-                        })
-                        .collect::<Result<_, _>>()?;
+        for (id, asset) in &composition.assets {
+            match asset {
+                Asset::Image(image) => {
                     archive
                         .start_file(format!("assets/{id}.png"), options)
                         .map_err(js_error)?;
                     {
-                        let mut encoder = png::Encoder::new(&mut archive, width, height);
+                        let mut encoder = png::Encoder::new(&mut archive, image.width, image.height);
                         encoder.set_color(png::ColorType::Rgba);
                         encoder.set_depth(png::BitDepth::Eight);
                         let mut writer = encoder.write_header().map_err(js_error)?;
-                        writer.write_image_data(&pixels).map_err(js_error)?;
+                        writer.write_image_data(&image.data).map_err(js_error)?;
                     }
                 }
-                Some("audio") => {
-                    let audio_values = asset["data"]
-                        .as_array()
-                        .ok_or_else(|| js_error("Audio asset data is invalid"))?;
-                    let audio_data: Vec<u8> = audio_values
-                        .iter()
-                        .map(|value| {
-                            value
-                                .as_u64()
-                                .and_then(|value| u8::try_from(value).ok())
-                                .ok_or_else(|| js_error("Audio byte value is invalid"))
-                        })
-                        .collect::<Result<_, _>>()?;
+                Asset::Audio(audio_data) => {
                     if audio_data.is_empty() {
                         return Err(js_error(format!("Audio asset {id} is empty")));
                     }
@@ -117,13 +92,8 @@ impl MointoCore {
                         .map_err(js_error)?;
                     archive.write_all(&audio_data).map_err(js_error)?;
                 }
-                _ => return Err(js_error(format!("Asset {id} has an invalid type"))),
             }
         }
-        manifest
-            .as_object_mut()
-            .ok_or_else(|| js_error("Composition manifest is invalid"))?
-            .remove("assets");
 
         // The composition starts with many unused placeholder layers. Keep layers
         // referenced by clips and any layers whose visibility/lock state changed.
