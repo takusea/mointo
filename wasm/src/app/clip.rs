@@ -427,10 +427,19 @@ impl Clip {
     }
 
     pub fn set_image(&mut self, image: Image) {
-        if let ClipContent::Image { image: current, .. } = &mut self.content {
+        if let ClipContent::Image {
+            image: current,
+            image_revision,
+            dirty_rect,
+            ..
+        } = &mut self.content
+        {
             *current = image;
+            *image_revision = image_revision.wrapping_add(1);
+            // A replacement can change dimensions, so dirty bounds from the old
+            // image must not be merged into the new image's bounds.
+            dirty_rect.set(Some([0, 0, current.width, current.height]));
         }
-        self.mark_image_changed();
     }
 
     pub fn mark_image_changed(&mut self) {

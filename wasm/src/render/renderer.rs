@@ -367,38 +367,47 @@ impl GpuRenderer {
                         .unwrap_or([0, 0, image.width, image.height])
                 };
                 let [x, y, rect_width, rect_height] = rect;
-                let clip_bytes_per_row = rect_width * 4;
-                let padded_clip_bytes_per_row = clip_bytes_per_row
-                    .div_ceil(wgpu::COPY_BYTES_PER_ROW_ALIGNMENT)
-                    * wgpu::COPY_BYTES_PER_ROW_ALIGNMENT;
-                let mut upload_data = vec![0; (padded_clip_bytes_per_row * rect_height) as usize];
-                for row in 0..rect_height as usize {
-                    let source_start = ((y as usize + row) * image.width as usize + x as usize) * 4;
-                    let target_start = row * padded_clip_bytes_per_row as usize;
-                    upload_data[target_start..target_start + clip_bytes_per_row as usize]
-                        .copy_from_slice(
-                            &image.data[source_start..source_start + clip_bytes_per_row as usize],
-                        );
+                let x = x.min(image.width);
+                let y = y.min(image.height);
+                let rect_width = rect_width.min(image.width - x);
+                let rect_height = rect_height.min(image.height - y);
+                if rect_width > 0 && rect_height > 0 {
+                    let clip_bytes_per_row = rect_width * 4;
+                    let padded_clip_bytes_per_row = clip_bytes_per_row
+                        .div_ceil(wgpu::COPY_BYTES_PER_ROW_ALIGNMENT)
+                        * wgpu::COPY_BYTES_PER_ROW_ALIGNMENT;
+                    let mut upload_data =
+                        vec![0; (padded_clip_bytes_per_row * rect_height) as usize];
+                    for row in 0..rect_height as usize {
+                        let source_start =
+                            ((y as usize + row) * image.width as usize + x as usize) * 4;
+                        let target_start = row * padded_clip_bytes_per_row as usize;
+                        upload_data[target_start..target_start + clip_bytes_per_row as usize]
+                            .copy_from_slice(
+                                &image.data
+                                    [source_start..source_start + clip_bytes_per_row as usize],
+                            );
+                    }
+                    self.queue.write_texture(
+                        wgpu::TexelCopyTextureInfo {
+                            texture: &cached.texture,
+                            mip_level: 0,
+                            origin: wgpu::Origin3d { x, y, z: 0 },
+                            aspect: wgpu::TextureAspect::All,
+                        },
+                        &upload_data,
+                        wgpu::TexelCopyBufferLayout {
+                            offset: 0,
+                            bytes_per_row: Some(padded_clip_bytes_per_row),
+                            rows_per_image: Some(rect_height),
+                        },
+                        wgpu::Extent3d {
+                            width: rect_width,
+                            height: rect_height,
+                            depth_or_array_layers: 1,
+                        },
+                    );
                 }
-                self.queue.write_texture(
-                    wgpu::TexelCopyTextureInfo {
-                        texture: &cached.texture,
-                        mip_level: 0,
-                        origin: wgpu::Origin3d { x, y, z: 0 },
-                        aspect: wgpu::TextureAspect::All,
-                    },
-                    &upload_data,
-                    wgpu::TexelCopyBufferLayout {
-                        offset: 0,
-                        bytes_per_row: Some(padded_clip_bytes_per_row),
-                        rows_per_image: Some(rect_height),
-                    },
-                    wgpu::Extent3d {
-                        width: rect_width,
-                        height: rect_height,
-                        depth_or_array_layers: 1,
-                    },
-                );
                 cached.revision = image_revision;
                 dirty_rect.set(None);
             }
