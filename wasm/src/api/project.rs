@@ -66,6 +66,8 @@ impl MointoCore {
             Vec::new(),
         ));
         self.project = Some(project);
+        self.action_manager = ActionManager::new();
+        self.gpu_renderer = None;
         Ok(())
     }
 

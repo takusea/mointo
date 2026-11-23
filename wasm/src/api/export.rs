@@ -368,6 +368,8 @@ impl MointoCore {
             composition.hydrate_asset_views().map_err(js_error)?;
         }
         self.project = Some(project);
+        self.action_manager = crate::app::action_manager::ActionManager::new();
+        self.gpu_renderer = None;
         Ok(())
     }
 }
