@@ -11,12 +11,14 @@ import {
 	IconEyeOff,
 	IconKeyframe,
 	IconLayoutAlignLeft,
+	IconLink,
 	IconLock,
 	IconLockOpen,
 	IconRotate,
 	IconTrash,
 	IconUnlink,
 } from "@tabler/icons-react";
+import { useState } from "react";
 import Card from "~/components/Card";
 import IconButton from "~/components/IconButton";
 import LabeledControl from "~/components/LabeledControl";
@@ -86,6 +88,7 @@ const ClipInspector = ({
 }: Props) => {
 	const { t } = useI18n();
 	const isLocked = clip.locked || isLayerLocked;
+	const [scaleLinked, setScaleLinked] = useState(true);
 
 	return (
 		<Card>
@@ -437,21 +440,36 @@ const ClipInspector = ({
 						<LabeledControl
 							label={t("inspector.clip.scale")}
 							sideElement={
-								<IconButton
-									icon={IconKeyframe}
-									label={t("inspector.clip.togglePropertyKeyframe", {
-										property: t("inspector.clip.scale"),
-									})}
-									variant={
-										keyframes.some(
-											(k) => k.frame === currentFrame && k.property === "scale",
-										)
-											? "primary"
-											: undefined
-									}
-									disabled={isLocked}
-									onClick={() => onKeyframeToggle("scale", transform.scale)}
-								/>
+								<div className="flex gap-1">
+									<IconButton
+										icon={IconLink}
+										label={t(
+											scaleLinked
+												? "inspector.clip.unlinkScale"
+												: "inspector.clip.linkScale",
+										)}
+										variant={scaleLinked ? "primary" : undefined}
+										aria-pressed={scaleLinked}
+										disabled={isLocked}
+										onClick={() => setScaleLinked(!scaleLinked)}
+									/>
+									<IconButton
+										icon={IconKeyframe}
+										label={t("inspector.clip.togglePropertyKeyframe", {
+											property: t("inspector.clip.scale"),
+										})}
+										variant={
+											keyframes.some(
+												(k) =>
+													k.frame === currentFrame && k.property === "scale",
+											)
+												? "primary"
+												: undefined
+										}
+										disabled={isLocked}
+										onClick={() => onKeyframeToggle("scale", transform.scale)}
+									/>
+								</div>
 							}
 						>
 							<div className="grid grid-cols-2 gap-2">
@@ -469,7 +487,10 @@ const ClipInspector = ({
 									onValueChange={(value) => {
 										onTransformChange({
 											...transform,
-											scale: [value / 100, transform.scale[1]],
+											scale: [
+												value / 100,
+												scaleLinked ? value / 100 : transform.scale[1],
+											],
 										});
 									}}
 								/>
@@ -487,7 +508,10 @@ const ClipInspector = ({
 									onValueChange={(value) => {
 										onTransformChange({
 											...transform,
-											scale: [transform.scale[0], value / 100],
+											scale: [
+												scaleLinked ? value / 100 : transform.scale[0],
+												value / 100,
+											],
 										});
 									}}
 								/>

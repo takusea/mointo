@@ -188,6 +188,8 @@
 	"inspector.clip.removeKeyframe": "フレーム {frame} のキーフレームを削除",
 	"inspector.clip.rotation": "回転",
 	"inspector.clip.scale": "拡大率",
+	"inspector.clip.linkScale": "拡大率の縦横を同期",
+	"inspector.clip.unlinkScale": "拡大率の縦横の同期を解除",
 	"inspector.clip.scaleX": "拡大率 X",
 	"inspector.clip.scaleY": "拡大率 Y",
 	"inspector.clip.show": "表示",

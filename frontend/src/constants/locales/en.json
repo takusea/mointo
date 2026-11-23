@@ -188,6 +188,8 @@
 	"inspector.clip.removeKeyframe": "Remove keyframe at frame {frame}",
 	"inspector.clip.rotation": "Rotation",
 	"inspector.clip.scale": "Scale",
+	"inspector.clip.linkScale": "Link scale dimensions",
+	"inspector.clip.unlinkScale": "Unlink scale dimensions",
 	"inspector.clip.scaleX": "Scale X",
 	"inspector.clip.scaleY": "Scale Y",
 	"inspector.clip.show": "Show",
