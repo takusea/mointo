@@ -365,8 +365,17 @@ export const useClipSelection = ({
 			}
 			return;
 		}
-		setSelectedClipIds(currentClip == null ? [] : [currentClip.id]);
-		setSelectedClipId(currentClip?.id);
+		const nextSelectedClipIds = currentClip == null ? [] : [currentClip.id];
+		const nextSelectedClipId = currentClip?.id;
+		if (
+			selectedClipIds.length !== nextSelectedClipIds.length ||
+			selectedClipIds.some((id, index) => id !== nextSelectedClipIds[index])
+		) {
+			setSelectedClipIds(nextSelectedClipIds);
+		}
+		if (selectedClipId !== nextSelectedClipId) {
+			setSelectedClipId(nextSelectedClipId);
+		}
 	}, [
 		clips,
 		currentClip,

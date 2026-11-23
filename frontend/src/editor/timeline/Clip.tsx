@@ -139,8 +139,11 @@ const Clip = ({
 		event.currentTarget.setPointerCapture(event.pointerId);
 
 		const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
+		// Modifier keys change selection on click, but a drag should keep the
+		// current selection so the selected clips can be moved together.
 		const deferSelection = isSelected && !hasModifier;
-		if (!deferSelection) {
+		const preserveSelectionOnDrag = isSelected && event.shiftKey;
+		if (!deferSelection && !preserveSelectionOnDrag) {
 			onSelect(
 				(event.ctrlKey || event.metaKey) && !event.shiftKey,
 				isSelected,

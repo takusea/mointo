@@ -8,6 +8,7 @@ type Options = {
 	layers: LayerState[];
 	selectedClipId: string | undefined;
 	selectedClipIds: string[];
+	selectedLayerId: LayerId | null;
 	currentFrame: number;
 	isLayerLocked: (layerId: LayerId) => boolean;
 	onClipSelected: (
@@ -23,6 +24,7 @@ export const useClipCommands = ({
 	layers,
 	selectedClipId,
 	selectedClipIds,
+	selectedLayerId,
 	currentFrame,
 	isLayerLocked,
 	onClipSelected,
@@ -97,7 +99,7 @@ export const useClipCommands = ({
 	};
 
 	const addClip = async (start: number, layerId: LayerId) => {
-		await addClipAtFrame(start, layerId, 1, "image", (targetLayerId) =>
+		await addClipAtFrame(start, layerId, 3, "image", (targetLayerId) =>
 			core.addClip(start, targetLayerId),
 		);
 	};
@@ -112,7 +114,7 @@ export const useClipCommands = ({
 		await addClipAtFrame(
 			start,
 			layerId,
-			1,
+			3,
 			"image",
 			(targetLayerId) =>
 				core.addClipWithSize(start, targetLayerId, width, height),
@@ -134,7 +136,7 @@ export const useClipCommands = ({
 	};
 
 	const addGroupClip = async (start: number, layerId: LayerId) => {
-		await addClipAtFrame(start, layerId, 1, "group", (targetLayerId) =>
+		await addClipAtFrame(start, layerId, 3, "group", (targetLayerId) =>
 			core.addGroupClip(start, targetLayerId),
 		);
 	};
@@ -157,7 +159,7 @@ export const useClipCommands = ({
 		const newClip = await addClipAtFrame(
 			frame,
 			layerId,
-			1,
+			3,
 			"image",
 			(targetId) => core.addClip(frame, targetId),
 		);
@@ -168,21 +170,48 @@ export const useClipCommands = ({
 		const sources = getSelectedClips(id ?? "").filter(
 			(clip) => !clip.locked && !isLayerLocked(clip.layer_id),
 		);
-		if (sources.length === 0) return;
-
-		const minimumStart = Math.min(...sources.map((clip) => clip.start));
-		let offset =
-			Math.max(...sources.map((clip) => clip.start + clip.duration)) -
-			minimumStart;
-		const obstacles = clips.filter(
-			(candidate) => !sources.some((source) => source.id === candidate.id),
+		if (sources.length === 0 || selectedLayerId == null) return;
+		const anchor = sources.find((clip) => clip.id === id) ?? sources[0];
+		const anchorLayerIndex = layers.findIndex(
+			(layer) => layer.id === anchor.layer_id,
 		);
+		const selectedLayerIndex = layers.findIndex(
+			(layer) => layer.id === selectedLayerId,
+		);
+		if (anchorLayerIndex < 0 || selectedLayerIndex < 0) return;
+		const targetLayerBySource = new Map(
+			sources.map((source) => {
+				const sourceLayerIndex = layers.findIndex(
+					(layer) => layer.id === source.layer_id,
+				);
+				return [
+					source.id,
+					layers[selectedLayerIndex + sourceLayerIndex - anchorLayerIndex]?.id,
+				] as const;
+			}),
+		);
+		const duplicableSources = sources.filter((source) => {
+			const targetLayerId = targetLayerBySource.get(source.id);
+			return targetLayerId != null && !isLayerLocked(targetLayerId);
+		});
+		if (duplicableSources.length === 0) return;
+
+		const sourcesToDuplicate = duplicableSources;
+		const minimumStart = Math.min(
+			...sourcesToDuplicate.map((clip) => clip.start),
+		);
+		let offset = currentFrame - minimumStart;
+		if (sourcesToDuplicate.some((source) => source.start + offset < 0)) {
+			offset += Math.max(
+				...sourcesToDuplicate.map((source) => -source.start - offset),
+			);
+		}
 		while (true) {
-			const collisions = sources.flatMap((source) =>
-				obstacles
+			const collisions = sourcesToDuplicate.flatMap((source) =>
+				clips
 					.filter(
 						(candidate) =>
-							candidate.layer_id === source.layer_id &&
+							candidate.layer_id === targetLayerBySource.get(source.id) &&
 							source.start + offset < candidate.start + candidate.duration &&
 							candidate.start < source.start + offset + source.duration,
 					)
@@ -202,8 +231,10 @@ export const useClipCommands = ({
 		const duplicateIds: string[] = [];
 		await core.beginActionGroup();
 		try {
-			for (const source of sources) {
+			for (const source of sourcesToDuplicate) {
 				const start = source.start + offset;
+				const targetLayerId = targetLayerBySource.get(source.id);
+				if (targetLayerId == null) continue;
 				let nextClips: ClipMetadata[];
 				if (source.clip_type === "audio") {
 					const audioData = await core.getAudioClipData(source.id);
@@ -212,21 +243,21 @@ export const useClipCommands = ({
 					}
 					nextClips = await core.addAudioClip(
 						start,
-						source.layer_id,
+						targetLayerId,
 						source.duration,
 						audioData,
 						source.audio_mime_type,
 						source.name,
 					);
 				} else if (source.clip_type === "group") {
-					nextClips = await core.addGroupClip(start, source.layer_id);
+					nextClips = await core.addGroupClip(start, targetLayerId);
 				} else {
-					nextClips = await core.addClip(start, source.layer_id);
+					nextClips = await core.addClip(start, targetLayerId);
 				}
 				const duplicate = nextClips.find(
 					(candidate) =>
 						!existingIds.has(candidate.id) &&
-						candidate.layer_id === source.layer_id &&
+						candidate.layer_id === targetLayerId &&
 						candidate.start === start,
 				);
 				if (duplicate == null) continue;
