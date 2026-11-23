@@ -469,11 +469,7 @@ impl GpuRenderer {
                 image_size: [image.width as f32, image.height as f32],
                 output_size: [width as f32, height as f32],
                 opacity: clip.image_opacity().unwrap_or(1.0)
-                    * if item.is_onion {
-                        item.tint[3]
-                    } else {
-                        1.0
-                    },
+                    * if item.is_onion { item.tint[3] } else { 1.0 },
                 blend_mode: if item.is_onion {
                     0
                 } else {
