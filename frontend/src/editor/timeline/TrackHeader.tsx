@@ -8,6 +8,7 @@ type Props = {
 	startFrame: number;
 	endFrame: number;
 	totalFrames: number;
+	frameRate: number;
 	frameWidth: number;
 	scrollX: number;
 	onFrameChange: (frame: number) => void;
@@ -23,6 +24,7 @@ const TrackHeader = ({
 	startFrame,
 	endFrame,
 	totalFrames,
+	frameRate,
 	frameWidth,
 	scrollX,
 	onFrameChange,
@@ -154,10 +156,24 @@ const TrackHeader = ({
 				<div
 					// biome-ignore lint/suspicious/noArrayIndexKey: Frame ticks are positional and have no persistent identity.
 					key={i}
-					className="absolute bottom-0 h-2 w-px bg-border"
+					data-exact-second={(i + 1) % Math.max(1, frameRate) === 0}
+					className="absolute bottom-0 h-2 w-px bg-border data-[exact-second=true]:h-4"
 					style={{ left: `${(i + 1) * frameWidth}px` }}
 				/>
 			))}
+			{[...Array(totalFrames)].map(
+				(_, i) =>
+					(i + 1) % Math.max(1, frameRate) === 0 && (
+						<span
+							// biome-ignore lint/suspicious/noArrayIndexKey: Frame labels are positional and have no persistent identity.
+							key={i}
+							className="pointer-events-none absolute top-1 px-1 text-center text-foreground-muted"
+							style={{ left: `${(i + 1) * frameWidth}px` }}
+						>
+							{i + 1}
+						</span>
+					),
+			)}
 			<button
 				type="button"
 				hidden={disabled}
