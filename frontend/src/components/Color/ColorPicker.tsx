@@ -87,14 +87,6 @@ const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
 					/>
 				</div>
 			</div>
-			<div
-				className="absolute bottom-0 left-0 h-4 w-4 rounded border border-border bg-(--color)"
-				style={
-					{
-						"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b})`,
-					} as React.CSSProperties
-				}
-			/>
 		</div>
 	);
 };

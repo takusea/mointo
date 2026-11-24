@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Slider from "~/components/Slider";
+import TextField from "~/components/TextField";
+import ToggleGroup from "~/components/ToggleGroup/ToggleGroup";
+import ToggleGroupItem from "~/components/ToggleGroup/ToggleGroupItem";
 import { type HSVAColor, hsvaToRgba, rgbaToHsva } from "~/lib/color";
-import ToggleGroup from "../ToggleGroup/ToggleGroup";
-import ToggleGroupItem from "../ToggleGroup/ToggleGroupItem";
 
 type Props = {
 	currentColor: HSVAColor;
@@ -12,6 +13,13 @@ type Props = {
 const ColorSlider = ({ currentColor, onCurrentColorChange }: Props) => {
 	const [mode, setMode] = useState<"rgb" | "hsv">("rgb");
 	const rgbaColor = hsvaToRgba(currentColor);
+	const hexColor = [rgbaColor.r, rgbaColor.g, rgbaColor.b]
+		.map((channel) => channel.toString(16).padStart(2, "0"))
+		.join("")
+		.toUpperCase();
+	const [hexInput, setHexInput] = useState(hexColor);
+
+	useEffect(() => setHexInput(hexColor), [hexColor]);
 	const channels =
 		mode === "rgb"
 			? [
@@ -78,6 +86,39 @@ const ColorSlider = ({ currentColor, onCurrentColorChange }: Props) => {
 					<span className="text-right">{value}</span>
 				</div>
 			))}
+			<div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+				<span className="font-medium">HEX</span>
+				<TextField
+					value={hexInput}
+					maxLength={6}
+					leftElement="#"
+					spellCheck={false}
+					onChange={(event) => {
+						const next = event.currentTarget.value
+							.replace(/[^\da-f]/gi, "")
+							.slice(0, 6);
+						setHexInput(next.toUpperCase());
+						if (next.length !== 6) return;
+						const value = Number.parseInt(next, 16);
+						onCurrentColorChange(
+							rgbaToHsva({
+								r: (value >> 16) & 255,
+								g: (value >> 8) & 255,
+								b: value & 255,
+								a: currentColor.a,
+							}),
+						);
+					}}
+				/>
+				<div
+					className="aspect-square h-full rounded-md border border-border bg-(--color)"
+					style={
+						{
+							"--color": `rgb(${rgbaColor.r} ${rgbaColor.g} ${rgbaColor.b})`,
+						} as React.CSSProperties
+					}
+				/>
+			</div>
 		</div>
 	);
 };
