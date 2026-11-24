@@ -12,6 +12,7 @@ export type AppDialog =
 	| "about";
 
 export type DialogsContextValue = {
+	isOpen: boolean;
 	open: (dialog: AppDialog) => void;
 	close: () => void;
 };

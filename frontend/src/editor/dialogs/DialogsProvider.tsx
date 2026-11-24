@@ -25,6 +25,7 @@ export const DialogsProvider = ({ children }: Props) => {
 	return (
 		<DialogsContext
 			value={{
+				isOpen: activeDialog !== null,
 				open: setActiveDialog,
 				close: () => setActiveDialog(null),
 			}}

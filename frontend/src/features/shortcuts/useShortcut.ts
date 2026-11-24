@@ -1,11 +1,21 @@
 import type { HotkeyCallback } from "react-hotkeys-hook";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useShortcutSettings } from "./useShortcuts";
+import { useDialogs } from "~/editor/dialogs/useDialogs";
 
 type HotkeyOptions = Exclude<
 	NonNullable<Parameters<typeof useHotkeys>[2]>,
 	readonly unknown[]
 >;
+
+const shortcutEnabledFormTags = [
+	"slider",
+	"spinbutton",
+	"menuitem",
+	"menuitemcheckbox",
+	"menuitemradio",
+	"option",
+	"radio",
+] as const;
 
 const isHotkeyOptions = (
 	options: NonNullable<Parameters<typeof useHotkeys>[2]>,
@@ -25,15 +35,20 @@ export const useShortcut = (
 	options?: Parameters<typeof useHotkeys>[2],
 	dependencies?: Parameters<typeof useHotkeys>[3],
 ) => {
-	const { isRecording } = useShortcutSettings();
+	const { isOpen: isDialogOpen } = useDialogs();
 	const hotkey = shortcut.split("+").map(toHotkeyPart).join("+");
 	const hotkeyOptions =
 		options == null
-			? { enabled: isRecording ? false : undefined }
+			? {
+					enabled: isDialogOpen ? false : undefined,
+					enableOnFormTags: shortcutEnabledFormTags,
+				}
 			: isHotkeyOptions(options)
 				? {
 						...options,
-						enabled: isRecording ? false : options.enabled,
+						enabled: isDialogOpen ? false : options.enabled,
+						enableOnFormTags:
+							options.enableOnFormTags ?? shortcutEnabledFormTags,
 					}
 				: options;
 
