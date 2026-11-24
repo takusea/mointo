@@ -32,7 +32,7 @@ impl MointoCore {
             "clips": serde_json::to_value(&composition.clips).map_err(js_error)?,
             "layers": serde_json::to_value(&composition.layers).map_err(js_error)?,
         });
-        let manifest_name = composition_manifest_name(None);
+        let manifest_name = composition_manifest_name(&composition.name);
         let mut archive = ZipWriter::new(Cursor::new(Vec::new()));
         let options = SimpleFileOptions::default();
         archive
@@ -367,11 +367,7 @@ impl MointoCore {
     }
 }
 
-fn composition_manifest_name(composition: Option<&serde_json::Value>) -> String {
-    let name = composition
-        .and_then(|composition| composition.get("name"))
-        .and_then(serde_json::Value::as_str)
-        .unwrap_or("composition");
+fn composition_manifest_name(name: &str) -> String {
     let safe_name: String = name
         .chars()
         .map(|character| {
@@ -384,7 +380,7 @@ fn composition_manifest_name(composition: Option<&serde_json::Value>) -> String 
         .collect();
     let safe_name = safe_name.trim_matches([' ', '.']);
     if safe_name.is_empty() {
-        "composition.json".to_string()
+        "main.json".to_string()
     } else {
         format!("{safe_name}.json")
     }
