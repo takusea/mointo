@@ -19,16 +19,9 @@ pub struct AddClipAction {
 }
 
 enum AddClipContent {
-    Image {
-        size: Option<(u32, u32)>,
-    },
-    Audio {
-        asset_id: Uuid,
-        data: Vec<u8>,
-    },
-    Group {
-        depth: u32,
-    },
+    Image { size: Option<(u32, u32)> },
+    Audio { asset_id: Uuid, data: Vec<u8> },
+    Group { depth: u32 },
 }
 
 impl AddClipAction {
@@ -125,20 +118,12 @@ impl Action for AddClipAction {
                     Vec::new(),
                 )
             }
-            AddClipContent::Audio {
-                asset_id,
-                data,
-            } => {
+            AddClipContent::Audio { asset_id, data } => {
                 project
                     .composition_mut()
                     .assets
                     .insert(*asset_id, Asset::Audio(data.clone()));
-                Clip::new_audio(
-                    metadata,
-                    *asset_id,
-                    Transform::default(),
-                    Vec::new(),
-                )
+                Clip::new_audio(metadata, *asset_id, Transform::default(), Vec::new())
             }
             AddClipContent::Group { depth } => {
                 Clip::new_group(metadata, *depth, Transform::default(), Vec::new())
