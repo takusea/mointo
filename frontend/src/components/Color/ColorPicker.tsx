@@ -1,4 +1,4 @@
-import { type HSVAColor, hsvaToRgba } from "~/lib/color";
+import type { HSVAColor } from "~/lib/color";
 
 type Props = {
 	currentColor: HSVAColor;
@@ -6,8 +6,6 @@ type Props = {
 };
 
 const ColorPicker = ({ currentColor, onCurrentColorChange }: Props) => {
-	const rgbaColor = hsvaToRgba(currentColor);
-
 	const updateHue = (event: React.PointerEvent) => {
 		if (event.buttons === 0) return;
 

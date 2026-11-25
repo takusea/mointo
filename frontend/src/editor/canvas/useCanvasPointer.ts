@@ -350,11 +350,7 @@ export const useCanvasPointer = (
 			brushResizeRef.current = { y: event.clientY, size: sizeProperty.value };
 			event.currentTarget.setPointerCapture(event.pointerId);
 		}
-		if (
-			event.ctrlKey &&
-			!isPenEraser &&
-			!canvasDraw.drawState.isDrawing
-		) {
+		if (event.ctrlKey && !isPenEraser && !canvasDraw.drawState.isDrawing) {
 			event.currentTarget.setPointerCapture(event.pointerId);
 			await pickColor(event.clientX, event.clientY, event.shiftKey);
 			return;
