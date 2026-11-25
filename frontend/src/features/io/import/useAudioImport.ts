@@ -72,14 +72,7 @@ export const useAudioImport = () => {
 			const data = new Uint8Array(await file.arrayBuffer());
 			throwIfIoCancelled(signal);
 			ioProgress.setCancelable(false);
-			await clipContext.addAudioClip(
-				frame,
-				layerId,
-				duration,
-				data,
-				file.type || "application/octet-stream",
-				file.name,
-			);
+			await clipContext.addAudioClip(frame, layerId, duration, data, file.name);
 		} catch (error) {
 			if (!signal.aborted) console.error("Failed to import audio.", error);
 		} finally {

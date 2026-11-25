@@ -50,7 +50,6 @@ enum ClipMetadataView<'a> {
         #[serde(flatten)]
         common: ClipMetadataCommon<'a>,
         asset_id: crate::app::clip::AssetId,
-        audio_mime_type: &'a str,
         audio_start_frame: u32,
     },
     Group {
@@ -171,12 +170,10 @@ impl MointoCore {
                     },
                     ClipContent::Audio {
                         asset_id,
-                        mime_type,
                         start_frame,
                     } => ClipMetadataView::Audio {
                         common,
                         asset_id: *asset_id,
-                        audio_mime_type: mime_type,
                         audio_start_frame: *start_frame,
                     },
                     ClipContent::Group { depth } => ClipMetadataView::Group {
@@ -274,10 +271,9 @@ impl MointoCore {
         layer_id_str: String,
         duration: u32,
         audio_data: Vec<u8>,
-        audio_mime_type: String,
         name: String,
     ) -> Result<(), JsValue> {
-        if duration == 0 || audio_data.is_empty() || audio_mime_type.is_empty() {
+        if duration == 0 || audio_data.is_empty() {
             return Err(JsValue::from_str(
                 "Audio clip data and duration must be valid",
             ));
@@ -298,7 +294,6 @@ impl MointoCore {
                 layer_id,
                 duration,
                 audio_data,
-                audio_mime_type,
                 name,
             )),
             project,

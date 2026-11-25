@@ -645,7 +645,6 @@ mod tests {
                 name: "Audio".to_string(),
             },
             asset_id,
-            "audio/wav".to_string(),
             Default::default(),
             Vec::new(),
         );

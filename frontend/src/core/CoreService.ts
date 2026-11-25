@@ -286,11 +286,10 @@ export class CoreService {
 		layerId: LayerId,
 		duration: number,
 		data: Uint8Array,
-		mimeType: string,
 		name: string,
 	) {
 		return this.enqueue((core) => {
-			core.add_audio_clip(start, layerId, duration, data, mimeType, name);
+			core.add_audio_clip(start, layerId, duration, data, name);
 			return (core.get_clips() as ClipMetadata[] | undefined) ?? [];
 		}, true);
 	}

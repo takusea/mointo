@@ -166,7 +166,6 @@ mod tests {
                 locked: false,
             },
             asset_id,
-            "audio/wav".to_string(),
             Transform::default(),
             Vec::new(),
         ));

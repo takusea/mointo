@@ -88,9 +88,7 @@ export const PlaybackProvider = ({ children }: Props) => {
 					if (cancelled) return;
 					const audioBuffer = new ArrayBuffer(data.byteLength);
 					new Uint8Array(audioBuffer).set(data);
-					const url = URL.createObjectURL(
-						new Blob([audioBuffer], { type: clip.audio_mime_type }),
-					);
+					const url = URL.createObjectURL(new Blob([audioBuffer]));
 					const player = {
 						assetId: clip.asset_id,
 						audioStartFrame: clip.audio_start_frame,

@@ -221,12 +221,6 @@ impl MointoCore {
                     {
                         content.insert("data".to_string(), data);
                     }
-                    if let Some(mime_type) = clip
-                        .as_object_mut()
-                        .and_then(|clip| clip.remove("audio_mime_type"))
-                    {
-                        content.insert("mime_type".to_string(), mime_type);
-                    }
                 } else {
                     let metadata = clip
                         .get_mut("metadata")

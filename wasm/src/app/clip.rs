@@ -74,7 +74,6 @@ pub enum ClipContent {
     },
     Audio {
         asset_id: AssetId,
-        mime_type: String,
         #[serde(default)]
         start_frame: u32,
     },
@@ -222,7 +221,6 @@ impl Clip {
     pub fn new_audio(
         metadata: ClipMetadata,
         asset_id: AssetId,
-        mime_type: String,
         transform: Transform,
         keyframes: Vec<ClipKeyframe>,
     ) -> Self {
@@ -230,7 +228,6 @@ impl Clip {
             metadata,
             content: ClipContent::Audio {
                 asset_id,
-                mime_type,
                 start_frame: 0,
             },
             transform,
@@ -535,7 +532,6 @@ mod tests {
                 locked: false,
             },
             asset_id,
-            "audio/wav".to_string(),
             Transform::default(),
             Vec::new(),
         );
@@ -548,13 +544,7 @@ mod tests {
         let restored: Clip = rmp_serde::from_slice(&bytes).unwrap();
 
         assert_eq!(restored.asset_id(), Some(asset_id));
-        assert!(matches!(
-            &restored.content,
-            ClipContent::Audio {
-                mime_type,
-                ..
-            } if mime_type == "audio/wav"
-        ));
+        assert!(matches!(&restored.content, ClipContent::Audio { .. }));
         assert_eq!(restored.audio_start_frame(), Some(12));
         assert_eq!(restored.metadata.duration, 72);
     }

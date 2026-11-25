@@ -25,7 +25,6 @@ enum AddClipContent {
     Audio {
         asset_id: Uuid,
         data: Vec<u8>,
-        mime_type: String,
     },
     Group {
         depth: u32,
@@ -62,7 +61,6 @@ impl AddClipAction {
         layer_id: LayerId,
         duration: u32,
         audio_data: Vec<u8>,
-        audio_mime_type: String,
         name: String,
     ) -> Self {
         Self {
@@ -71,7 +69,6 @@ impl AddClipAction {
             content: AddClipContent::Audio {
                 asset_id: Uuid::new_v4(),
                 data: audio_data,
-                mime_type: audio_mime_type,
             },
             clip_id: None,
             name: Some(name),
@@ -131,7 +128,6 @@ impl Action for AddClipAction {
             AddClipContent::Audio {
                 asset_id,
                 data,
-                mime_type,
             } => {
                 project
                     .composition_mut()
@@ -140,7 +136,6 @@ impl Action for AddClipAction {
                 Clip::new_audio(
                     metadata,
                     *asset_id,
-                    mime_type.clone(),
                     Transform::default(),
                     Vec::new(),
                 )

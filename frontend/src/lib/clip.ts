@@ -24,7 +24,6 @@ export type ImageClipMetadata = ClipMetadataCommon & {
 export type AudioClipMetadata = ClipMetadataCommon & {
 	clip_type: "audio";
 	asset_id: string;
-	audio_mime_type: string;
 	audio_start_frame: number;
 };
 

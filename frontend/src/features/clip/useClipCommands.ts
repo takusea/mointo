@@ -127,11 +127,10 @@ export const useClipCommands = ({
 		layerId: LayerId,
 		duration: number,
 		data: Uint8Array,
-		mimeType: string,
 		name: string,
 	) => {
 		await addClipAtFrame(start, layerId, duration, "audio", (targetLayerId) =>
-			core.addAudioClip(start, targetLayerId, duration, data, mimeType, name),
+			core.addAudioClip(start, targetLayerId, duration, data, name),
 		);
 	};
 
@@ -246,7 +245,6 @@ export const useClipCommands = ({
 						targetLayerId,
 						source.duration,
 						audioData,
-						source.audio_mime_type,
 						source.name,
 					);
 				} else if (source.clip_type === "group") {
@@ -444,7 +442,6 @@ export const useClipCommands = ({
 						source.layer_id,
 						rightDuration,
 						audioData,
-						source.audio_mime_type,
 						source.name,
 					);
 				} else if (source.clip_type === "group") {

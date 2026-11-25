@@ -46,7 +46,6 @@ export type ClipContextValue = {
 		layerId: LayerId,
 		duration: number,
 		data: Uint8Array,
-		mimeType: string,
 		name: string,
 	) => Promise<void>;
 	addGroupClip: (start: number, layerId: LayerId) => Promise<void>;
