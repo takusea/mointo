@@ -53,7 +53,7 @@ const TextField = ({
 					onChange?.(event);
 				}}
 				onBlur={handleBlur}
-				className="h-full flex-1 outline-none"
+				className="h-full min-w-0 flex-1 outline-none"
 			/>
 			{rightElement && (
 				<div className="flex h-full items-center text-foreground-muted">
