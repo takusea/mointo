@@ -6,6 +6,7 @@ import {
 	IconArrowsHorizontal,
 	IconArrowsMoveHorizontal,
 	IconArrowsMoveVertical,
+	IconChevronDown,
 	IconCopy,
 	IconEye,
 	IconEyeOff,
@@ -15,11 +16,14 @@ import {
 	IconLock,
 	IconLockOpen,
 	IconRotate,
+	IconScissors,
 	IconTrash,
 	IconUnlink,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import Card from "~/components/Card";
+import DropdownMenu from "~/components/DropdownMenu/DropdownMenu";
+import DropdownMenuItem from "~/components/DropdownMenu/DropdownMenuItem";
 import IconButton from "~/components/IconButton";
 import LabeledControl from "~/components/LabeledControl";
 import NumberField from "~/components/NumberField";
@@ -36,6 +40,9 @@ type Props = {
 	clips: ClipMetadata[];
 	onUnlink: () => void;
 	onDuplicate: () => void;
+	onDuplicateLinked: () => void;
+	onSplit: () => void;
+	canSplit: boolean;
 	onDelete: () => void;
 	isLayerLocked: boolean;
 	transform: Transform;
@@ -70,6 +77,9 @@ const ClipInspector = ({
 	clips,
 	onUnlink,
 	onDuplicate,
+	onDuplicateLinked,
+	onSplit,
+	canSplit,
 	onDelete,
 	isLayerLocked,
 	transform,
@@ -96,7 +106,7 @@ const ClipInspector = ({
 				<h2 className="font-bold">
 					{t("inspector.clip.propertyOf", { name: clip.name })}
 				</h2>
-				<div className="flex gap-1">
+				<div className="flex flex-wrap gap-1">
 					<IconButton
 						icon={clip.hidden ? IconEyeOff : IconEye}
 						label={
@@ -144,10 +154,35 @@ const ClipInspector = ({
 						/>
 					)}
 					<IconButton
-						icon={IconCopy}
-						label={t("action.edit.duplicateClip")}
-						onClick={onDuplicate}
+						icon={IconScissors}
+						label={t("action.edit.splitClip")}
+						disabled={isLocked || !canSplit}
+						onClick={onSplit}
 					/>
+					<div className="flex">
+						<IconButton
+							icon={IconCopy}
+							label={t("action.edit.duplicateClip")}
+							disabled={isLocked}
+							onClick={onDuplicate}
+						/>
+						<DropdownMenu
+							menu={
+								<DropdownMenuItem
+									label={t("action.edit.duplicateLinkedClip")}
+									disabled={isLocked}
+									onSelect={onDuplicateLinked}
+								/>
+							}
+						>
+							<IconButton
+								size="small"
+								label={t("action.edit.duplicateClip")}
+								icon={IconChevronDown}
+								disabled={isLocked}
+							/>
+						</DropdownMenu>
+					</div>
 					<IconButton
 						icon={IconTrash}
 						label={t("action.edit.deleteClip")}
