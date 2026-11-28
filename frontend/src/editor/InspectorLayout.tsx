@@ -247,7 +247,9 @@ const InspectorLayout = () => {
 								clips={clipContext.clips}
 								onUnlink={() => void core.unlinkClip(selectedClip.id)}
 								onDuplicate={() => void clipContext.duplicateSelectedClip()}
-								onDuplicateLinked={() => void clipContext.linkDuplicateSelectedClip()}
+								onDuplicateLinked={() =>
+									void clipContext.linkDuplicateSelectedClip()
+								}
 								onSplit={() => void clipContext.splitSelectedClip()}
 								canSplit={clipContext.canSplitSelectedClip}
 								onDelete={() => void clipContext.deleteClip(selectedClip.id)}
